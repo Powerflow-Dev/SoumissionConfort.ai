@@ -32,14 +32,12 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
   const [currentStep, setCurrentStep] = useState(0)
   const [utmParams, setUtmParams] = useState<UTMParameters>({})
   const [answers, setAnswers] = useState({
-    roofConditions: [] as string[],
-    roofAge: "",
-    roofMaterial: "",
-    roofIssues: [] as string[],
-    propertyAccess: "",
+    heatingSystem: "",
+    currentInsulation: "",
+    atticAccess: "",
+    identifiedProblems: [] as string[],
     serviceType: [] as string[],
-    timeline: "",
-    contactTime: "",
+    postalCode: "",
   })
 
   // Extract UTM parameters on component mount
@@ -50,42 +48,28 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
   }, [])
 
   const steps = [
-    { title: "Roof Conditions", key: "roofConditions" },
-    { title: "Property Details", key: "details" },
-    { title: "Service Needs", key: "services" },
-    { title: "Timeline & Contact", key: "contact" },
+    { title: "Système de chauffage", key: "heating" },
+    { title: "État de l'isolation", key: "insulation" },
+    { title: "Accès à l'entre-toit", key: "access" },
+    { title: "Problèmes identifiés", key: "problems" },
   ]
 
   const getProgress = () => {
     let completed = 0
-    if (answers.roofConditions.length > 0) completed++
-    if (answers.roofAge && answers.roofMaterial && answers.propertyAccess) completed++
-    if (answers.serviceType.length > 0) completed++
-    if (answers.timeline && answers.contactTime) completed++
+    if (answers.heatingSystem) completed++
+    if (answers.currentInsulation) completed++
+    if (answers.atticAccess) completed++
+    if (currentStep >= 3) completed++ // Problems step (optional)
     return (completed / 4) * 100
   }
 
-  const handleConditionChange = (condition: string, checked: boolean) => {
-    setAnswers((prev) => ({
-      ...prev,
-      roofConditions: checked
-        ? [...prev.roofConditions, condition]
-        : prev.roofConditions.filter((c) => c !== condition),
-    }))
-  }
-
-  const handleIssueChange = (issue: string, checked: boolean) => {
-    setAnswers((prev) => ({
-      ...prev,
-      roofIssues: checked ? [...prev.roofIssues, issue] : prev.roofIssues.filter((i) => i !== issue),
-    }))
-  }
-
-  const handleServiceChange = (service: string, checked: boolean) => {
-    setAnswers((prev) => ({
-      ...prev,
-      serviceType: checked ? [...prev.serviceType, service] : prev.serviceType.filter((s) => s !== service),
-    }))
+  const isFormValid = () => {
+    return (
+      answers.heatingSystem &&
+      answers.currentInsulation &&
+      answers.atticAccess
+      // identifiedProblems is optional
+    )
   }
 
   const handleGetPricing = () => {
@@ -219,18 +203,6 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
     }
   }
 
-  const isFormValid = () => {
-    return (
-      answers.roofConditions.length > 0 &&
-      answers.roofAge &&
-      answers.roofMaterial &&
-      answers.propertyAccess &&
-      answers.serviceType.length > 0 &&
-      answers.timeline &&
-      answers.contactTime
-    )
-  }
-
   return (
     <>
       <div className="max-w-4xl mx-auto space-y-8 overflow-x-hidden">
@@ -263,7 +235,7 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
           </div>
         </div>
 
-        {/* Step 1: Roof Conditions */}
+        {/* Question 1: Système de chauffage principal */}
         <Card className="border-0 shadow-xl bg-gradient-to-br from-blue-50 to-white">
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -272,55 +244,51 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
                   1
                 </div>
                 <div>
-                  <CardTitle className="text-xl">{t.roofConditions}</CardTitle>
-                  <CardDescription>{t.selectAllThatApply}</CardDescription>
+                  <CardTitle className="text-xl">Système de chauffage principal</CardTitle>
+                  <CardDescription>Quel est votre système de chauffage principal?</CardDescription>
                 </div>
               </div>
-              {answers.roofConditions.length > 0 && (
+              {answers.heatingSystem && (
                 <Badge className="bg-green-100 text-green-800">
                   <CheckCircle className="w-3 h-3 mr-1" />
-                  Complete
+                  Complété
                 </Badge>
               )}
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <RadioGroup
+              value={answers.heatingSystem}
+              onValueChange={(value) => setAnswers((prev) => ({ ...prev, heatingSystem: value }))}
+              className="space-y-3"
+            >
               {[
-                { key: "treesShading", text: t.treesShading, icon: "🌳" },
-                { key: "multipleLevels", text: t.multipleLevels, icon: "🏠" },
-                { key: "skylightsObstacles", text: t.skylightsObstacles, icon: "🪟" },
-                { key: "steepPitch", text: t.steepPitch, icon: "📐" },
-                { key: "flatRoof", text: "Toit plat", icon: "⬜" },
-                { key: "easyAccess", text: t.easyAccess, icon: "🚗" },
-              ].map((condition) => (
+                { value: "electricite", label: "Électricité (plinthes, air pulsé, thermopompe)", icon: "⚡" },
+                { value: "gaz", label: "Gaz naturel", icon: "�" },
+                { value: "mazout", label: "Mazout", icon: "🛢️" },
+                { value: "autre", label: "Autre/Combinaison", icon: "🏠" },
+              ].map((option) => (
                 <div
-                  key={condition.key}
+                  key={option.value}
                   className={`flex items-center space-x-3 p-4 rounded-xl border-2 transition-all cursor-pointer hover:shadow-md ${
-                    answers.roofConditions.includes(condition.text)
+                    answers.heatingSystem === option.value
                       ? "border-blue-500 bg-blue-50"
                       : "border-gray-200 bg-white hover:border-blue-300"
                   }`}
-                  onClick={() =>
-                    handleConditionChange(condition.text, !answers.roofConditions.includes(condition.text))
-                  }
+                  onClick={() => setAnswers((prev) => ({ ...prev, heatingSystem: option.value }))}
                 >
-                  <Checkbox
-                    id={condition.key}
-                    checked={answers.roofConditions.includes(condition.text)}
-                    onCheckedChange={(checked) => handleConditionChange(condition.text, checked as boolean)}
-                  />
-                  <span className="text-2xl">{condition.icon}</span>
-                  <Label htmlFor={condition.key} className="text-sm font-medium cursor-pointer flex-1">
-                    {condition.text}
+                  <RadioGroupItem value={option.value} id={option.value} />
+                  <span className="text-2xl">{option.icon}</span>
+                  <Label htmlFor={option.value} className="text-sm font-medium cursor-pointer flex-1">
+                    {option.label}
                   </Label>
                 </div>
               ))}
-            </div>
+            </RadioGroup>
           </CardContent>
         </Card>
 
-        {/* Step 2: Property Details */}
+        {/* Question 2: État actuel de l'isolation */}
         <Card className="border-0 shadow-xl bg-gradient-to-br from-green-50 to-white">
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -381,7 +349,7 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
                     <SelectItem value="asphalt">{t.asphaltShingles}</SelectItem>
                     <SelectItem value="metal">{t.metal}</SelectItem>
                     <SelectItem value="tile">{t.tile}</SelectItem>
-                    <SelectItem value="cedar">{t.cedarSha,kes}</SelectItem>
+                    <SelectItem value="cedar">{t.cedarShakes}</SelectItem>
                     <SelectItem value="slate">{t.slate}</SelectItem>
                     <SelectItem value="membrane">{t.membrane}</SelectItem>
                     <SelectItem value="other">{t.other}</SelectItem>
@@ -436,7 +404,7 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
                   <CardDescription>{t.servicesInterested}</CardDescription>
                 </div>
               </div>
-              {answers.serviceType.length > 0 && (
+              {answers.serviceType && answers.serviceType.length > 0 && (
                 <Badge className="bg-green-100 text-green-800">
                   <CheckCircle className="w-3 h-3 mr-1" />
                   Complete
@@ -456,18 +424,18 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
                 <div
                   key={service.key}
                   className={`relative flex items-center space-x-3 p-4 rounded-xl border-2 transition-all cursor-pointer hover:shadow-md ${
-                    answers.serviceType.includes(service.text)
+                    answers.serviceType && answers.serviceType.includes(service.text)
                       ? "border-purple-500 bg-purple-50"
                       : "border-gray-200 bg-white hover:border-purple-300"
                   }`}
-                  onClick={() => handleServiceChange(service.text, !answers.serviceType.includes(service.text))}
+                  onClick={() => handleServiceChange(service.text, !(answers.serviceType && answers.serviceType.includes(service.text)))}
                 >
                   {service.popular && (
                     <Badge className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs">Most Popular</Badge>
                   )}
                   <Checkbox
                     id={service.key}
-                    checked={answers.serviceType.includes(service.text)}
+                    checked={answers.serviceType && answers.serviceType.includes(service.text)}
                     onCheckedChange={(checked) => handleServiceChange(service.text, checked as boolean)}
                   />
                   <span className="text-2xl">{service.icon}</span>

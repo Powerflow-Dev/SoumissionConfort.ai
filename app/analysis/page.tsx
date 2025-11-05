@@ -3,8 +3,10 @@
 import { useSearchParams, useRouter } from "next/navigation"
 import { useState, useEffect, useMemo } from "react"
 import { RoofAnalysisResults } from "@/components/roof-analysis-results"
-import { UserQuestionnaire } from "@/components/user-questionnaire"
+//import { UserQuestionnaire } from "@/components/user-questionnaire"
+import { UserQuestionnaire } from "@/components/user-questionnaire-wizard"
 import { PricingCalculator } from "@/components/pricing-calculator"
+import { InsulationResults } from "@/components/insulation-results"
 import { LeadCaptureForm } from "@/components/lead-capture-form"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
@@ -40,7 +42,8 @@ export default function AnalysisPage() {
   const dataParam = useMemo(() => searchParams.get("data"), [searchParams])
 
   useEffect(() => {
-    if (hasAnalyzed || !address) return
+    // Ensure we're on the client side and have an address
+    if (typeof window === 'undefined' || hasAnalyzed || !address) return
 
     const analyzeRoof = async () => {
       setHasAnalyzed(true)
@@ -56,29 +59,50 @@ export default function AnalysisPage() {
         }
       }
 
+      // Log the fetch attempt for debugging
+      console.log("Attempting to fetch roof analysis for:", address)
+      console.log("API endpoint:", window.location.origin + "/api/roof-analysis")
+
       try {
-        const response = await fetch("/api/roof-analysis", {
+        // Use absolute URL to avoid any routing issues
+        const apiUrl = `${window.location.origin}/api/roof-analysis`
+        
+        const response = await fetch(apiUrl, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ address }),
+          // Add cache control to prevent stale responses
+          cache: 'no-store'
         })
 
         if (!response.ok) {
-          const errorData = await response.json()
-          throw new Error(errorData.error || "Failed to analyze roof")
+          const errorData = await response.json().catch(() => ({ error: "Server error" }))
+          console.error("API Error Response:", response.status, errorData)
+          throw new Error(errorData.error || `Server error: ${response.status}`)
         }
 
         const data = await response.json()
+        console.log("Roof analysis successful:", data)
         setRoofData({ ...data.roofData, address })
         setCurrentStep("results")
       } catch (error) {
         console.error("Roof analysis error:", error)
+        
+        // Provide more specific error messages
+        let errorMessage = "Unable to analyze this address. Please try a different address."
+        if (error instanceof TypeError && error.message.includes("fetch")) {
+          errorMessage = "Network error: Unable to connect to the server. Please refresh the page and try again."
+          console.error("Network/CORS error - this may be a hydration issue")
+        } else if (error instanceof Error) {
+          errorMessage = error.message
+        }
+        
         setCurrentStep("results")
         setRoofData({
           address,
-          error: "Unable to analyze this address. Please try a different address.",
+          error: errorMessage,
           roofArea: 2400,
           segments: 4,
           pitchComplexity: "moderate",
@@ -90,7 +114,12 @@ export default function AnalysisPage() {
       }
     }
 
-    analyzeRoof()
+    // Small delay to ensure client is fully mounted
+    const timeoutId = setTimeout(() => {
+      analyzeRoof()
+    }, 100)
+
+    return () => clearTimeout(timeoutId)
   }, [address, dataParam, hasAnalyzed])
 
   const getStepProgress = () => {
@@ -113,17 +142,17 @@ export default function AnalysisPage() {
   const getStepInfo = () => {
     switch (currentStep) {
       case "loading":
-        return { title: "Analyzing Your Roof", subtitle: "AI processing satellite data", icon: Zap }
+        return { title: "Analyse de Votre Propriété", subtitle: "Traitement des données par IA", icon: Zap }
       case "results":
-        return { title: "Analysis Complete", subtitle: "Review your roof details", icon: CheckCircle }
+        return { title: "Analyse Complète", subtitle: "Consultez les détails de votre projet", icon: CheckCircle }
       case "questionnaire":
-        return { title: "Project Details", subtitle: "Tell us about your needs", icon: Clock }
+        return { title: "Détails du Projet", subtitle: "Parlez-nous de vos besoins", icon: Clock }
       case "lead-capture":
-        return { title: "Connecting Contractors", subtitle: "Matching you with professionals", icon: CheckCircle }
+        return { title: "Connexion aux Entrepreneurs", subtitle: "Nous vous mettons en contact avec des professionnels", icon: CheckCircle }
       case "pricing":
-        return { title: "Pricing Results", subtitle: "Your personalized estimate", icon: CheckCircle }
+        return { title: "Résultats de Prix", subtitle: "Votre estimation personnalisée", icon: CheckCircle }
       default:
-        return { title: "Processing", subtitle: "Please wait", icon: Clock }
+        return { title: "Traitement", subtitle: "Veuillez patienter", icon: Clock }
     }
   }
 
@@ -144,19 +173,16 @@ export default function AnalysisPage() {
   const StepIcon = stepInfo.icon
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 overflow-x-hidden">
-      {/* Enhanced Header */}
-      <header className="bg-white/95 backdrop-blur-sm border-b sticky top-0 z-50 shadow-sm">
-        <div className="container mx-auto px-4 py-4">
+    <div className="min-h-screen bg-white overflow-x-hidden">
+      {/* Header */}
+      <header className="border-b bg-white/95 backdrop-blur-sm sticky top-0 z-50 shadow-sm">
+        <div className="container mx-auto px-4 py-2 md:py-3">
           <div className="flex items-center justify-between min-w-0">
             <Link
               href="/"
-              className="flex items-center space-x-2 md:space-x-3 text-blue-600 hover:text-blue-700 transition-colors group flex-shrink-0"
+              className="flex items-center space-x-3"
             >
-              <div className="w-6 h-6 md:w-8 md:h-8 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors">
-                <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
-              </div>
-              <span className="font-medium text-sm md:text-base hidden sm:inline">{t.backToHome}</span>
+              <img src="/images/logosoumissionconfort-1.png" alt="Soumission Confort AI" className="h-[120px] md:h-[140px] w-auto" />
             </Link>
 
             <div className="flex items-center space-x-2 md:space-x-4 min-w-0 flex-shrink">
@@ -164,7 +190,7 @@ export default function AnalysisPage() {
                 <MapPin className="w-3 h-3 md:w-4 md:h-4 text-gray-400 flex-shrink-0" />
                 <span className="text-xs md:text-sm text-gray-600 truncate max-w-[120px] md:max-w-xs">{address}</span>
               </div>
-              <Badge className="bg-blue-100 text-blue-800 border-blue-200 text-xs md:text-sm flex-shrink-0">
+              <Badge className="bg-teal-100 text-teal-800 border-teal-200 text-xs md:text-sm flex-shrink-0">
                 <StepIcon className="w-3 h-3 mr-1" />
                 <span className="hidden sm:inline">{stepInfo.title}</span>
               </Badge>
@@ -174,11 +200,11 @@ export default function AnalysisPage() {
           {/* Enhanced Progress Bar */}
           <div className="mt-4">
             <div className="flex justify-between text-xs text-gray-600 mb-2">
-              <span className={currentStep === "loading" ? "text-blue-600 font-medium" : ""}>Analysis</span>
-              <span className={currentStep === "results" ? "text-blue-600 font-medium" : ""}>Results</span>
-              <span className={currentStep === "questionnaire" ? "text-blue-600 font-medium" : ""}>Questions</span>
-              <span className={currentStep === "lead-capture" ? "text-blue-600 font-medium" : ""}>Connect</span>
-              <span className={currentStep === "pricing" ? "text-blue-600 font-medium" : ""}>Pricing</span>
+              <span className={currentStep === "loading" ? "text-teal-600 font-medium" : ""}>Analyse</span>
+              <span className={currentStep === "results" ? "text-teal-600 font-medium" : ""}>Résultats</span>
+              <span className={currentStep === "questionnaire" ? "text-teal-600 font-medium" : ""}>Questions</span>
+              <span className={currentStep === "lead-capture" ? "text-teal-600 font-medium" : ""}>Connexion</span>
+              <span className={currentStep === "pricing" ? "text-teal-600 font-medium" : ""}>Prix</span>
             </div>
             <Progress value={getStepProgress()} className="h-3 bg-gray-200" />
             <p className="text-xs text-gray-500 mt-1 text-center">{stepInfo.subtitle}</p>
@@ -188,40 +214,39 @@ export default function AnalysisPage() {
 
       <main className="container mx-auto px-4 py-8 overflow-x-hidden">
         {currentStep === "loading" && (
-          <Card className="max-w-3xl mx-auto border-0 shadow-2xl bg-gradient-to-br from-blue-50 to-purple-50">
+          <Card className="max-w-3xl mx-auto border-0 shadow-2xl bg-gradient-to-br from-teal-50 to-blue-50">
             <CardHeader className="text-center pb-6">
-              <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+              <div className="w-20 h-20 bg-gradient-to-r from-teal-500 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
                 <div className="w-10 h-10 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
               </div>
-              <CardTitle className="text-3xl font-bold text-gray-900 mb-2">AI Analyzing Your Roof...</CardTitle>
-              <p className="text-gray-600 text-lg">Processing satellite imagery and market data</p>
+              <CardTitle className="text-3xl font-bold text-gray-900 mb-2">Analyse de Votre Propriété...</CardTitle>
+              <p className="text-gray-600 text-lg">Traitement des données par intelligence artificielle</p>
             </CardHeader>
             <CardContent className="text-center py-8">
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                   <div className="flex items-center justify-center space-x-2 text-green-600 bg-green-50 p-4 rounded-xl">
                     <CheckCircle className="w-5 h-5" />
-                    <span className="font-medium">Satellite Data Retrieved</span>
+                    <span className="font-medium">Données Récupérées</span>
                   </div>
-                  <div className="flex items-center justify-center space-x-2 text-blue-600 bg-blue-50 p-4 rounded-xl">
-                    <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                    <span className="font-medium">Analyzing Roof Structure</span>
+                  <div className="flex items-center justify-center space-x-2 text-teal-600 bg-teal-50 p-4 rounded-xl">
+                    <div className="w-5 h-5 border-2 border-teal-600 border-t-transparent rounded-full animate-spin"></div>
+                    <span className="font-medium">Analyse de la Structure</span>
                   </div>
                   <div className="flex items-center justify-center space-x-2 text-gray-400 bg-gray-50 p-4 rounded-xl">
                     <Clock className="w-5 h-5" />
-                    <span className="font-medium">Calculating Complexity</span>
+                    <span className="font-medium">Calcul de Complexité</span>
                   </div>
                 </div>
-                <div className="bg-white rounded-xl p-6 border border-blue-100">
+                <div className="bg-white rounded-xl p-6 border border-teal-100">
                   <p className="text-gray-600 mb-2">
-                    <strong>Advanced AI Technology</strong>
+                    <strong>Technologie IA Avancée</strong>
                   </p>
                   <p className="text-sm text-gray-500">
-                    Our system analyzes 47+ data points including roof pitch, obstacles, access difficulty, and local
-                    market conditions to provide the most accurate estimate possible.
+                    Notre système analyse plus de 47 points de données incluant la superficie, les obstacles, la difficulté d'accès et les conditions du marché local pour fournir l'estimation la plus précise possible pour votre projet d'isolation.
                   </p>
                 </div>
-                <p className="text-gray-500">This usually takes 30-60 seconds...</p>
+                <p className="text-gray-500">Cela prend généralement 30-60 secondes...</p>
               </div>
             </CardContent>
           </Card>
@@ -239,8 +264,8 @@ export default function AnalysisPage() {
           <LeadCaptureForm roofData={roofData} userAnswers={userAnswers} leadData={leadData} onComplete={handleLeadCaptureComplete} />
         )}
 
-        {currentStep === "pricing" && roofData && userAnswers && leadData && pricingData && (
-          <PricingCalculator 
+        {currentStep === "pricing" && roofData && userAnswers && leadData && (
+          <InsulationResults 
             roofData={roofData} 
             userAnswers={userAnswers} 
             leadData={leadData}

@@ -50,7 +50,9 @@ export async function POST(request: Request) {
 
     // Calculate condition factor
     let conditionFactor = 1.0
-    const specialConditions = userAnswers.roofConditions?.length || 0
+    // Support both roofConditions and identifiedProblems (from questionnaire)
+    const conditions = userAnswers.roofConditions || userAnswers.identifiedProblems || []
+    const specialConditions = Array.isArray(conditions) ? conditions.length : 0
     if (specialConditions > 2) conditionFactor = 1.15
     else if (specialConditions > 0) conditionFactor = 1.05
 

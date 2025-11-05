@@ -28,12 +28,15 @@ export function useAddressAutocomplete(): UseAddressAutocompleteReturn {
   const debounceRef = useRef<NodeJS.Timeout>()
 
   const fetchPredictions = useCallback(async (input: string) => {
+    console.log('🔵 fetchPredictions called with:', input)
+    
     // Clear previous debounce
     if (debounceRef.current) {
       clearTimeout(debounceRef.current)
     }
 
     if (!input || input.length < 2) {
+      console.log('⚠️ Input too short, clearing predictions')
       setPredictions([])
       setError(null)
       setIsFallback(false)
@@ -45,14 +48,20 @@ export function useAddressAutocomplete(): UseAddressAutocompleteReturn {
 
     // Debounce the API call
     debounceRef.current = setTimeout(async () => {
+      console.log('🚀 Making API call to /api/places/autocomplete with input:', input)
       try {
-        const response = await fetch(`/api/places/autocomplete?input=${encodeURIComponent(input)}`)
+        const url = `/api/places/autocomplete?input=${encodeURIComponent(input)}`
+        console.log('📡 Fetching:', url)
+        const response = await fetch(url)
 
+        console.log('📥 Response status:', response.status, response.ok)
+        
         if (!response.ok) {
           throw new Error("Failed to fetch predictions")
         }
 
         const data = await response.json()
+        console.log('✅ API Response data:', data)
 
         setPredictions(data.predictions || [])
         setIsFallback(data.fallback || false)
@@ -63,7 +72,7 @@ export function useAddressAutocomplete(): UseAddressAutocompleteReturn {
           setError(null)
         }
       } catch (err) {
-        console.error("Autocomplete fetch error:", err)
+        console.error("❌ Autocomplete fetch error:", err)
         setError(err instanceof Error ? err.message : "Unknown error")
         setPredictions([])
         setIsFallback(false)

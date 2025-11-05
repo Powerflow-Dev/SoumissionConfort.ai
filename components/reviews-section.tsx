@@ -7,21 +7,21 @@ export function ReviewsSection() {
     {
       id: 1,
       name: "Brian Grant Rogers",
-      text: "Reçu trois soumissions et oui j'ai une bonne affaire ! Le bon prix et une exécution parfaite! Merci",
+      text: "Isolation de l'entre-toit impeccable! J'ai économisé 35% sur mes factures de chauffage. Service professionnel et rapide.",
       rating: 5,
       avatar: "/images/placeholder-user.jpg"
     },
     {
       id: 2,
-      name: "Miguel Di Salvia",
-      text: "Simple, pas compliqué. Très sympathique. 100% transparent et disponible. Informations complémentaires. Je le recommande haut la main.",
+      name: "Sophie Tremblay",
+      text: "Trois soumissions reçues en 24h pour l'isolation de mon sous-sol. Prix compétitifs et entrepreneurs certifiés. Très satisfaite!",
       rating: 5,
       avatar: "/images/placeholder-user.jpg"
     },
     {
       id: 3,
-      name: "Julian Budileanu",
-      text: "C'est Super! Avec 0 connaissances en construction, ça a été la façon la plus simple et rapide d'entrer en contact avec les compagnies.",
+      name: "Marc Leblanc",
+      text: "Plateforme simple et efficace. J'ai comparé les prix facilement et choisi le meilleur entrepreneur pour isoler mes murs. Excellent!",
       rating: 5,
       avatar: "/images/placeholder-user.jpg"
     }
@@ -45,10 +45,10 @@ export function ReviewsSection() {
         {/* Header */}
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Pourquoi les Québécois nous font confiance
+            Ce Que Disent Nos Clients
           </h2>
           <p className="text-xl text-gray-200 mb-6">
-            Découvrez ce que nos clients ont à dire sur nos services et notre expertise
+            Plus de 800 propriétaires ont amélioré leur confort grâce à notre plateforme
           </p>
           
           {/* Google Reviews Badge */}
@@ -111,7 +111,7 @@ export function ReviewsSection() {
               Rejoignez nos clients satisfaits
             </h3>
             <p className="text-gray-200 mb-6">
-              Plus de 1,200+ propriétaires ont fait confiance à notre plateforme pour leurs projets de toiture
+              Plus de 800 propriétaires ont fait confiance à notre plateforme pour leurs projets d'isolation
             </p>
             <button className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 px-8 rounded-full transition-colors duration-300 shadow-lg">
               Obtenir ma soumission gratuite

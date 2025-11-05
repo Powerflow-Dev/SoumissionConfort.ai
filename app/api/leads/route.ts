@@ -65,16 +65,84 @@ export async function POST(request: NextRequest) {
           coordinates: leadData.roofData?.coordinates || null,
         },
         projectDetails: {
-          roofConditions: leadData.userAnswers?.roofConditions || [],
+          // Questions d'isolation
+          heatingSystem: leadData.userAnswers?.heatingSystem || "",
+          currentInsulation: leadData.userAnswers?.currentInsulation || "",
+          atticAccess: leadData.userAnswers?.atticAccess || "",
+          identifiedProblems: leadData.userAnswers?.identifiedProblems || [],
+          
+          // Anciennes questions (pour compatibilité)
+          roofConditions: leadData.userAnswers?.roofConditions || leadData.userAnswers?.identifiedProblems || [],
           roofAge: leadData.userAnswers?.roofAge || "",
           roofMaterial: leadData.userAnswers?.roofMaterial || "",
-          propertyAccess: leadData.userAnswers?.propertyAccess || "",
+          propertyAccess: leadData.userAnswers?.propertyAccess || leadData.userAnswers?.atticAccess || "",
           serviceType: leadData.userAnswers?.serviceType || [],
           timeline: leadData.userAnswers?.timeline || "",
           contactPreference: leadData.userAnswers?.contactPreference || "",
           contactTime: leadData.userAnswers?.contactTime || "",
         },
-        pricing: leadData.pricingData || null,
+        pricing: {
+          // Fourchette principale (Standard - recommandée)
+          estimatedCost: leadData.pricingData || null,
+          
+          // 3 Fourchettes de prix détaillées
+          ranges: {
+            economique: {
+              name: "Économique",
+              type: "Fibre de verre soufflée",
+              rValue: 50,
+              min: leadData.pricingData?.ranges?.economique?.totalCost?.min || null,
+              max: leadData.pricingData?.ranges?.economique?.totalCost?.max || null,
+              annualSavings: {
+                min: leadData.pricingData?.ranges?.economique?.annualSavings?.min || null,
+                max: leadData.pricingData?.ranges?.economique?.annualSavings?.max || null,
+              },
+              paybackPeriod: {
+                min: leadData.pricingData?.ranges?.economique?.paybackPeriod?.min || null,
+                max: leadData.pricingData?.ranges?.economique?.paybackPeriod?.max || null,
+              },
+            },
+            standard: {
+              name: "Standard",
+              type: "Cellulose soufflée",
+              rValue: 55,
+              recommended: true,
+              min: leadData.pricingData?.ranges?.standard?.totalCost?.min || null,
+              max: leadData.pricingData?.ranges?.standard?.totalCost?.max || null,
+              annualSavings: {
+                min: leadData.pricingData?.ranges?.standard?.annualSavings?.min || null,
+                max: leadData.pricingData?.ranges?.standard?.annualSavings?.max || null,
+              },
+              paybackPeriod: {
+                min: leadData.pricingData?.ranges?.standard?.paybackPeriod?.min || null,
+                max: leadData.pricingData?.ranges?.standard?.paybackPeriod?.max || null,
+              },
+            },
+            premium: {
+              name: "Premium",
+              type: "Uréthane giclé",
+              rValue: 60,
+              min: leadData.pricingData?.ranges?.premium?.totalCost?.min || null,
+              max: leadData.pricingData?.ranges?.premium?.totalCost?.max || null,
+              annualSavings: {
+                min: leadData.pricingData?.ranges?.premium?.annualSavings?.min || null,
+                max: leadData.pricingData?.ranges?.premium?.annualSavings?.max || null,
+              },
+              paybackPeriod: {
+                min: leadData.pricingData?.ranges?.premium?.paybackPeriod?.min || null,
+                max: leadData.pricingData?.ranges?.premium?.paybackPeriod?.max || null,
+              },
+            },
+          },
+          
+          // Détails supplémentaires
+          adjustedArea: leadData.pricingData?.adjustedArea || leadData.roofData?.roofArea || 0,
+          calculationFactors: {
+            pitchMultiplier: leadData.pricingData?.pitchMultiplier || 1.0,
+            accessMultiplier: leadData.pricingData?.accessMultiplier || 1.0,
+            currentRValue: leadData.pricingData?.currentRValue || 0,
+          },
+        },
         utmParams: utmParams, // Include UTM parameters in webhook payload
         source: "soumission-toiture-ai",
       }

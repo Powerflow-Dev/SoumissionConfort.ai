@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { useLanguage } from "@/lib/language-context"
 import { Home, TrendingUp, AlertTriangle, CheckCircle, Star, Zap, Clock, Shield } from "lucide-react"
+import { TrustBadges } from "@/components/trust-badges"
 
 interface RoofAnalysisResultsProps {
   roofData: any
@@ -56,21 +57,6 @@ export function RoofAnalysisResults({ roofData, onContinue }: RoofAnalysisResult
 
   return (
     <div className="max-w-6xl mx-auto space-y-4 md:space-y-8">
-      {/* Success Header with Social Proof */}
-      <div className="text-center">
-        <div className="w-20 h-20 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-          <CheckCircle className="w-10 h-10 text-white" />
-        </div>
-        <Badge className="mb-4 bg-green-100 text-green-800 border-green-200 px-4 py-2">
-          <Star className="w-4 h-4 mr-2" />
-          Analyse terminée - Joignez-vous à 50 000+ propriétaires
-        </Badge>
-        <h1 className="text-2xl md:text-5xl font-bold text-gray-900 mb-3 md:mb-4">🎉 Votre analyse de toit est prête !</h1>
-        <p className="text-base md:text-xl text-gray-600 max-w-2xl mx-auto mb-2 md:mb-0">
-          Notre IA a analysé votre propriété à l'aide d'imagerie satellite et de données de marché
-        </p>
-      </div>
-
       {/* Mobile-Optimized First Fold CTA */}
       <div className="text-center bg-gradient-to-r from-green-50 to-blue-50 p-4 md:p-8 rounded-2xl border border-green-200 shadow-lg">
         <Badge className="mb-3 bg-orange-100 text-orange-800 border-orange-200 px-3 py-1 text-sm">
@@ -78,7 +64,7 @@ export function RoofAnalysisResults({ roofData, onContinue }: RoofAnalysisResult
         </Badge>
         <h2 className="text-xl md:text-3xl font-bold text-gray-900 mb-3">Prêt à connaître votre prix ?</h2>
         <p className="text-base md:text-lg text-gray-600 mb-4 max-w-xl mx-auto">
-          Répondez à 5 questions rapides pour obtenir un prix précis de couvreurs certifiés dans votre région
+          Répondez à 5 questions rapides pour obtenir un prix précis d'entrepreneurs en isolation certifiés dans votre région
         </p>
         
         {/* Simplified mobile progress */}
@@ -104,7 +90,22 @@ export function RoofAnalysisResults({ roofData, onContinue }: RoofAnalysisResult
         <p className="text-xs md:text-sm text-gray-500 mt-3">⏱️ 2 min • 🔒 Sécurisé • 📞 Aucun appel indésirable</p>
       </div>
 
-      {/* Key Metrics Cards - Enhanced */}
+      {/* Success Header with Social Proof */}
+      <div className="text-center">
+        <div className="w-20 h-20 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+          <CheckCircle className="w-10 h-10 text-white" />
+        </div>
+        <Badge className="mb-4 bg-green-100 text-green-800 border-green-200 px-4 py-2">
+          <Star className="w-4 h-4 mr-2" />
+          Analyse terminée - Joignez-vous à 50 000+ propriétaires
+        </Badge>
+        <h1 className="text-2xl md:text-5xl font-bold text-gray-900 mb-3 md:mb-4">🎉 Votre analyse d'isolation est prête !</h1>
+        <p className="text-base md:text-xl text-gray-600 max-w-2xl mx-auto mb-2 md:mb-0">
+          Notre IA a analysé votre propriété pour déterminer vos besoins en isolation
+        </p>
+      </div>
+
+      {/* Key Metrics Cards - Simplified */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="border-0 shadow-xl bg-gradient-to-br from-blue-50 to-blue-100 hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
           <CardHeader className="pb-3">
@@ -263,7 +264,7 @@ export function RoofAnalysisResults({ roofData, onContinue }: RoofAnalysisResult
           </Badge>
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Prêt à connaître votre prix ?</h2>
           <p className="text-xl text-gray-600 mb-6 max-w-2xl mx-auto">
-            Répondez à 5 questions rapides pour obtenir un prix précis de couvreurs certifiés dans votre région
+            Répondez à 5 questions rapides pour obtenir un prix précis d'entrepreneurs en isolation certifiés dans votre région
           </p>
 
           {/* Progress indicator */}
@@ -296,6 +297,9 @@ export function RoofAnalysisResults({ roofData, onContinue }: RoofAnalysisResult
           <p className="text-sm text-gray-500 mt-4">⏱️ 2 minutes • 🔒 100 % sécurisé • 📞 Aucun appel indésirable</p>
         </CardContent>
       </Card>
+
+      {/* Trust Badges Section */}
+      <TrustBadges />
     </div>
   )
 }

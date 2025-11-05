@@ -18,7 +18,7 @@ function ToitureShawiniganPage() {
       <header className="border-b bg-white/95 backdrop-blur-sm sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <img src="/images/logo-fr.png" alt="Toiture Shawinigan" className="h-[80px] w-auto" />
+            <img src="/images/logosoumissionconfort-1.png" alt="Toiture Shawinigan" className="h-[120px] w-auto" />
           </div>
           <Badge className="bg-orange-500 text-white border-orange-500 px-4 py-2">
             Service Local Shawinigan

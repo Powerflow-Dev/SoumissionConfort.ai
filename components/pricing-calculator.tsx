@@ -61,7 +61,7 @@ export function PricingCalculator({ roofData, userAnswers, leadData, onComplete 
             roofComplexity: roofData.pitchComplexity || "moderate",
             accessDifficulty: userAnswers.propertyAccess || "easy",
             roofAge: userAnswers.roofAge || "unknown",
-            specialConditions: userAnswers.roofConditions?.length || 0,
+            specialConditions: (userAnswers.roofConditions || userAnswers.identifiedProblems || []).length,
           },
         }
         setPricingData(mockPricing)
