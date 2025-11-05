@@ -8,19 +8,24 @@ import { Analytics } from "@vercel/analytics/next"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Soumission Toiture AI - Devis de Toiture Instantanés au Canada",
-  description: "Obtenez une analyse de toit alimentée par l'IA et connectez-vous avec des entrepreneurs locaux certifiés partout au Canada. Soumissions instantanées en 60 secondes.",
+  title: "Soumission Confort - Estimation Gratuite d'Isolation d'Entretoit au Québec",
+  description: "Obtenez votre estimation gratuite d'isolation d'entretoit en 60 secondes. Connectez-vous avec des entrepreneurs certifiés RBQ. Économisez jusqu'à 30% sur vos factures de chauffage. Subventions disponibles avec Hydro-Québec et RénoClimat.",
   generator: 'v0.dev',
   icons: {
-    icon: '/favicon.ico',
+    icon: [
+      { url: '/favicon.ico' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+    ],
+    apple: '/apple-touch-icon.png',
   },
   viewport: 'width=device-width, initial-scale=1',
   charset: 'UTF-8',
   openGraph: {
-    title: "Soumission Toiture AI - Devis de Toiture Instantanés au Canada",
-    description: "Obtenez une analyse de toit alimentée par l'IA et connectez-vous avec des entrepreneurs locaux certifiés partout au Canada. Soumissions instantanées en 60 secondes.",
-    url: 'https://soumission-toiture.ai',
-    siteName: 'Soumission Toiture AI',
+    title: "Soumission Confort - Estimation Gratuite d'Isolation d'Entretoit au Québec",
+    description: "Obtenez votre estimation gratuite d'isolation d'entretoit en 60 secondes. Connectez-vous avec des entrepreneurs certifiés RBQ. Économisez jusqu'à 30% sur vos factures de chauffage. Subventions disponibles avec Hydro-Québec et RénoClimat.",
+    url: 'https://soumissionconfort.ai',
+    siteName: 'Soumission Confort',
     locale: 'fr_CA',
     type: 'website',
   },
@@ -42,10 +47,10 @@ export default function RootLayout({
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
-    "name": "Soumission Toiture AI",
-    "description": "Soumission toiture gratuite au Québec. Réparation toiture urgente 24h, couvreurs certifiés.",
-    "url": "https://soumission-toiture.ai",
-    "telephone": "+1-800-TOITURE",
+    "name": "Soumission Confort",
+    "description": "Estimation gratuite d'isolation d'entretoit au Québec. Entrepreneurs certifiés RBQ, subventions disponibles avec Hydro-Québec, LogisVert et RénoClimat.",
+    "url": "https://soumissionconfort.ai",
+    "telephone": "+1-800-CONFORT",
     "priceRange": "$$",
     "areaServed": [
       {
@@ -66,31 +71,41 @@ export default function RootLayout({
       }
     ],
     "serviceType": [
-      "Réparation toiture urgente",
-      "Soumission toiture gratuite", 
-      "Estimation toiture",
-      "Couvreur certifié",
-      "Fuite toit urgence",
-      "Infiltration eau toiture"
+      "Isolation d'entretoit",
+      "Estimation isolation gratuite", 
+      "Isolation soufflée",
+      "Isolation cellulose",
+      "Amélioration efficacité énergétique",
+      "Subventions isolation Hydro-Québec",
+      "Programme RénoClimat",
+      "Programme LogisVert"
     ],
     "hasOfferCatalog": {
       "@type": "OfferCatalog",
-      "name": "Services de toiture",
+      "name": "Services d'isolation d'entretoit",
       "itemListElement": [
         {
           "@type": "Offer",
           "itemOffered": {
             "@type": "Service",
-            "name": "Réparation toiture urgente 24h",
-            "description": "Service d'urgence pour réparation de toit, fuite et infiltration d'eau"
+            "name": "Isolation d'entretoit soufflée",
+            "description": "Installation d'isolation cellulose ou fibre de verre soufflée pour améliorer l'efficacité énergétique"
           }
         },
         {
           "@type": "Offer", 
           "itemOffered": {
             "@type": "Service",
-            "name": "Soumission toiture gratuite",
-            "description": "Estimation gratuite et instantanée pour tous travaux de toiture"
+            "name": "Estimation gratuite d'isolation",
+            "description": "Évaluation instantanée avec 3 gammes de prix et calcul des économies d'énergie"
+          }
+        },
+        {
+          "@type": "Offer", 
+          "itemOffered": {
+            "@type": "Service",
+            "name": "Aide aux subventions",
+            "description": "Accompagnement pour obtenir les subventions Hydro-Québec, LogisVert et RénoClimat"
           }
         }
       ]
