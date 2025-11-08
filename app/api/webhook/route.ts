@@ -98,43 +98,65 @@ export async function POST(request: NextRequest) {
 
     // Prepare webhook payload to match Google Sheets structure
     const webhookPayload = {
+      // Contact (A-D)
       "Prénom (A)": leadData.contact.firstName,
       "Nom (B)": leadData.contact.lastName,
       "Adresse courriel (C)": leadData.contact.email,
       "Téléphone (D)": leadData.contact.phone,
+      
+      // Propriété (E-I)
       "Adresse (E)": leadData.property.address || "",
       "Code postal (F)": leadData.property.postalCode || "",
       "Ville (G)": leadData.property.city || "",
-      "Superficie du toit (H)": leadData.property.roofArea || 0,
+      "Superficie entretoit (H)": leadData.property.roofArea || 0,
       "Hauteur du bâtiment (I)": leadData.property.buildingHeight || 0,
-      "Condition particulières (J)": leadData.projectDetails.roofMaterial || "",
-      "Âge du toit (K)": leadData.projectDetails.roofAge || "",
-      "Matériau du toit (L)": leadData.projectDetails.roofMaterial || "",
-      "Accès (M)": leadData.projectDetails.propertyAccess || "",
-      "Type de service (N)": Array.isArray(leadData.projectDetails.serviceType) 
-        ? leadData.projectDetails.serviceType.join(", ") 
-        : leadData.projectDetails.serviceType || "",
-      "Date du projet (O)": leadData.projectDetails.timeline || "",
-      "Méthode de contact (P)": leadData.projectDetails.contactPreference || "",
-      "Meilleur moment (Q)": leadData.projectDetails.contactTime || "",
-      "Valeur estimée (R)": leadData.pricing?.totalCost || (leadData.property.roofArea ? leadData.property.roofArea * 10 : 5000),
-      "Souhaite recevoir une estimation par un entrepreneur (S)": true,
-      // UTM Parameters
-      "UTM Source (T)": utmParams.utm_source || "",
-      "UTM Campaign (U)": utmParams.utm_campaign || "",
-      "UTM Content (V)": utmParams.utm_content || "",
-      "UTM Medium (W)": utmParams.utm_medium || "",
-      "UTM Term (X)": utmParams.utm_term || "",
-      // Additional fields for webhook linking
-      "Lead ID (Y)": leadData.leadId || "",
-      "Webhook Type (Z)": leadData.webhookType || "initial_contact",
-      // Price range fields
-      "Prix minimum (AA)": leadData.pricing?.lowEstimate || 0,
-      "Prix maximum (AB)": leadData.pricing?.highEstimate || 0
+      
+      // Questions d'isolation (J-M)
+      "Système de chauffage (J)": leadData.projectDetails.heatingSystem || "",
+      "Isolation actuelle (K)": leadData.projectDetails.currentInsulation || "",
+      "Accès entretoit (L)": leadData.projectDetails.atticAccess || "",
+      "Problèmes identifiés (M)": Array.isArray(leadData.projectDetails.identifiedProblems) 
+        ? leadData.projectDetails.identifiedProblems.join(", ") 
+        : leadData.projectDetails.identifiedProblems || "",
+      
+      // Gamme Économique (N-S)
+      "Économique - Prix min (N)": leadData.pricing?.ranges?.economique?.min || 0,
+      "Économique - Prix max (O)": leadData.pricing?.ranges?.economique?.max || 0,
+      "Économique - Économies min (P)": leadData.pricing?.ranges?.economique?.annualSavings?.min || 0,
+      "Économique - Économies max (Q)": leadData.pricing?.ranges?.economique?.annualSavings?.max || 0,
+      "Économique - Retour min (R)": leadData.pricing?.ranges?.economique?.paybackPeriod?.min || 0,
+      "Économique - Retour max (S)": leadData.pricing?.ranges?.economique?.paybackPeriod?.max || 0,
+      
+      // Gamme Standard (T-Y)
+      "Standard - Prix min (T)": leadData.pricing?.ranges?.standard?.min || 0,
+      "Standard - Prix max (U)": leadData.pricing?.ranges?.standard?.max || 0,
+      "Standard - Économies min (V)": leadData.pricing?.ranges?.standard?.annualSavings?.min || 0,
+      "Standard - Économies max (W)": leadData.pricing?.ranges?.standard?.annualSavings?.max || 0,
+      "Standard - Retour min (X)": leadData.pricing?.ranges?.standard?.paybackPeriod?.min || 0,
+      "Standard - Retour max (Y)": leadData.pricing?.ranges?.standard?.paybackPeriod?.max || 0,
+      
+      // Gamme Premium (Z-AE)
+      "Premium - Prix min (Z)": leadData.pricing?.ranges?.premium?.min || 0,
+      "Premium - Prix max (AA)": leadData.pricing?.ranges?.premium?.max || 0,
+      "Premium - Économies min (AB)": leadData.pricing?.ranges?.premium?.annualSavings?.min || 0,
+      "Premium - Économies max (AC)": leadData.pricing?.ranges?.premium?.annualSavings?.max || 0,
+      "Premium - Retour min (AD)": leadData.pricing?.ranges?.premium?.paybackPeriod?.min || 0,
+      "Premium - Retour max (AE)": leadData.pricing?.ranges?.premium?.paybackPeriod?.max || 0,
+      
+      // UTM Parameters (AF-AJ)
+      "UTM Source (AF)": utmParams.utm_source || "",
+      "UTM Campaign (AG)": utmParams.utm_campaign || "",
+      "UTM Content (AH)": utmParams.utm_content || "",
+      "UTM Medium (AI)": utmParams.utm_medium || "",
+      "UTM Term (AJ)": utmParams.utm_term || "",
+      
+      // Métadonnées (AK-AL)
+      "Lead ID (AK)": leadData.leadId || "",
+      "Webhook Type (AL)": leadData.webhookType || "initial_contact"
     }
 
     // Get webhook URLs from environment
-    const webhookUrlsEnv = process.env.WEBHOOK_URLS || 'https://hook.us2.make.com/hkh6cvtrgbswwecam6gmul9plxtgk98m'
+    const webhookUrlsEnv = process.env.WEBHOOK_URLS
     console.log('🔍 Environment check - WEBHOOK_URLS configured:', webhookUrlsEnv ? 'YES' : 'NO')
     console.log('🔗 Using webhook URL:', webhookUrlsEnv)
     
@@ -290,7 +312,7 @@ export async function POST(request: NextRequest) {
 
 export async function TEST(request: NextRequest) {
   try {
-    const webhookUrlsEnv = process.env.WEBHOOK_URLS || 'https://hook.us2.make.com/hkh6cvtrgbswwecam6gmul9plxtgk98m'
+    const webhookUrlsEnv = process.env.WEBHOOK_URLS
     console.log('🔍 Environment check - WEBHOOK_URLS configured:', webhookUrlsEnv ? 'YES' : 'NO')
     console.log('🔗 Using webhook URL:', webhookUrlsEnv)
     
