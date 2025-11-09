@@ -20,7 +20,6 @@ export const metadata: Metadata = {
     apple: '/apple-touch-icon.png',
   },
   viewport: 'width=device-width, initial-scale=1',
-  charset: 'UTF-8',
   openGraph: {
     title: "Soumission Confort - Estimation Gratuite d'Isolation d'Entretoit au Québec",
     description: "Obtenez votre estimation gratuite d'isolation d'entretoit en 60 secondes. Connectez-vous avec des entrepreneurs certifiés RBQ. Économisez jusqu'à 30% sur vos factures de chauffage. Subventions disponibles avec Hydro-Québec et RénoClimat.",
@@ -154,7 +153,7 @@ export default function RootLayout({
                   t.src=v;s=b.getElementsByTagName(e)[0];
                   s.parentNode.insertBefore(t,s)}(window, document,'script',
                   'https://connect.facebook.net/en_US/fbevents.js');
-                  fbq('init', '${process.env.NEXT_PUBLIC_META_PIXEL_ID}');
+                  fbq('init', '1508005413751111');
                   fbq('track', 'PageView');
                 `
               }}
@@ -164,7 +163,7 @@ export default function RootLayout({
                 height="1" 
                 width="1" 
                 style={{display:'none'}}
-                src={`https://www.facebook.com/tr?id=${process.env.NEXT_PUBLIC_META_PIXEL_ID}&ev=PageView&noscript=1`}
+                src="https://www.facebook.com/tr?id=1508005413751111&ev=PageView&noscript=1"
               />
             </noscript>
             {/* End Meta Pixel Code */}

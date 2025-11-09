@@ -3,8 +3,8 @@ interface MetaConversionEvent {
   event_time: number;
   action_source: string;
   user_data?: {
-    em?: string; // email (hashed)
-    ph?: string; // phone (hashed)
+    em?: string | string[]; // email (hashed) - can be array
+    ph?: string | (string | null)[]; // phone (hashed) - can be array
     fn?: string; // first name (hashed)
     ln?: string; // last name (hashed)
     client_ip_address?: string;
@@ -15,10 +15,17 @@ interface MetaConversionEvent {
   custom_data?: {
     content_type?: string;
     content_name?: string;
-    value?: number;
+    value?: number | string;
     currency?: string;
     search_string?: string;
     [key: string]: any;
+  };
+  attribution_data?: {
+    attribution_share?: string | number;
+  };
+  original_event_data?: {
+    event_name?: string;
+    event_time?: number;
   };
   event_source_url?: string;
 }
@@ -191,6 +198,83 @@ export class MetaConversionAPI {
     }
   }
 
+  // Track Purchase event (when customer completes a purchase)
+  async trackPurchase(purchaseData: {
+    email: string;
+    phone?: string;
+    firstName?: string;
+    lastName?: string;
+    value: number | string;
+    currency?: string;
+    clientIp?: string;
+    userAgent?: string;
+    sourceUrl?: string;
+    attributionShare?: string | number;
+    contentName?: string;
+    contentType?: string;
+  }) {
+    try {
+      const userData: any = {
+        em: [await hashData(purchaseData.email)]
+      };
+
+      if (purchaseData.phone) {
+        userData.ph = [await hashData(purchaseData.phone)];
+      } else {
+        userData.ph = [null];
+      }
+      
+      if (purchaseData.firstName) {
+        userData.fn = await hashData(purchaseData.firstName);
+      }
+      if (purchaseData.lastName) {
+        userData.ln = await hashData(purchaseData.lastName);
+      }
+      
+      // Add server-side client information
+      if (purchaseData.clientIp) {
+        userData.client_ip_address = purchaseData.clientIp;
+      }
+      if (purchaseData.userAgent) {
+        userData.client_user_agent = purchaseData.userAgent;
+      }
+
+      const eventTime = Math.floor(Date.now() / 1000);
+
+      const event: MetaConversionEvent = {
+        event_name: 'Purchase',
+        event_time: eventTime,
+        action_source: 'website',
+        user_data: userData,
+        custom_data: {
+          currency: purchaseData.currency || 'USD',
+          value: purchaseData.value.toString(),
+          content_type: purchaseData.contentType,
+          content_name: purchaseData.contentName
+        },
+        event_source_url: purchaseData.sourceUrl || (typeof window !== 'undefined' ? window.location.href : undefined)
+      };
+
+      // Add attribution data if provided
+      if (purchaseData.attributionShare) {
+        event.attribution_data = {
+          attribution_share: purchaseData.attributionShare.toString()
+        };
+      }
+
+      // Add original event data
+      event.original_event_data = {
+        event_name: 'Purchase',
+        event_time: eventTime
+      };
+
+      return this.sendEvent(event);
+    } catch (error) {
+      console.error('Error in trackPurchase:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+  }
+
   // Send event to Meta Conversion API
   private async sendEvent(event: MetaConversionEvent) {
     try {
@@ -274,6 +358,27 @@ export async function trackLead(leadData: {
 }) {
   if (metaAPI) {
     return await metaAPI.trackLead(leadData);
+  }
+  console.warn('Meta Conversion API not initialized');
+  return { success: false, error: 'API not initialized' };
+}
+
+export async function trackPurchase(purchaseData: {
+  email: string;
+  phone?: string;
+  firstName?: string;
+  lastName?: string;
+  value: number | string;
+  currency?: string;
+  clientIp?: string;
+  userAgent?: string;
+  sourceUrl?: string;
+  attributionShare?: string | number;
+  contentName?: string;
+  contentType?: string;
+}) {
+  if (metaAPI) {
+    return await metaAPI.trackPurchase(purchaseData);
   }
   console.warn('Meta Conversion API not initialized');
   return { success: false, error: 'API not initialized' };
