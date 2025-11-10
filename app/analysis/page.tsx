@@ -15,6 +15,7 @@ import { useLanguage } from "@/lib/language-context"
 import { ArrowLeft, MapPin, Zap, Clock, CheckCircle } from 'lucide-react'
 import Link from "next/link"
 import type { LeadData } from "@/components/lead-capture-popup"
+import { Analytics } from "@vercel/analytics/next"
 
 type AnalysisStep = "loading" | "results" | "questionnaire" | "lead-capture" | "pricing"
 
