@@ -99,10 +99,11 @@ export function InsulationResults({ roofData, userAnswers, leadData, onComplete 
           <Button
             onClick={onComplete}
             size="lg"
-            className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold py-6 text-lg shadow-xl"
+            className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold py-4 md:py-6 text-base md:text-lg shadow-xl"
           >
-            Obtenir une soumission plus précise par des entrepreneurs
-            <ArrowRight className="w-5 h-5 ml-2" />
+            <span className="hidden md:inline">Obtenir une soumission plus précise par des entrepreneurs</span>
+            <span className="md:hidden">Obtenir mes 3 soumissions gratuites</span>
+            <ArrowRight className="w-4 h-4 md:w-5 md:h-5 ml-2" />
           </Button>
 
           <p className="text-center text-sm text-blue-100 mt-4">
@@ -215,10 +216,10 @@ export function InsulationResults({ roofData, userAnswers, leadData, onComplete 
           <Button
             onClick={onComplete}
             size="lg"
-            className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-bold py-6 px-12 text-lg shadow-xl"
+            className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-bold py-4 md:py-6 px-6 md:px-12 text-base md:text-lg shadow-xl"
           >
             Obtenir mes 3 soumissions gratuites
-            <ArrowRight className="w-5 h-5 ml-2" />
+            <ArrowRight className="w-4 h-4 md:w-5 md:h-5 ml-2" />
           </Button>
           <p className="text-sm text-gray-500 mt-4">
             ⏱️ 24-48h • 🔒 100% gratuit • 📞 Aucune obligation
