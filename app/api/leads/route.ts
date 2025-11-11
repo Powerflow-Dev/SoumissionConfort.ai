@@ -294,43 +294,21 @@ export async function POST(request: NextRequest) {
         message: webhookError instanceof Error ? webhookError.message : 'Unknown',
         stack: webhookError instanceof Error ? webhookError.stack : 'No stack'
       })
-      // Continue even if webhook fails - return success for user experience
+      
+      // Return error response with details
+      return NextResponse.json({
+        success: false,
+        leadId: leadId,
+        message: "❌ LEADS API: Webhook failed",
+        error: webhookError instanceof Error ? webhookError.message : 'Unknown error',
+        debugInfo: {
+          timestamp: new Date().toISOString(),
+          endpoint: "/api/leads/route.ts",
+          version: "WEBHOOK_ERROR",
+          errorStack: webhookError instanceof Error ? webhookError.stack : 'No stack'
+        }
+      }, { status: 500 })
     }
-
-    // Mock lead processing
-    // Simulate processing delay
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-
-    // Mock contractor matching based on location
-    const mockContractors = [
-      {
-        id: "CONT-001",
-        businessName: "Superior Roofing Solutions",
-        rating: 4.8,
-        reviewCount: 127,
-        serviceAreas: ["Toronto", "Mississauga", "Brampton"],
-        specialties: ["Residential", "Commercial", "Emergency Repairs"],
-        verified: true,
-      },
-      // ... autres entrepreneurs
-    ]
-
-    // Return mock response with lead confirmation
-    return NextResponse.json({
-      success: true,
-      leadId: leadId,
-      message: "🚨 LEADS API ENDPOINT CONFIRMED - RESPONSE FROM /api/leads/route.ts 🚨",
-      estimatedResponseTime: "24-48 hours",
-      matchedContractors: mockContractors.length,
-      usableArea: leadData.roofData.usableArea || 1347,
-      segments: leadData.roofData.segments || 2,
-      pitchComplexity: "complex",
-      debugInfo: {
-        timestamp: new Date().toISOString(),
-        endpoint: "/api/leads/route.ts",
-        version: "DEBUG_VERSION_2.0"
-      }
-    })
   } catch (error) {
     console.error("Lead submission error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
