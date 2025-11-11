@@ -1,5 +1,5 @@
 // Test script pour vérifier si le webhook Make.com fonctionne
-const WEBHOOK_URL = 'https://hook.us2.make.com/hkh6cvtrgbswwecam6gmul9plxtgk98m';
+const WEBHOOK_URL = 'https://hook.us2.make.com/4dldjzcucd02ouqe1ho1avuwjpvfliu2';
 
 const testPayload = {
   "Prénom (A)": "Test",

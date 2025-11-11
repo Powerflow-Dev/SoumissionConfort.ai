@@ -29,19 +29,23 @@ export async function POST(request: NextRequest) {
     const randomString = Math.random().toString(36).substring(2, 10) // 8 character random string
     const leadId = `LEAD${timestamp}${randomString}`
 
-    // Send to webhook endpoints
+    // Send to webhook endpoints - DIRECT CALL TO MAKE.COM
     try {
       console.log('🚨 LEADS API: ENTERING WEBHOOK TRY BLOCK')
+      console.log('🚨🚨🚨 LEADS API: ABOUT TO CALL WEBHOOK DIRECTLY 🚨🚨🚨')
       
-      const baseUrl = process.env.VERCEL_URL 
-        ? `https://${process.env.VERCEL_URL}` 
-        : process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+      // Get webhook URLs directly from environment
+      const webhookUrlsEnv = process.env.WEBHOOK_URLS
+      console.log('🔍 LEADS API: WEBHOOK_URLS configured:', webhookUrlsEnv ? 'YES' : 'NO')
       
-      console.log('🌐 LEADS API: Base URL:', baseUrl)
-      console.log('📞 LEADS API: Calling webhook at:', `${baseUrl}/api/webhook`)
-      console.log('🚨🚨🚨 LEADS API: ABOUT TO CALL WEBHOOK - THIS SHOULD APPEAR 🚨🚨🚨')
-      console.log('🔍 LEADS API: Environment check - VERCEL_URL:', process.env.VERCEL_URL)
-      console.log('🔍 LEADS API: Environment check - NEXT_PUBLIC_BASE_URL:', process.env.NEXT_PUBLIC_BASE_URL)
+      if (!webhookUrlsEnv) {
+        console.error('❌ LEADS API: No webhook URLs configured')
+        throw new Error('WEBHOOK_URLS not configured')
+      }
+      
+      const webhookUrls = webhookUrlsEnv.split(',').map(url => url.trim()).filter(url => url.length > 0)
+      console.log('🌐 LEADS API: Webhook URLs count:', webhookUrls.length)
+      console.log('📋 LEADS API: Webhook URLs:', webhookUrls)
       
       // Prepare clean webhook payload (matching the structure expected by webhook endpoint)
       const webhookPayload = {
@@ -156,73 +160,141 @@ export async function POST(request: NextRequest) {
       console.log('💰 LEADS API: Pricing info:', webhookPayload.pricing)
       console.log('🏷️ LEADS API: UTM Parameters:', webhookPayload.utmParams)
       
-      // Add bypass parameter for internal webhook call
-      const bypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET
-      let webhookUrl = `${baseUrl}/api/webhook`
-      
-      if (bypassSecret) {
-        // Construct URL with proper query parameter (avoid double encoding)
-        const url = new URL('/api/webhook', baseUrl)
-        url.searchParams.set('vercel-protection-bypass', bypassSecret)
-        webhookUrl = url.toString()
+      // Prepare formatted payload for Make.com (matching Google Sheets structure)
+      const makeComPayload = {
+        // Contact (A-D)
+        "Prénom (A)": webhookPayload.contact.firstName,
+        "Nom (B)": webhookPayload.contact.lastName,
+        "Adresse courriel (C)": webhookPayload.contact.email,
+        "Téléphone (D)": webhookPayload.contact.phone,
+        
+        // Propriété (E-I)
+        "Adresse (E)": webhookPayload.property.address || "",
+        "Code postal (F)": webhookPayload.property.postalCode || "",
+        "Ville (G)": webhookPayload.property.city || "",
+        "Superficie entretoit (H)": webhookPayload.property.roofArea || 0,
+        "Hauteur du bâtiment (I)": webhookPayload.property.buildingHeight || 0,
+        
+        // Questions d'isolation (J-M)
+        "Système de chauffage (J)": webhookPayload.projectDetails.heatingSystem || "",
+        "Isolation actuelle (K)": webhookPayload.projectDetails.currentInsulation || "",
+        "Accès entretoit (L)": webhookPayload.projectDetails.atticAccess || "",
+        "Problèmes identifiés (M)": Array.isArray(webhookPayload.projectDetails.identifiedProblems) 
+          ? webhookPayload.projectDetails.identifiedProblems.join(", ") 
+          : webhookPayload.projectDetails.identifiedProblems || "",
+        
+        // Gamme Économique (N-S)
+        "Économique - Prix min (N)": webhookPayload.pricing?.ranges?.economique?.min || 0,
+        "Économique - Prix max (O)": webhookPayload.pricing?.ranges?.economique?.max || 0,
+        "Économique - Économies min (P)": webhookPayload.pricing?.ranges?.economique?.annualSavings?.min || 0,
+        "Économique - Économies max (Q)": webhookPayload.pricing?.ranges?.economique?.annualSavings?.max || 0,
+        "Économique - Retour min (R)": webhookPayload.pricing?.ranges?.economique?.paybackPeriod?.min || 0,
+        "Économique - Retour max (S)": webhookPayload.pricing?.ranges?.economique?.paybackPeriod?.max || 0,
+        
+        // Gamme Standard (T-Y)
+        "Standard - Prix min (T)": webhookPayload.pricing?.ranges?.standard?.min || 0,
+        "Standard - Prix max (U)": webhookPayload.pricing?.ranges?.standard?.max || 0,
+        "Standard - Économies min (V)": webhookPayload.pricing?.ranges?.standard?.annualSavings?.min || 0,
+        "Standard - Économies max (W)": webhookPayload.pricing?.ranges?.standard?.annualSavings?.max || 0,
+        "Standard - Retour min (X)": webhookPayload.pricing?.ranges?.standard?.paybackPeriod?.min || 0,
+        "Standard - Retour max (Y)": webhookPayload.pricing?.ranges?.standard?.paybackPeriod?.max || 0,
+        
+        // Gamme Premium (Z-AE)
+        "Premium - Prix min (Z)": webhookPayload.pricing?.ranges?.premium?.min || 0,
+        "Premium - Prix max (AA)": webhookPayload.pricing?.ranges?.premium?.max || 0,
+        "Premium - Économies min (AB)": webhookPayload.pricing?.ranges?.premium?.annualSavings?.min || 0,
+        "Premium - Économies max (AC)": webhookPayload.pricing?.ranges?.premium?.annualSavings?.max || 0,
+        "Premium - Retour min (AD)": webhookPayload.pricing?.ranges?.premium?.paybackPeriod?.min || 0,
+        "Premium - Retour max (AE)": webhookPayload.pricing?.ranges?.premium?.paybackPeriod?.max || 0,
+        
+        // UTM Parameters (AF-AJ)
+        "UTM Source (AF)": webhookPayload.utmParams?.utm_source || "",
+        "UTM Campaign (AG)": webhookPayload.utmParams?.utm_campaign || "",
+        "UTM Content (AH)": webhookPayload.utmParams?.utm_content || "",
+        "UTM Medium (AI)": webhookPayload.utmParams?.utm_medium || "",
+        "UTM Term (AJ)": webhookPayload.utmParams?.utm_term || "",
+        
+        // Métadonnées (AK-AL)
+        "Lead ID (AK)": leadId,
+        "Webhook Type (AL)": "initial_contact"
       }
       
-      console.log('🔗 LEADS API: Calling webhook at:', webhookUrl)
-      console.log('🔍 LEADS API: Bypass secret configured:', bypassSecret ? 'YES' : 'NO')
+      console.log('📦 LEADS API: Make.com formatted payload:', JSON.stringify(makeComPayload, null, 2))
       
-      const webhookResponse = await fetch(webhookUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(webhookPayload),
+      // Send to all webhook URLs
+      const webhookPromises = webhookUrls.map(async (url, index) => {
+        try {
+          console.log(`📤 LEADS API: Sending to webhook ${index + 1}/${webhookUrls.length}:`, url)
+          
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'User-Agent': 'Soumission-Toiture-AI/1.0',
+            },
+            body: JSON.stringify(makeComPayload),
+            signal: AbortSignal.timeout(30000)
+          })
+          
+          const responseText = await response.text().catch(() => 'Could not read response body')
+          
+          console.log(`📥 LEADS API: Webhook ${index + 1} response:`, {
+            status: response.status,
+            statusText: response.statusText,
+            body: responseText.substring(0, 200)
+          })
+          
+          return {
+            url,
+            status: response.ok ? 'success' : 'error',
+            statusCode: response.status,
+            responseBody: responseText
+          }
+        } catch (error) {
+          console.error(`❌ LEADS API: Webhook ${index + 1} error:`, error)
+          return {
+            url,
+            status: 'error',
+            error: error instanceof Error ? error.message : 'Unknown error'
+          }
+        }
       })
       
-      console.log('📥 LEADS API: Webhook response status:', webhookResponse.status)
-      console.log('📥 LEADS API: Webhook response ok:', webhookResponse.ok)
+      const webhookResults = await Promise.all(webhookPromises)
+      const successfulWebhooks = webhookResults.filter(r => r.status === 'success').length
       
-      if (webhookResponse.ok) {
-        const webhookResult = await webhookResponse.json()
-        console.log('✅ LEADS API: Webhook sent successfully:', webhookResult.summary)
-        
-        // Return the actual webhook response instead of mock response
-        return NextResponse.json({
-          success: true,
-          leadId: leadId,
-          message: "🔥 LEADS API: RETURNING ACTUAL WEBHOOK RESPONSE 🔥",
-          webhookResponse: webhookResult,
-          debugInfo: {
-            timestamp: new Date().toISOString(),
-            endpoint: "/api/leads/route.ts",
-            version: "LEADS_RETURNING_WEBHOOK_RESPONSE",
-            webhookStatus: webhookResponse.status,
-            webhookOk: webhookResponse.ok,
-            generatedLeadId: leadId
-          }
-        })
+      console.log(`✅ LEADS API: Webhooks sent - ${successfulWebhooks}/${webhookUrls.length} successful`)
+      
+      if (successfulWebhooks > 0) {
+        console.log('✅ LEADS API: At least one webhook sent successfully')
       } else {
-        const errorText = await webhookResponse.text()
-        console.error('❌ LEADS API: Webhook failed:', errorText)
-        
-        // Return webhook error details
-        return NextResponse.json({
-          success: false,
-          leadId: leadId,
-          message: "❌ LEADS API: WEBHOOK FAILED ❌",
-          error: errorText,
-          debugInfo: {
-            timestamp: new Date().toISOString(),
-            endpoint: "/api/leads/route.ts",
-            version: "LEADS_WEBHOOK_ERROR",
-            webhookStatus: webhookResponse.status,
-            webhookOk: webhookResponse.ok,
-            generatedLeadId: leadId
-          }
-        })
+        console.error('❌ LEADS API: All webhooks failed')
       }
+      
+      // Return success with webhook results
+      return NextResponse.json({
+        success: true,
+        leadId: leadId,
+        message: "✅ LEADS API: Lead processed and webhooks sent",
+        webhookResults: webhookResults,
+        debugInfo: {
+          timestamp: new Date().toISOString(),
+          endpoint: "/api/leads/route.ts",
+          version: "DIRECT_WEBHOOK_CALL",
+          webhooksSent: successfulWebhooks,
+          webhooksTotal: webhookUrls.length,
+          generatedLeadId: leadId
+        }
+      })
+      
     } catch (webhookError) {
       console.error('💥 LEADS API: Webhook error:', webhookError)
-      // Don't fail the main request if webhook fails
+      console.error('💥 LEADS API: Error details:', {
+        message: webhookError instanceof Error ? webhookError.message : 'Unknown',
+        stack: webhookError instanceof Error ? webhookError.stack : 'No stack'
+      })
+      // Continue even if webhook fails - return success for user experience
     }
 
     // Mock lead processing
