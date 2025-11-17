@@ -5,8 +5,15 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { CheckCircle2, Home, Phone, ArrowRight } from "lucide-react"
+import { track } from '@vercel/analytics'
+import { useEffect } from 'react'
 
 export default function SuccessPage() {
+  // Track conversion on success page
+  useEffect(() => {
+    track('Conversion Completed')
+  }, [])
+  
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {/* Hero with background image */}

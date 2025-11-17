@@ -8,6 +8,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { getCurrentUTMParameters } from "@/lib/utm-utils"
 import { TrustBadges } from "@/components/trust-badges"
+import { track } from '@vercel/analytics'
 
 export function HeroSection() {
   const { t } = useLanguage()
@@ -29,6 +30,10 @@ export function HeroSection() {
 
   const navigateToAnalysis = () => {
     if (!address.trim()) return
+    
+    // Track analysis start
+    track('Analysis Started', { address: address.trim() })
+    
     // Build /analysis URL with address and forward any UTM params we have
     const utm = getCurrentUTMParameters()
     const origin = typeof window !== 'undefined' ? window.location.origin : ''

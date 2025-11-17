@@ -7,6 +7,8 @@ import { Progress } from "@/components/ui/progress"
 import { useLanguage } from "@/lib/language-context"
 import { Home, TrendingUp, AlertTriangle, CheckCircle, Star, Zap, Clock, Shield } from "lucide-react"
 import { TrustBadges } from "@/components/trust-badges"
+import { track } from '@vercel/analytics'
+import { useEffect } from 'react'
 
 interface RoofAnalysisResultsProps {
   roofData: any
@@ -15,6 +17,15 @@ interface RoofAnalysisResultsProps {
 
 export function RoofAnalysisResults({ roofData, onContinue }: RoofAnalysisResultsProps) {
   const { t } = useLanguage()
+
+  // Track when results are viewed
+  useEffect(() => {
+    track('Analysis Results Viewed', {
+      roofArea: roofData.roofArea,
+      complexity: roofData.pitchComplexity,
+      segments: roofData.segments
+    })
+  }, [])
 
   const getComplexityColor = (complexity: string) => {
     switch (complexity) {
@@ -81,7 +92,10 @@ export function RoofAnalysisResults({ roofData, onContinue }: RoofAnalysisResult
 
         <Button
           size="lg"
-          onClick={onContinue}
+          onClick={() => {
+            track('Continue to Questionnaire')
+            onContinue()
+          }}
           className="w-full md:w-auto bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-bold py-4 px-6 md:px-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 text-lg"
         >
           <Zap className="w-5 h-5 mr-2" />
@@ -288,7 +302,10 @@ export function RoofAnalysisResults({ roofData, onContinue }: RoofAnalysisResult
 
           <Button
             size="lg"
-            onClick={onContinue}
+            onClick={() => {
+              track('Continue to Questionnaire')
+              onContinue()
+            }}
             className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
           >
             <Zap className="w-6 h-6 mr-3" />

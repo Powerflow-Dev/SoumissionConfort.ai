@@ -8,6 +8,7 @@ import { calculateInsulationPricing, formatPrice, formatPercentage } from "@/lib
 import { TrendingUp, Zap, Star, CheckCircle, ArrowRight } from "lucide-react"
 import type { LeadData } from "@/components/lead-capture-popup"
 import { TrustBadges } from "@/components/trust-badges"
+import { track } from '@vercel/analytics'
 
 interface InsulationResultsProps {
   roofData: any
@@ -32,6 +33,12 @@ export function InsulationResults({ roofData, userAnswers, leadData, onComplete 
 
     const calculatedResults = calculateInsulationPricing(calculationInputs)
     setResults(calculatedResults)
+    
+    // Track pricing results viewed
+    track('Pricing Results Viewed', {
+      roofArea: calculationInputs.roofArea,
+      estimatedCost: calculatedResults.ranges.standard.totalCost.min + '-' + calculatedResults.ranges.standard.totalCost.max
+    })
   }, [roofData, userAnswers])
 
   if (!results) {
@@ -97,7 +104,10 @@ export function InsulationResults({ roofData, userAnswers, leadData, onComplete 
           </div>
 
           <Button
-            onClick={onComplete}
+            onClick={() => {
+              track('Get Quotes CTA Clicked', { location: 'pricing_card' })
+              onComplete()
+            }}
             size="lg"
             className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold py-4 md:py-6 text-base md:text-lg shadow-xl"
           >
@@ -214,7 +224,10 @@ export function InsulationResults({ roofData, userAnswers, leadData, onComplete 
             Comparez les prix, les garanties et choisissez le meilleur pour votre projet.
           </p>
           <Button
-            onClick={onComplete}
+            onClick={() => {
+              track('Get Quotes CTA Clicked', { location: 'final_cta' })
+              onComplete()
+            }}
             size="lg"
             className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-bold py-4 md:py-6 px-6 md:px-12 text-base md:text-lg shadow-xl"
           >

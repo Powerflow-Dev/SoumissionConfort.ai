@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { useLanguage } from "@/lib/language-context"
 import { X, Loader2, Shield, Clock, Star, Gift } from 'lucide-react'
+import { track } from '@vercel/analytics'
 
 interface LeadCapturePopupProps {
   isOpen: boolean
@@ -42,6 +43,12 @@ export function LeadCapturePopup({ isOpen, onClose, onSubmit, isSubmitting = fal
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (isFormValid()) {
+      // Track lead submission
+      track('Lead Submitted', {
+        firstName: formData.firstName,
+        email: formData.email
+      })
+      
       // Meta Pixel tracking is handled in user-questionnaire.tsx via fbq('track', 'Lead')
       // Server-side tracking is handled in the webhook endpoint
       console.log('Lead form submitted - tracking handled elsewhere')

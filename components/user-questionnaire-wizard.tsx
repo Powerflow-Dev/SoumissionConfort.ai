@@ -11,6 +11,7 @@ import { Progress } from "@/components/ui/progress"
 import { LeadCapturePopup, type LeadData } from "@/components/lead-capture-popup"
 import { getCurrentUTMParameters, type UTMParameters } from "@/lib/utm-utils"
 import { ArrowLeft, ArrowRight, CheckCircle, Clock } from "lucide-react"
+import { track } from '@vercel/analytics'
 
 declare global {
   interface Window {
@@ -85,9 +86,16 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
   }
 
   const handleNext = () => {
+    // Track step completion
+    track('Questionnaire Step Completed', {
+      step: currentStep + 1,
+      stepName: steps[currentStep].key
+    })
+    
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1)
     } else {
+      track('Questionnaire Completed')
       handleGetPricing()
     }
   }
@@ -108,6 +116,7 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
 
   const handleGetPricing = () => {
     if (isFormValid()) {
+      track('Lead Capture Popup Opened')
       setShowLeadCapture(true)
     }
   }
