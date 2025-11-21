@@ -1,11 +1,16 @@
 import type React from "react"
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Inter } from 'next/font/google'
 import "./globals.css"
 import { LanguageProvider } from "@/lib/language-context"
 import { Analytics } from "@vercel/analytics/next"
 
 const inter = Inter({ subsets: ["latin"] })
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+}
 
 export const metadata: Metadata = {
   title: "Soumission Confort - Estimation Gratuite d'Isolation d'Entretoit au Québec",
@@ -19,7 +24,6 @@ export const metadata: Metadata = {
     ],
     apple: '/apple-touch-icon.png',
   },
-  viewport: 'width=device-width, initial-scale=1',
   openGraph: {
     title: "Soumission Confort - Estimation Gratuite d'Isolation d'Entretoit au Québec",
     description: "Obtenez votre estimation gratuite d'isolation d'entretoit en 60 secondes. Connectez-vous avec des entrepreneurs certifiés RBQ. Économisez jusqu'à 30% sur vos factures de chauffage. Subventions disponibles avec Hydro-Québec et RénoClimat.",
@@ -120,7 +124,6 @@ export default function RootLayout({
     <html lang="fr">
       <head>
         <meta charSet="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
