@@ -84,7 +84,7 @@ function getCurrentRValue(currentInsulation: string): number {
   return rValues[currentInsulation] || 20
 }
 
-// Étape 3: Gammes d'isolation (prix réduits de 30%)
+// Étape 3: Gammes d'isolation (prix réduits de ~48% par rapport aux prix originaux)
 const INSULATION_RANGES: { [key: string]: InsulationRange } = {
   economique: {
     name: 'Économique',
@@ -92,7 +92,7 @@ const INSULATION_RANGES: { [key: string]: InsulationRange } = {
     rValue: 50,
     thickness: '12 pouces',
     durability: '20-25 ans',
-    pricePerSqFt: { min: 0.63, max: 0.70 },
+    pricePerSqFt: { min: 0.47, max: 0.53 },
     features: [
       'Valeur R: 3,2-4,2 par pouce',
       'Installation rapide',
@@ -107,7 +107,7 @@ const INSULATION_RANGES: { [key: string]: InsulationRange } = {
     rValue: 55,
     thickness: '15 pouces',
     durability: '25-30 ans',
-    pricePerSqFt: { min: 0.84, max: 1.26 },
+    pricePerSqFt: { min: 0.63, max: 0.95 },
     features: [
       'Valeur R: 3,6-3,8 par pouce',
       'Matériau écologique (recyclé)',
@@ -122,7 +122,7 @@ const INSULATION_RANGES: { [key: string]: InsulationRange } = {
     rValue: 60,
     thickness: '10 pouces',
     durability: '30-50 ans',
-    pricePerSqFt: { min: 2.80, max: 4.20 },
+    pricePerSqFt: { min: 2.10, max: 3.15 },
     features: [
       'Valeur R: 6,0-7,0 par pouce',
       'Barrière d\'air et d\'humidité',

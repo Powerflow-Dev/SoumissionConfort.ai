@@ -47,6 +47,9 @@ export default function HomePage() {
             <a href="#how-it-works" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">
               Comment ça fonctionne
             </a>
+            <a href="/pour-entrepreneurs" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">
+              Pour les entrepreneurs
+            </a>
           </nav>
         </div>
       </header>

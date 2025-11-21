@@ -7,12 +7,17 @@ import { Card, CardContent } from "@/components/ui/card"
 import { CheckCircle2, Home, Phone, ArrowRight } from "lucide-react"
 import { track } from '@vercel/analytics'
 import { useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 
 export default function SuccessPage() {
+  const searchParams = useSearchParams()
+  const type = searchParams.get('type')
+  const isContractor = type === 'contractor'
+
   // Track conversion on success page
   useEffect(() => {
-    track('Conversion Completed')
-  }, [])
+    track(isContractor ? 'Contractor Lead Submitted' : 'Conversion Completed')
+  }, [isContractor])
   
   return (
     <div className="min-h-screen flex flex-col bg-white">
@@ -39,11 +44,14 @@ export default function SuccessPage() {
             </div>
 
             <h1 className="text-3xl md:text-5xl font-bold leading-tight mb-4">
-              Merci! Votre demande de soumission a été transmise
+              {isContractor 
+                ? "Merci de votre intérêt pour rejoindre notre réseau!" 
+                : "Merci! Votre demande de soumission a été transmise"}
             </h1>
             <p className="text-base md:text-lg text-blue-100 max-w-2xl">
-              Nous contactons les meilleurs entrepreneurs de votre région. Vous recevrez jusqu'à 3 soumissions
-              détaillées dans les prochaines 24 heures.
+              {isContractor
+                ? "Notre équipe examinera votre demande et vous contactera dans les prochaines 24-48 heures pour discuter des opportunités de collaboration."
+                : "Nous contactons les meilleurs entrepreneurs de votre région. Vous recevrez jusqu'à 3 soumissions détaillées dans les prochaines 24 heures."}
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
@@ -65,7 +73,23 @@ export default function SuccessPage() {
       {/* What happens next */}
       <section className="container mx-auto px-4 py-10 md:py-14">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
+          {(isContractor ? [
+            {
+              title: "Vérification de votre profil",
+              desc:
+                "Notre équipe vérifie vos informations et votre licence RBQ pour assurer la qualité de notre réseau.",
+            },
+            {
+              title: "Configuration de votre compte",
+              desc:
+                "Nous créons votre profil d'entrepreneur et configurons vos préférences de zone de service et de projets.",
+            },
+            {
+              title: "Réception de vos premiers leads",
+              desc:
+                "Commencez à recevoir des leads qualifiés correspondant à votre expertise et votre zone de service.",
+            },
+          ] : [
             {
               title: "Validation de votre projet",
               desc:
@@ -81,7 +105,7 @@ export default function SuccessPage() {
               desc:
                 "Comparez les prix, les matériaux et les délais. Notre objectif est de vous aider à économiser et choisir en confiance.",
             },
-          ].map((item, idx) => (
+          ]).map((item, idx) => (
             <Card key={idx} className="border-0 shadow-lg">
               <CardContent className="p-6">
                 <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 font-semibold flex items-center justify-center mb-4">
@@ -99,14 +123,19 @@ export default function SuccessPage() {
       <section className="bg-gray-50 border-t">
         <div className="container mx-auto px-4 py-12 md:py-16">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-2xl md:text-3xl font-bold mb-3">Optimisez vos chances d'obtenir le meilleur prix</h2>
+            <h2 className="text-2xl md:text-3xl font-bold mb-3">
+              {isContractor 
+                ? "Préparez-vous à recevoir des leads" 
+                : "Optimisez vos chances d'obtenir le meilleur prix"}
+            </h2>
             <p className="text-gray-600 mb-6 md:mb-8">
-              Préparez quelques photos de votre toiture et vos préférences de matériaux. Cela accélère l'obtention de
-              soumissions précises.
+              {isContractor
+                ? "Assurez-vous que votre profil est complet et que vous êtes prêt à répondre rapidement aux demandes de soumission."
+                : "Préparez quelques photos de votre toiture et vos préférences de matériaux. Cela accélère l'obtention de soumissions précises."}
             </p>
             <Link href="/">
               <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
-                Parcourir nos conseils <ArrowRight className="w-4 h-4 ml-2" />
+                {isContractor ? "Retour à l'accueil" : "Parcourir nos conseils"} <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </Link>
           </div>
