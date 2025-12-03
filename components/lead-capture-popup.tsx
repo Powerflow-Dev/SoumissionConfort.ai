@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { useLanguage } from "@/lib/language-context"
-import { X, Loader2, Shield, Clock, Star, Gift } from 'lucide-react'
+import { X, Loader2, Shield, Clock, Star, Gift, ArrowRight } from 'lucide-react'
 import { track } from '@vercel/analytics'
 
 interface LeadCapturePopupProps {
@@ -18,6 +18,7 @@ interface LeadCapturePopupProps {
   onClose: () => void
   onSubmit: (leadData: LeadData) => void
   isSubmitting?: boolean
+  roofData?: any
 }
 
 export interface LeadData {
@@ -29,8 +30,15 @@ export interface LeadData {
   agreeToContact: boolean
 }
 
-export function LeadCapturePopup({ isOpen, onClose, onSubmit, isSubmitting = false }: LeadCapturePopupProps) {
+export function LeadCapturePopup({ isOpen, onClose, onSubmit, isSubmitting = false, roofData }: LeadCapturePopupProps) {
   const { t } = useLanguage()
+  
+  // Calculate maximum potential savings based on roof area
+  // Premium insulation can save up to $1,200/year on average
+  // We use a conservative estimate based on roof area
+  const estimatedMaxSavings = roofData?.roofArea 
+    ? Math.round((roofData.roofArea / 2000) * 1200) // Scale based on average 2000 sq ft = $1200/year
+    : 1200 // Default fallback
   const [formData, setFormData] = useState<LeadData>({
     firstName: "",
     lastName: "",
@@ -76,44 +84,24 @@ export function LeadCapturePopup({ isOpen, onClose, onSubmit, isSubmitting = fal
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="w-full sm:max-w-lg max-h-[95vh] overflow-y-auto overflow-x-hidden border-0 shadow-2xl p-4 sm:p-6">
+      <DialogContent className="w-full sm:max-w-lg max-h-[95vh] overflow-y-auto overflow-x-hidden border-0 shadow-2xl p-3 sm:p-4">
         {/* Header with value proposition */}
-        <DialogHeader className="text-center pb-4 border-b border-gray-100">
-          <div className="flex items-center justify-between mb-4">
-            <Badge className="bg-green-100 text-green-800 border-green-200">
-              Offre à durée limitée
-            </Badge>
+        <DialogHeader className="text-center pb-2 border-b border-gray-100">
+          <div className="flex items-center justify-end mb-2">
             {!isSubmitting && (
               <Button variant="ghost" size="sm" onClick={handleClose} className="h-6 w-6 p-0">
                 <X className="h-4 w-4" />
               </Button>
             )}
           </div>
-          <DialogTitle className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Obtenez votre soumission d'isolation gratuite</DialogTitle>
-          <DialogDescription className="text-sm sm:text-base text-gray-600">
-            Accès prioritaire aux entrepreneurs certifiés + estimation de prix instantanée
-          </DialogDescription>
+          <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 text-center">
+            Plus qu'une étape avant d'obtenir votre estimation de prix
+          </h2>
         </DialogHeader>
 
-        {/* Trust indicators */}
-        <div className="flex flex-wrap justify-center gap-3 py-3 bg-blue-50 rounded-lg mb-4">
-          <div className="flex items-center space-x-1 text-xs sm:text-sm text-blue-700">
-            <Shield className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span>100% Sécurisé</span>
-          </div>
-          <div className="flex items-center space-x-1 text-xs sm:text-sm text-green-700">
-            <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span>60 secondes</span>
-          </div>
-          <div className="flex items-center space-x-1 text-xs sm:text-sm text-purple-700">
-            <Star className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span>Gratuit</span>
-          </div>
-        </div>
-
         {/* Form container with max width to keep content contained */}
-        <form onSubmit={handleSubmit} className="space-y-3 max-w-md mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="space-y-2 max-w-md mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
               <Label htmlFor="firstName" className="text-sm font-medium text-gray-700">
                 {t.firstName} *
@@ -176,7 +164,7 @@ export function LeadCapturePopup({ isOpen, onClose, onSubmit, isSubmitting = fal
             />
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <div className="flex items-start space-x-2">
               <Checkbox
                 id="terms"
@@ -206,17 +194,17 @@ export function LeadCapturePopup({ isOpen, onClose, onSubmit, isSubmitting = fal
                 className="mt-1"
               />
               <Label htmlFor="contact" className="text-sm leading-relaxed text-gray-600">
-                Je consens à être contacté par des entrepreneurs en isolation qualifiés concernant mon projet *
+                Je consens à être contacté par Soumission Confort concernant mon projet *
               </Label>
             </div>
           </div>
 
           {/* Action button - Full width CTA */}
-          <div className="pt-3">
+          <div className="pt-2">
             <Button
               type="submit"
               disabled={!isFormValid() || isSubmitting}
-              className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 text-base sm:text-lg"
+              className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-200 text-base sm:text-lg"
             >
               {isSubmitting ? (
                 <>
@@ -224,15 +212,51 @@ export function LeadCapturePopup({ isOpen, onClose, onSubmit, isSubmitting = fal
                   Génération en cours...
                 </>
               ) : (
-                <>Obtenir ma soumission d'isolation gratuite</>
+                <>
+                  Découvrir mon estimation maintenant
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </>
               )}
             </Button>
+            
+            {/* Energy savings box - Below CTA */}
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-3 mt-3 text-center">
+              <p className="text-sm font-semibold text-green-800 mb-1">
+                Économie d'énergie potentielle:
+              </p>
+              <p className="text-2xl sm:text-3xl font-bold text-green-700">
+                Jusqu'à {estimatedMaxSavings.toLocaleString()}$
+              </p>
+              <p className="text-sm text-green-600 font-medium mb-1">
+                par année
+              </p>
+              <p className="text-xs text-green-600">
+                Données estimées par notre IA.
+              </p>
+            </div>
+            
+            {/* Trust indicators - Moved below CTA */}
+            <div className="flex flex-wrap justify-center gap-3 py-2 mt-2">
+              <div className="flex items-center space-x-1 text-xs sm:text-sm text-blue-700">
+                <Shield className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span>100% Sécurisé</span>
+              </div>
+              <div className="flex items-center space-x-1 text-xs sm:text-sm text-green-700">
+                <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span>Estimation instantanée</span>
+              </div>
+              <div className="flex items-center space-x-1 text-xs sm:text-sm text-purple-700">
+                <Star className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span>Gratuit</span>
+              </div>
+            </div>
+            
             <Button
               type="button"
               variant="ghost"
               onClick={handleClose}
               disabled={isSubmitting}
-              className="w-full mt-2 text-gray-500 hover:text-gray-700"
+              className="w-full mt-1 text-gray-500 hover:text-gray-700 text-sm"
             >
               Plus tard
             </Button>

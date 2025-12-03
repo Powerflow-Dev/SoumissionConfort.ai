@@ -465,6 +465,7 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
           onClose={() => setShowLeadCapture(false)}
           onSubmit={handleLeadSubmit}
           isSubmitting={isSubmittingLead}
+          roofData={roofData}
         />
       )}
     </>
