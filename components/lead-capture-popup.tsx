@@ -28,6 +28,7 @@ export interface LeadData {
   phone: string
   agreeToTerms: boolean
   agreeToContact: boolean
+  leadId?: string // Optional leadId added after submission
 }
 
 export function LeadCapturePopup({ isOpen, onClose, onSubmit, isSubmitting = false, roofData }: LeadCapturePopupProps) {

@@ -157,12 +157,37 @@ export default function AnalysisPage() {
     }
   }
 
-  const handleQuestionnaireComplete = (answers: any, capturedLeadData: LeadData, pricingData: any) => {
+  const handleQuestionnaireComplete = async (answers: any, capturedLeadData: LeadData, pricingData: any) => {
     setUserAnswers(answers)
     setLeadData(capturedLeadData)
     setPricingData(pricingData)
-    // Skip lead-capture step entirely since webhook was triggered from popup
-    setCurrentStep("pricing")
+    
+    // Store pricing data in API and redirect to /pricing page
+    const leadId = capturedLeadData.leadId
+    if (leadId) {
+      try {
+        await fetch('/api/pricing-data', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            leadId,
+            roofData,
+            userAnswers: answers,
+            leadData: capturedLeadData
+          })
+        })
+        
+        // Redirect to pricing page
+        router.push(`/pricing?leadId=${leadId}`)
+      } catch (error) {
+        console.error('Error storing pricing data:', error)
+        // Fallback to old behavior if API fails
+        setCurrentStep("pricing")
+      }
+    } else {
+      // Fallback if no leadId
+      setCurrentStep("pricing")
+    }
   }
 
   const handleLeadCaptureComplete = (pricing: any) => {
