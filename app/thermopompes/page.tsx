@@ -821,7 +821,7 @@ export default function ThermopompesPage() {
                 </p>
                 <Button
                   size="lg"
-                  className="bg-blue-600 hover:bg-blue-700 h-14 px-8 text-lg"
+                  className="bg-blue-600 hover:bg-blue-700 h-14 px-8 text-lg w-full max-w-xl mx-auto shadow-lg hover:shadow-xl transition"
                   onClick={() => router.push('/success')}
                 >
                   Obtenir mes soumissions gratuites
