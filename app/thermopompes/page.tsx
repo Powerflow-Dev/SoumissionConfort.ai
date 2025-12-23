@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { LeadCapturePopup, type LeadData } from "@/components/lead-capture-popup"
+import { AddressInput } from "@/components/address-input"
 import { 
   Wind, 
   Home, 
@@ -296,15 +297,14 @@ export default function ThermopompesPage() {
                   Entrez votre adresse pour commencer l'analyse
                 </Label>
                 <div className="flex flex-col md:flex-row gap-4">
-                  <Input
-                    type="text"
-                    placeholder="123 Rue Exemple, Montréal, QC"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleAddressSubmit()}
-                    className="flex-1 text-lg h-14"
-                    disabled={isAnalyzing}
-                  />
+                  <div className="flex-1">
+                    <AddressInput
+                      onAddressSelect={setAddress}
+                      onAnalyze={handleAddressSubmit}
+                      isLoading={isAnalyzing}
+                      className="max-w-full"
+                    />
+                  </div>
                   <Button 
                     onClick={handleAddressSubmit}
                     size="lg"
@@ -410,7 +410,13 @@ export default function ThermopompesPage() {
                     { value: '2', label: '2 étages' },
                     { value: '3', label: '3 étages ou plus' }
                   ].map((option) => (
-                    <div key={option.value} className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-blue-50 cursor-pointer">
+                    <div
+                      key={option.value}
+                      onClick={() => setGeometric({ ...geometric, floors: parseFloat(option.value) })}
+                      className={`flex items-center space-x-3 p-4 border rounded-lg hover:bg-blue-50 cursor-pointer transition ${
+                        geometric.floors?.toString() === option.value ? "border-blue-500 bg-blue-50" : "border-gray-200"
+                      }`}
+                    >
                       <RadioGroupItem value={option.value} id={`floors-${option.value}`} />
                       <Label htmlFor={`floors-${option.value}`} className="flex-1 cursor-pointer font-medium">
                         {option.label}
@@ -433,7 +439,13 @@ export default function ThermopompesPage() {
                     { value: 'true', label: 'Oui, sous-sol aménagé' },
                     { value: 'false', label: 'Non, pas de sous-sol ou non-aménagé' }
                   ].map((option) => (
-                    <div key={option.value} className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-blue-50 cursor-pointer">
+                    <div
+                      key={option.value}
+                      onClick={() => setGeometric({ ...geometric, hasFinishedBasement: option.value === 'true' })}
+                      className={`flex items-center space-x-3 p-4 border rounded-lg hover:bg-blue-50 cursor-pointer transition ${
+                        geometric.hasFinishedBasement?.toString() === option.value ? "border-blue-500 bg-blue-50" : "border-gray-200"
+                      }`}
+                    >
                       <RadioGroupItem value={option.value} id={`basement-${option.value}`} />
                       <Label htmlFor={`basement-${option.value}`} className="flex-1 cursor-pointer font-medium">
                         {option.label}
@@ -457,7 +469,13 @@ export default function ThermopompesPage() {
                     { value: 'single', label: 'Garage simple (1 voiture)' },
                     { value: 'double', label: 'Garage double (2 voitures)' }
                   ].map((option) => (
-                    <div key={option.value} className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-blue-50 cursor-pointer">
+                    <div
+                      key={option.value}
+                      onClick={() => setGeometric({ ...geometric, garageType: option.value })}
+                      className={`flex items-center space-x-3 p-4 border rounded-lg hover:bg-blue-50 cursor-pointer transition ${
+                        geometric.garageType === option.value ? "border-blue-500 bg-blue-50" : "border-gray-200"
+                      }`}
+                    >
                       <RadioGroupItem value={option.value} id={`garage-${option.value}`} />
                       <Label htmlFor={`garage-${option.value}`} className="flex-1 cursor-pointer font-medium">
                         {option.label}
@@ -500,33 +518,21 @@ export default function ThermopompesPage() {
                 </p>
               </div>
 
-              <div>
-                <Label className="text-lg font-semibold mb-4 block">
-                  Est-ce que cela semble correct ?
-                </Label>
-                
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <Button
-                    onClick={() => handleSurfaceValidation(true)}
-                    variant="outline"
-                    className="h-16 text-lg border-2 border-green-500 hover:bg-green-50"
-                  >
-                    <CheckCircle className="w-6 h-6 mr-2 text-green-600" />
-                    Oui, c'est correct
-                  </Button>
-                  <Button
-                    onClick={() => handleSurfaceValidation(false)}
-                    variant="outline"
-                    className="h-16 text-lg border-2 border-orange-500 hover:bg-orange-50"
-                  >
-                    Non, je veux corriger
-                  </Button>
-                </div>
+              <div className="space-y-4">
+                <p className="text-gray-700">
+                  Nous utiliserons cette surface pour la suite. Ajustez-la si nécessaire avant de continuer.
+                </p>
 
-                {/* Champ de correction */}
-                <div className="mt-6 p-4 border-2 border-dashed border-gray-300 rounded-lg">
+                <Button
+                  onClick={() => handleSurfaceValidation(true)}
+                  className="w-full h-14 text-lg bg-blue-600 hover:bg-blue-700"
+                >
+                  Continuer avec cette surface
+                </Button>
+
+                <div className="p-4 border-2 border-dashed border-gray-300 rounded-lg">
                   <Label className="font-semibold mb-2 block">
-                    Entrez la surface correcte (en pi²)
+                    Ajuster la surface (en pi²)
                   </Label>
                   <div className="flex gap-3">
                     <Input
@@ -539,9 +545,9 @@ export default function ThermopompesPage() {
                     <Button
                       onClick={handleSurfaceCorrection}
                       disabled={!userCorrectedArea}
-                      className="bg-blue-600 hover:bg-blue-700"
+                      className="bg-orange-500 hover:bg-orange-600 disabled:opacity-60"
                     >
-                      Valider
+                      Valider la surface corrigée
                     </Button>
                   </div>
                 </div>
