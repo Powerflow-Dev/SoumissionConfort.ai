@@ -28,6 +28,7 @@ import type {
   ThermalProfile, 
   HeatPumpRecommendation 
 } from "@/lib/heatpump-calculator"
+import { useLanguage } from "@/lib/language-context"
 import {
   formatBTU,
   formatPrice,
@@ -36,10 +37,149 @@ import {
   getThermalProfileDescription
 } from "@/lib/heatpump-calculator"
 
+const copy = {
+  fr: {
+    badge: "Thermopompes",
+    toggleLabel: "FR",
+    heroTitle: "Économisez jusqu'à 50% sur votre chauffage",
+    heroSubtitle: "Découvrez combien vous pourriez économiser avec une thermopompe",
+    addressLabel: "Entrez votre adresse pour commencer l'analyse",
+    analyze: "Analyser",
+    analyzing: "Analyse...",
+    stat1: "Analyse IA",
+    stat2: "Gratuit",
+    stat3: "2 minutes",
+    benefit1Title: "Économies Garanties",
+    benefit1Desc: "Réduisez vos coûts de chauffage de 35% à 50%",
+    benefit2Title: "Efficacité Maximale",
+    benefit2Desc: "Chauffage et climatisation en un seul système",
+    benefit3Title: "Subventions Disponibles",
+    benefit3Desc: "Jusqu'à 5,000$ en subventions gouvernementales",
+    step2Title: "Pour valider l'analyse satellite, nous avons besoin de précisions",
+    step2Subtitle: "Ces informations nous permettent de calculer précisément votre surface habitable",
+    floorsQuestion: "Combien d'étages a votre maison ?",
+    basementQuestion: "Avez-vous un sous-sol fini (aménagé) ?",
+    garageQuestion: "Type de garage attaché ?",
+    step2Continue: "Continuer",
+    step3Title: "Validation de la surface habitable",
+    aiEstimate: "L'IA estime votre surface habitable à",
+    step3Help: "Nous utiliserons cette surface pour la suite. Ajustez-la si nécessaire avant de continuer.",
+    surfaceHint: "(Basé sur l'analyse satellite et vos réponses — ajustez si nécessaire)",
+    editSurface: "Modifier la surface",
+    finishEdit: "Terminer",
+    continueSurface: "Continuer avec cette surface",
+    step4Title: "Profil thermique de votre maison",
+    step4Subtitle: "Ces informations nous permettent de calculer précisément vos besoins en chauffage",
+    constructionYear: "Année de construction de la maison ?",
+    insulationQuestion: "L'isolation (murs/toit/fenêtres) a-t-elle été refaite ou améliorée significativement depuis la construction ?",
+    insulationYes: "Oui, isolation améliorée",
+    insulationYesDesc: "Rénovations majeures d'isolation effectuées",
+    insulationNo: "Non, isolation d'origine",
+    insulationNoDesc: "Aucune amélioration majeure depuis la construction",
+    heatingType: "Type de chauffage actuel ?",
+    heatingElectric: "Plinthes électriques",
+    heatingForcedAir: "Air pulsé (fournaise électrique)",
+    heatingOilGas: "Huile ou Gaz naturel",
+    seeReport: "Voir mon rapport d'économies",
+    step5Title: "Analyse terminée !",
+    step5Subtitle: "Où souhaitez-vous recevoir votre rapport d'économies personnalisé ?",
+    free: "100% Gratuit",
+    noCommit: "Sans engagement",
+    instant: "Instantané",
+    getReport: "Recevoir mon rapport gratuit",
+    resultsTitle: "Votre Rapport d'Économies Personnalisé",
+    savingsAnnual: "Économies Annuelles",
+    savings15: "Économies 15 ans",
+    payback: "Période de Retour",
+    recommended: "Thermopompe Recommandée",
+    model: "Modèle",
+    power: "Puissance",
+    surface: "Surface Habitable",
+    thermalProfile: "Profil Thermique",
+    investment: "Investissement Estimé",
+    equipment: "Équipement:",
+    installation: "Installation:",
+    total: "Total:",
+    readySave: "Prêt à économiser",
+    perYear: "par an ?",
+    cta: "Obtenir mes soumissions gratuites",
+    stepsLabel: (step: number) => `Étape ${step} sur 6`,
+  },
+  en: {
+    badge: "Heat Pumps",
+    toggleLabel: "EN",
+    heroTitle: "Save up to 50% on your heating bills",
+    heroSubtitle: "See how much you could save with a heat pump",
+    addressLabel: "Enter your address to start the analysis",
+    analyze: "Analyze",
+    analyzing: "Analyzing...",
+    stat1: "AI Analysis",
+    stat2: "Free",
+    stat3: "2 minutes",
+    benefit1Title: "Guaranteed Savings",
+    benefit1Desc: "Cut your heating costs by 35% to 50%",
+    benefit2Title: "Maximum Efficiency",
+    benefit2Desc: "Heating and cooling in one system",
+    benefit3Title: "Available Rebates",
+    benefit3Desc: "Up to $5,000 in government incentives",
+    step2Title: "To confirm the satellite analysis, we need a few details",
+    step2Subtitle: "These details let us calculate your exact living area",
+    floorsQuestion: "How many floors does your home have?",
+    basementQuestion: "Do you have a finished basement?",
+    garageQuestion: "Attached garage type?",
+    step2Continue: "Continue",
+    step3Title: "Validate your living area",
+    aiEstimate: "AI estimates your living area at",
+    step3Help: "We'll use this area going forward. Adjust it if needed before you continue.",
+    surfaceHint: "(Based on satellite analysis and your answers — adjust if needed)",
+    editSurface: "Edit area",
+    finishEdit: "Done",
+    continueSurface: "Continue with this area",
+    step4Title: "Thermal profile of your home",
+    step4Subtitle: "These details help us size your heating needs accurately",
+    constructionYear: "What year was your home built?",
+    insulationQuestion: "Has the insulation (walls/roof/windows) been significantly upgraded since construction?",
+    insulationYes: "Yes, insulation upgraded",
+    insulationYesDesc: "Major insulation renovations completed",
+    insulationNo: "No, original insulation",
+    insulationNoDesc: "No major improvements since construction",
+    heatingType: "Current heating type?",
+    heatingElectric: "Electric baseboards",
+    heatingForcedAir: "Forced air (electric furnace)",
+    heatingOilGas: "Oil or natural gas",
+    seeReport: "See my savings report",
+    step5Title: "Analysis complete!",
+    step5Subtitle: "Where should we send your personalized savings report?",
+    free: "100% Free",
+    noCommit: "No commitment",
+    instant: "Instant",
+    getReport: "Get my free report",
+    resultsTitle: "Your Personalized Savings Report",
+    savingsAnnual: "Annual Savings",
+    savings15: "15-Year Savings",
+    payback: "Payback Period",
+    recommended: "Recommended Heat Pump",
+    model: "Model",
+    power: "Capacity",
+    surface: "Living Area",
+    thermalProfile: "Thermal Profile",
+    investment: "Estimated Investment",
+    equipment: "Equipment:",
+    installation: "Installation:",
+    total: "Total:",
+    readySave: "Ready to save",
+    perYear: "per year?",
+    cta: "Get my free quotes",
+    stepsLabel: (step: number) => `Step ${step} of 6`,
+  }
+} as const
+
 type FunnelStep = 1 | 2 | 3 | 4 | 5 | 6
 
 export default function ThermopompesPage() {
   const router = useRouter()
+  const { language, setLanguage } = useLanguage()
+  const c = copy[language]
   
   // État du funnel
   const [currentStep, setCurrentStep] = useState<FunnelStep>(1)
@@ -59,6 +199,42 @@ export default function ThermopompesPage() {
   const [recommendation, setRecommendation] = useState<HeatPumpRecommendation | null>(null)
   const [showLeadCapture, setShowLeadCapture] = useState(false)
   const [leadData, setLeadData] = useState<LeadData | null>(null)
+
+  const floorOptions = language === "fr"
+    ? [
+        { value: '1', label: '1 étage (plain-pied)' },
+        { value: '1.5', label: '1.5 étage (avec mezzanine)' },
+        { value: '2', label: '2 étages' },
+        { value: '3', label: '3 étages ou plus' }
+      ]
+    : [
+        { value: '1', label: '1 floor (bungalow)' },
+        { value: '1.5', label: '1.5 floor (mezzanine)' },
+        { value: '2', label: '2 floors' },
+        { value: '3', label: '3 floors or more' }
+      ]
+
+  const basementOptions = language === "fr"
+    ? [
+        { value: 'true', label: 'Oui, sous-sol aménagé' },
+        { value: 'false', label: 'Non, pas de sous-sol ou non-aménagé' }
+      ]
+    : [
+        { value: 'true', label: 'Yes, finished basement' },
+        { value: 'false', label: 'No, none or unfinished' }
+      ]
+
+  const garageOptions = language === "fr"
+    ? [
+        { value: 'none', label: 'Aucun garage ou détaché' },
+        { value: 'single', label: 'Garage simple (1 voiture)' },
+        { value: 'double', label: 'Garage double (2 voitures)' }
+      ]
+    : [
+        { value: 'none', label: 'No garage or detached' },
+        { value: 'single', label: 'Single garage (1 car)' },
+        { value: 'double', label: 'Double garage (2 cars)' }
+      ]
 
   // Calcul du progrès
   const getProgress = () => {
@@ -252,17 +428,27 @@ export default function ThermopompesPage() {
               alt="Soumission Confort AI" 
               className="h-[100px] md:h-[120px] w-auto" 
             />
-            <Badge className="bg-blue-100 text-blue-800 border-blue-200">
-              <ThermometerSnowflake className="w-4 h-4 mr-1" />
-              Thermopompes
-            </Badge>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-blue-200 text-blue-700"
+                onClick={() => setLanguage(language === "fr" ? "en" : "fr")}
+              >
+                {language === "fr" ? "EN" : "FR"}
+              </Button>
+              <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+                <ThermometerSnowflake className="w-4 h-4 mr-1" />
+                {c.badge}
+              </Badge>
+            </div>
           </div>
           
           {/* Progress Bar */}
           {currentStep > 1 && (
             <div className="mt-4">
               <div className="flex justify-between text-xs text-gray-600 mb-2">
-                <span>Étape {currentStep} sur 6</span>
+                <span>{c.stepsLabel(currentStep)}</span>
                 <span>{Math.round(getProgress())}%</span>
               </div>
               <Progress value={getProgress()} className="h-2" />
@@ -281,18 +467,18 @@ export default function ThermopompesPage() {
               </div>
               
               <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                Économisez jusqu'à 50% sur votre chauffage
+                {c.heroTitle}
               </h1>
               
               <p className="text-xl text-gray-600 mb-8">
-                Découvrez combien vous pourriez économiser avec une thermopompe
+                {c.heroSubtitle}
               </p>
             </div>
 
             <Card className="max-w-2xl mx-auto shadow-2xl border-2 border-blue-100">
               <CardContent className="p-8">
                 <Label className="text-lg font-semibold mb-4 block">
-                  Entrez votre adresse pour commencer l'analyse
+                  {c.addressLabel}
                 </Label>
                 <div className="flex flex-col md:flex-row gap-4">
                   <div className="flex-1">
@@ -312,11 +498,11 @@ export default function ThermopompesPage() {
                     {isAnalyzing ? (
                       <>
                         <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                        Analyse...
+                        {c.analyzing}
                       </>
                     ) : (
                       <>
-                        Analyser
+                        {c.analyze}
                         <ArrowRight className="w-5 h-5 ml-2" />
                       </>
                     )}
@@ -326,15 +512,15 @@ export default function ThermopompesPage() {
                 <div className="mt-6 grid grid-cols-3 gap-4 text-center text-sm">
                   <div className="flex flex-col items-center">
                     <CheckCircle className="w-6 h-6 text-green-600 mb-2" />
-                    <span className="text-gray-600">Analyse IA</span>
+                    <span className="text-gray-600">{c.stat1}</span>
                   </div>
                   <div className="flex flex-col items-center">
                     <CheckCircle className="w-6 h-6 text-green-600 mb-2" />
-                    <span className="text-gray-600">Gratuit</span>
+                    <span className="text-gray-600">{c.stat2}</span>
                   </div>
                   <div className="flex flex-col items-center">
                     <CheckCircle className="w-6 h-6 text-green-600 mb-2" />
-                    <span className="text-gray-600">2 minutes</span>
+                    <span className="text-gray-600">{c.stat3}</span>
                   </div>
                 </div>
               </CardContent>
@@ -345,11 +531,11 @@ export default function ThermopompesPage() {
               <Card className="border-blue-100">
                 <CardHeader>
                   <TrendingDown className="w-10 h-10 text-blue-600 mb-2" />
-                  <CardTitle className="text-lg">Économies Garanties</CardTitle>
+                  <CardTitle className="text-lg">{c.benefit1Title}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-600">
-                    Réduisez vos coûts de chauffage de 35% à 50%
+                    {c.benefit1Desc}
                   </p>
                 </CardContent>
               </Card>
@@ -357,11 +543,11 @@ export default function ThermopompesPage() {
               <Card className="border-blue-100">
                 <CardHeader>
                   <Zap className="w-10 h-10 text-blue-600 mb-2" />
-                  <CardTitle className="text-lg">Efficacité Maximale</CardTitle>
+                  <CardTitle className="text-lg">{c.benefit2Title}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-600">
-                    Chauffage et climatisation en un seul système
+                    {c.benefit2Desc}
                   </p>
                 </CardContent>
               </Card>
@@ -369,11 +555,11 @@ export default function ThermopompesPage() {
               <Card className="border-blue-100">
                 <CardHeader>
                   <DollarSign className="w-10 h-10 text-blue-600 mb-2" />
-                  <CardTitle className="text-lg">Subventions Disponibles</CardTitle>
+                  <CardTitle className="text-lg">{c.benefit3Title}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-600">
-                    Jusqu'à 5,000$ en subventions gouvernementales
+                    {c.benefit3Desc}
                   </p>
                 </CardContent>
               </Card>
@@ -386,28 +572,23 @@ export default function ThermopompesPage() {
           <Card className="max-w-2xl mx-auto shadow-xl">
             <CardHeader>
               <CardTitle className="text-2xl">
-                Pour valider l'analyse satellite, nous avons besoin de précisions
+                {c.step2Title}
               </CardTitle>
               <p className="text-gray-600">
-                Ces informations nous permettent de calculer précisément votre surface habitable
+                {c.step2Subtitle}
               </p>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Nombre d'étages */}
               <div>
                 <Label className="text-lg font-semibold mb-3 block">
-                  Combien d'étages a votre maison ?
+                  {c.floorsQuestion}
                 </Label>
                 <RadioGroup
                   value={geometric.floors?.toString()}
                   onValueChange={(value) => setGeometric({ ...geometric, floors: parseFloat(value) })}
                 >
-                  {[
-                    { value: '1', label: '1 étage (plain-pied)' },
-                    { value: '1.5', label: '1.5 étage (avec mezzanine)' },
-                    { value: '2', label: '2 étages' },
-                    { value: '3', label: '3 étages ou plus' }
-                  ].map((option) => (
+                  {floorOptions.map((option) => (
                     <div
                       key={option.value}
                       onClick={() => setGeometric({ ...geometric, floors: parseFloat(option.value) })}
@@ -427,16 +608,13 @@ export default function ThermopompesPage() {
               {/* Sous-sol fini */}
               <div>
                 <Label className="text-lg font-semibold mb-3 block">
-                  Avez-vous un sous-sol fini (aménagé) ?
+                  {c.basementQuestion}
                 </Label>
                 <RadioGroup
                   value={geometric.hasFinishedBasement?.toString()}
                   onValueChange={(value) => setGeometric({ ...geometric, hasFinishedBasement: value === 'true' })}
                 >
-                  {[
-                    { value: 'true', label: 'Oui, sous-sol aménagé' },
-                    { value: 'false', label: 'Non, pas de sous-sol ou non-aménagé' }
-                  ].map((option) => (
+                  {basementOptions.map((option) => (
                     <div
                       key={option.value}
                       onClick={() => setGeometric({ ...geometric, hasFinishedBasement: option.value === 'true' })}
@@ -456,17 +634,13 @@ export default function ThermopompesPage() {
               {/* Garage */}
               <div>
                 <Label className="text-lg font-semibold mb-3 block">
-                  Type de garage attaché ?
+                  {c.garageQuestion}
                 </Label>
                 <RadioGroup
                   value={geometric.garageType}
                   onValueChange={(value: any) => setGeometric({ ...geometric, garageType: value })}
                 >
-                  {[
-                    { value: 'none', label: 'Aucun garage ou détaché' },
-                    { value: 'single', label: 'Garage simple (1 voiture)' },
-                    { value: 'double', label: 'Garage double (2 voitures)' }
-                  ].map((option) => (
+                  {garageOptions.map((option) => (
                     <div
                       key={option.value}
                       onClick={() => setGeometric({ ...geometric, garageType: option.value })}
@@ -488,7 +662,7 @@ export default function ThermopompesPage() {
                 className="w-full bg-blue-600 hover:bg-blue-700 h-12 text-lg"
                 disabled={!geometric.floors || geometric.hasFinishedBasement === undefined || !geometric.garageType}
               >
-                Continuer
+                {c.step2Continue}
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </CardContent>
@@ -500,13 +674,13 @@ export default function ThermopompesPage() {
           <Card className="max-w-2xl mx-auto shadow-xl">
             <CardHeader>
               <CardTitle className="text-2xl">
-                Validation de la surface habitable
+                {c.step3Title}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-6 text-center space-y-4">
                 <p className="text-gray-700">
-                  L'IA estime votre surface habitable à
+                  {c.aiEstimate}
                 </p>
                 {!isEditingSurface ? (
                   <>
@@ -521,7 +695,7 @@ export default function ThermopompesPage() {
                       className="border-blue-300 text-blue-700 hover:bg-white"
                       onClick={() => setIsEditingSurface(true)}
                     >
-                      Modifier la surface
+                      {c.editSurface}
                     </Button>
                   </>
                 ) : (
@@ -540,18 +714,18 @@ export default function ThermopompesPage() {
                       onClick={() => setIsEditingSurface(false)}
                       disabled={!userCorrectedArea}
                     >
-                      Terminer
+                      {c.finishEdit}
                     </Button>
                   </div>
                 )}
                 <p className="text-sm text-gray-600">
-                  (Basé sur l'analyse satellite et vos réponses — ajustez si nécessaire)
+                  {c.surfaceHint}
                 </p>
               </div>
 
               <div className="space-y-4">
                 <p className="text-gray-700">
-                  Nous utiliserons cette surface pour la suite. Ajustez-la si nécessaire avant de continuer.
+                  {c.step3Help}
                 </p>
 
                 <Button
@@ -559,7 +733,7 @@ export default function ThermopompesPage() {
                   className="w-full h-14 text-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-60"
                   disabled={!userCorrectedArea}
                 >
-                  Continuer avec cette surface
+                  {c.continueSurface}
                 </Button>
               </div>
             </CardContent>
@@ -571,17 +745,17 @@ export default function ThermopompesPage() {
           <Card className="max-w-2xl mx-auto shadow-xl">
             <CardHeader>
               <CardTitle className="text-2xl">
-                Profil thermique de votre maison
+                {c.step4Title}
               </CardTitle>
               <p className="text-gray-600">
-                Ces informations nous permettent de calculer précisément vos besoins en chauffage
+                {c.step4Subtitle}
               </p>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Année de construction */}
               <div>
                 <Label className="text-lg font-semibold mb-3 block">
-                  Année de construction de la maison ?
+                  {c.constructionYear}
                 </Label>
                 <Input
                   type="number"
@@ -597,7 +771,7 @@ export default function ThermopompesPage() {
               {/* Isolation refaite - QUESTION CRITIQUE */}
               <div>
                 <Label className="text-lg font-semibold mb-3 block">
-                  L'isolation (murs/toit/fenêtres) a-t-elle été refaite ou améliorée significativement depuis la construction ?
+                  {c.insulationQuestion}
                 </Label>
                 <RadioGroup
                   value={thermal.insulationUpgraded?.toString()}
@@ -606,13 +780,13 @@ export default function ThermopompesPage() {
                   {[
                     { 
                       value: 'true', 
-                      label: 'Oui, isolation améliorée',
-                      description: 'Rénovations majeures d\'isolation effectuées'
+                      label: c.insulationYes,
+                      description: c.insulationYesDesc
                     },
                     { 
                       value: 'false', 
-                      label: 'Non, isolation d\'origine',
-                      description: 'Aucune amélioration majeure depuis la construction'
+                      label: c.insulationNo,
+                      description: c.insulationNoDesc
                     }
                   ].map((option) => (
                     <div
@@ -637,16 +811,16 @@ export default function ThermopompesPage() {
               {/* Type de chauffage actuel */}
               <div>
                 <Label className="text-lg font-semibold mb-3 block">
-                  Type de chauffage actuel ?
+                  {c.heatingType}
                 </Label>
                 <RadioGroup
                   value={thermal.currentHeatingType}
                   onValueChange={(value: any) => setThermal({ ...thermal, currentHeatingType: value })}
                 >
                   {[
-                    { value: 'electric', label: 'Plinthes électriques' },
-                    { value: 'forced-air', label: 'Air pulsé (fournaise électrique)' },
-                    { value: 'oil-gas', label: 'Huile ou Gaz naturel' }
+                    { value: 'electric', label: c.heatingElectric },
+                    { value: 'forced-air', label: c.heatingForcedAir },
+                    { value: 'oil-gas', label: c.heatingOilGas }
                   ].map((option) => (
                     <div
                       key={option.value}
@@ -669,7 +843,7 @@ export default function ThermopompesPage() {
                 className="w-full bg-blue-600 hover:bg-blue-700 h-12 text-lg"
                 disabled={!thermal.constructionYear || thermal.insulationUpgraded === undefined || !thermal.currentHeatingType}
               >
-                Voir mon rapport d'économies
+                {c.seeReport}
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </CardContent>
@@ -684,10 +858,10 @@ export default function ThermopompesPage() {
                 <CheckCircle className="w-8 h-8 text-green-600" />
               </div>
               <CardTitle className="text-2xl">
-                Analyse terminée !
+                {c.step5Title}
               </CardTitle>
               <p className="text-gray-600 text-lg">
-                Où souhaitez-vous recevoir votre rapport d'économies personnalisé ?
+                {c.step5Subtitle}
               </p>
             </CardHeader>
             <CardContent>
@@ -695,22 +869,22 @@ export default function ThermopompesPage() {
                 onClick={() => setShowLeadCapture(true)}
                 className="w-full bg-blue-600 hover:bg-blue-700 h-14 text-lg"
               >
-                Recevoir mon rapport gratuit
+                {c.getReport}
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
               
               <div className="mt-6 grid grid-cols-3 gap-4 text-center text-sm">
                 <div className="flex flex-col items-center">
                   <CheckCircle className="w-6 h-6 text-green-600 mb-2" />
-                  <span className="text-gray-600">100% Gratuit</span>
+                  <span className="text-gray-600">{c.free}</span>
                 </div>
                 <div className="flex flex-col items-center">
                   <CheckCircle className="w-6 h-6 text-green-600 mb-2" />
-                  <span className="text-gray-600">Sans engagement</span>
+                  <span className="text-gray-600">{c.noCommit}</span>
                 </div>
                 <div className="flex flex-col items-center">
                   <CheckCircle className="w-6 h-6 text-green-600 mb-2" />
-                  <span className="text-gray-600">Instantané</span>
+                  <span className="text-gray-600">{c.instant}</span>
                 </div>
               </div>
             </CardContent>
@@ -724,34 +898,34 @@ export default function ThermopompesPage() {
             <Card className="bg-gradient-to-br from-blue-600 to-cyan-600 text-white shadow-2xl">
               <CardContent className="p-8 text-center">
                 <h2 className="text-3xl font-bold mb-4">
-                  Votre Rapport d'Économies Personnalisé
+                  {c.resultsTitle}
                 </h2>
                 <div className="grid md:grid-cols-3 gap-6 mt-8">
                   <div className="bg-white/10 backdrop-blur rounded-lg p-6">
-                    <p className="text-sm opacity-90 mb-2">Économies Annuelles</p>
+                    <p className="text-sm opacity-90 mb-2">{c.savingsAnnual}</p>
                     <p className="text-4xl font-bold">
                       {formatPrice(recommendation.savings.annualSavings)}
                     </p>
                     <p className="text-sm opacity-75 mt-2">
-                      {formatPercentage(recommendation.savings.savingsPercentage)} de réduction
+                      {language === "fr" ? `${formatPercentage(recommendation.savings.savingsPercentage)} de réduction` : `${formatPercentage(recommendation.savings.savingsPercentage)} savings`}
                     </p>
                   </div>
                   <div className="bg-white/10 backdrop-blur rounded-lg p-6">
-                    <p className="text-sm opacity-90 mb-2">Économies 15 ans</p>
+                    <p className="text-sm opacity-90 mb-2">{c.savings15}</p>
                     <p className="text-4xl font-bold">
                       {formatPrice(recommendation.savings.savings15Years)}
                     </p>
                     <p className="text-sm opacity-75 mt-2">
-                      Retour sur investissement
+                      {language === "fr" ? "Retour sur investissement" : "Return on investment"}
                     </p>
                   </div>
                   <div className="bg-white/10 backdrop-blur rounded-lg p-6">
-                    <p className="text-sm opacity-90 mb-2">Période de Retour</p>
+                    <p className="text-sm opacity-90 mb-2">{c.payback}</p>
                     <p className="text-4xl font-bold">
-                      {recommendation.savings.paybackPeriod} ans
+                      {recommendation.savings.paybackPeriod} {language === "fr" ? "ans" : "yrs"}
                     </p>
                     <p className="text-sm opacity-75 mt-2">
-                      Investissement rentable
+                      {language === "fr" ? "Investissement rentable" : "Profitable investment"}
                     </p>
                   </div>
                 </div>
@@ -763,27 +937,27 @@ export default function ThermopompesPage() {
               <CardHeader>
                 <CardTitle className="text-2xl flex items-center">
                   <Wind className="w-8 h-8 mr-3 text-blue-600" />
-                  Thermopompe Recommandée
+                  {c.recommended}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
-                    <Label className="text-gray-600">Modèle</Label>
+                    <Label className="text-gray-600">{c.model}</Label>
                     <p className="text-xl font-semibold">{recommendation.recommendation.model}</p>
                   </div>
                   <div>
-                    <Label className="text-gray-600">Puissance</Label>
+                    <Label className="text-gray-600">{c.power}</Label>
                     <p className="text-xl font-semibold">
                       {recommendation.btu.recommendedTonnage} tonnes ({formatBTU(recommendation.btu.totalBTU)} BTU)
                     </p>
                   </div>
                   <div>
-                    <Label className="text-gray-600">Surface Habitable</Label>
+                    <Label className="text-gray-600">{c.surface}</Label>
                     <p className="text-xl font-semibold">{formatArea(recommendation.surface.totalHabitableArea)}</p>
                   </div>
                   <div>
-                    <Label className="text-gray-600">Profil Thermique</Label>
+                    <Label className="text-gray-600">{c.thermalProfile}</Label>
                     <p className="text-xl font-semibold">
                       {getThermalProfileDescription(recommendation.btu.effectiveYear)}
                     </p>
@@ -791,18 +965,18 @@ export default function ThermopompesPage() {
                 </div>
 
                 <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-6 mt-6">
-                  <h4 className="font-semibold text-lg mb-3">Investissement Estimé</h4>
+                  <h4 className="font-semibold text-lg mb-3">{c.investment}</h4>
                   <div className="space-y-2">
                     <div className="flex justify-between">
-                      <span>Équipement:</span>
+                      <span>{c.equipment}</span>
                       <span className="font-semibold">{formatPrice(recommendation.recommendation.estimatedCost)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Installation:</span>
+                      <span>{c.installation}</span>
                       <span className="font-semibold">{formatPrice(recommendation.recommendation.installationCost)}</span>
                     </div>
                     <div className="flex justify-between text-lg font-bold border-t-2 pt-2">
-                      <span>Total:</span>
+                      <span>{c.total}</span>
                       <span className="text-blue-600">{formatPrice(recommendation.recommendation.totalInvestment)}</span>
                     </div>
                   </div>
@@ -814,17 +988,17 @@ export default function ThermopompesPage() {
             <Card className="border-2 border-blue-200 bg-blue-50">
               <CardContent className="p-8 text-center">
                 <h3 className="text-2xl font-bold mb-4">
-                  Prêt à économiser {formatPrice(recommendation.savings.annualSavings)} par an ?
+                  {c.readySave} {formatPrice(recommendation.savings.annualSavings)} {c.perYear}
                 </h3>
                 <p className="text-gray-600 mb-6">
-                  Obtenez jusqu'à 3 soumissions gratuites d'entrepreneurs certifiés
+                  {language === "fr" ? "Obtenez jusqu'à 3 soumissions gratuites d'entrepreneurs certifiés" : "Get up to 3 free quotes from certified contractors"}
                 </p>
                 <Button
                   size="lg"
                   className="bg-blue-600 hover:bg-blue-700 h-14 px-8 text-lg w-full max-w-xl mx-auto shadow-lg hover:shadow-xl transition"
                   onClick={() => router.push('/success')}
                 >
-                  Obtenir mes soumissions gratuites
+                  {c.cta}
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </CardContent>
