@@ -53,6 +53,7 @@ export default function ThermopompesPage() {
   const [estimatedArea, setEstimatedArea] = useState<number>(0)
   const [finalArea, setFinalArea] = useState<number>(0)
   const [userCorrectedArea, setUserCorrectedArea] = useState<string>("")
+  const [isEditingSurface, setIsEditingSurface] = useState(false)
   
   // Résultats
   const [recommendation, setRecommendation] = useState<HeatPumpRecommendation | null>(null)
@@ -63,6 +64,14 @@ export default function ThermopompesPage() {
   const getProgress = () => {
     return (currentStep / 6) * 100
   }
+
+  // Garder l'input de surface synchronisé avec l'estimation initiale
+  useEffect(() => {
+    if (estimatedArea) {
+      setUserCorrectedArea(estimatedArea.toString())
+      setIsEditingSurface(false)
+    }
+  }, [estimatedArea])
 
   // ============================================================================
   // STEP 1: DÉTECTION & HOOK (AUTO)
@@ -133,24 +142,13 @@ export default function ThermopompesPage() {
   // STEP 3: VALIDATION DE LA SURFACE
   // ============================================================================
   
-  const handleSurfaceValidation = (isCorrect: boolean) => {
-    if (isCorrect) {
-      setFinalArea(estimatedArea)
-      track('HeatPump_Surface_Validated', { area: estimatedArea, corrected: false })
-      setCurrentStep(4)
-    } else {
-      // L'utilisateur va corriger
-      track('HeatPump_Surface_Correction_Started')
-    }
-  }
-  
-  const handleSurfaceCorrection = () => {
-    const corrected = parseInt(userCorrectedArea)
-    if (corrected && corrected > 0) {
-      setFinalArea(corrected)
-      track('HeatPump_Surface_Validated', { area: corrected, corrected: true })
-      setCurrentStep(4)
-    }
+  const handleSurfaceValidation = () => {
+    const parsedArea = parseFloat(userCorrectedArea)
+    const finalAreaValue = Number.isFinite(parsedArea) && parsedArea > 0 ? parsedArea : estimatedArea
+
+    setFinalArea(finalAreaValue)
+    track('HeatPump_Surface_Validated', { area: finalAreaValue, corrected: finalAreaValue !== estimatedArea })
+    setCurrentStep(4)
   }
 
   // ============================================================================
@@ -506,15 +504,48 @@ export default function ThermopompesPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-6 text-center">
-                <p className="text-gray-700 mb-2">
+              <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-6 text-center space-y-4">
+                <p className="text-gray-700">
                   L'IA estime votre surface habitable à
                 </p>
-                <p className="text-5xl font-bold text-blue-600 mb-2">
-                  {formatArea(estimatedArea)}
-                </p>
+                {!isEditingSurface ? (
+                  <>
+                    <div className="flex items-center justify-center gap-3">
+                      <p className="text-5xl font-bold text-blue-600">
+                        {formatArea(Number.parseFloat(userCorrectedArea) || estimatedArea)}
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-blue-300 text-blue-700 hover:bg-white"
+                      onClick={() => setIsEditingSurface(true)}
+                    >
+                      Modifier la surface
+                    </Button>
+                  </>
+                ) : (
+                  <div className="flex items-center justify-center gap-3">
+                    <Input
+                      type="number"
+                      value={userCorrectedArea}
+                      onChange={(e) => setUserCorrectedArea(e.target.value)}
+                      className="max-w-[200px] text-center text-3xl font-bold h-14"
+                    />
+                    <span className="text-2xl font-semibold text-blue-700">pi²</span>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="ml-2"
+                      onClick={() => setIsEditingSurface(false)}
+                      disabled={!userCorrectedArea}
+                    >
+                      Terminer
+                    </Button>
+                  </div>
+                )}
                 <p className="text-sm text-gray-600">
-                  (Basé sur l'analyse satellite et vos réponses)
+                  (Basé sur l'analyse satellite et vos réponses — ajustez si nécessaire)
                 </p>
               </div>
 
@@ -524,33 +555,12 @@ export default function ThermopompesPage() {
                 </p>
 
                 <Button
-                  onClick={() => handleSurfaceValidation(true)}
-                  className="w-full h-14 text-lg bg-blue-600 hover:bg-blue-700"
+                  onClick={handleSurfaceValidation}
+                  className="w-full h-14 text-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-60"
+                  disabled={!userCorrectedArea}
                 >
                   Continuer avec cette surface
                 </Button>
-
-                <div className="p-4 border-2 border-dashed border-gray-300 rounded-lg">
-                  <Label className="font-semibold mb-2 block">
-                    Ajuster la surface (en pi²)
-                  </Label>
-                  <div className="flex gap-3">
-                    <Input
-                      type="number"
-                      placeholder="Ex: 1500"
-                      value={userCorrectedArea}
-                      onChange={(e) => setUserCorrectedArea(e.target.value)}
-                      className="flex-1"
-                    />
-                    <Button
-                      onClick={handleSurfaceCorrection}
-                      disabled={!userCorrectedArea}
-                      className="bg-orange-500 hover:bg-orange-600 disabled:opacity-60"
-                    >
-                      Valider la surface corrigée
-                    </Button>
-                  </div>
-                </div>
               </div>
             </CardContent>
           </Card>
@@ -605,7 +615,13 @@ export default function ThermopompesPage() {
                       description: 'Aucune amélioration majeure depuis la construction'
                     }
                   ].map((option) => (
-                    <div key={option.value} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-blue-50 cursor-pointer">
+                    <div
+                      key={option.value}
+                      onClick={() => setThermal({ ...thermal, insulationUpgraded: option.value === 'true' })}
+                      className={`flex items-start space-x-3 p-4 border rounded-lg hover:bg-blue-50 cursor-pointer transition ${
+                        thermal.insulationUpgraded?.toString() === option.value ? "border-blue-500 bg-blue-50" : "border-gray-200"
+                      }`}
+                    >
                       <RadioGroupItem value={option.value} id={`insulation-${option.value}`} className="mt-1" />
                       <div className="flex-1">
                         <Label htmlFor={`insulation-${option.value}`} className="cursor-pointer font-medium block">
@@ -632,7 +648,13 @@ export default function ThermopompesPage() {
                     { value: 'forced-air', label: 'Air pulsé (fournaise électrique)' },
                     { value: 'oil-gas', label: 'Huile ou Gaz naturel' }
                   ].map((option) => (
-                    <div key={option.value} className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-blue-50 cursor-pointer">
+                    <div
+                      key={option.value}
+                      onClick={() => setThermal({ ...thermal, currentHeatingType: option.value })}
+                      className={`flex items-center space-x-3 p-4 border rounded-lg hover:bg-blue-50 cursor-pointer transition ${
+                        thermal.currentHeatingType === option.value ? "border-blue-500 bg-blue-50" : "border-gray-200"
+                      }`}
+                    >
                       <RadioGroupItem value={option.value} id={`heating-${option.value}`} />
                       <Label htmlFor={`heating-${option.value}`} className="flex-1 cursor-pointer font-medium">
                         {option.label}
