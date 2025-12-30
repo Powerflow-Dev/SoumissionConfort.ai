@@ -264,8 +264,10 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
             >
               {[
                 { value: "electricite", label: "Électricité (plinthes, air pulsé, thermopompe)", icon: "⚡" },
+                { value: "bi-energie", label: "Bi-énergie (Hydro + combustible)", icon: "♻️" },
                 { value: "gaz", label: "Gaz naturel", icon: "�" },
                 { value: "mazout", label: "Mazout", icon: "🛢️" },
+                { value: "eau-chaude", label: "Système à eau chaude (chaudière/radiateurs)", icon: "🚿" },
                 { value: "autre", label: "Autre/Combinaison", icon: "🏠" },
               ].map((option) => (
                 <div

@@ -33,6 +33,7 @@ export interface LeadData {
 
 export function LeadCapturePopup({ isOpen, onClose, onSubmit, isSubmitting = false, roofData }: LeadCapturePopupProps) {
   const { t } = useLanguage()
+  const [phoneError, setPhoneError] = useState<string | null>(null)
   
   // Calculate maximum potential savings based on roof area
   // Premium insulation can save up to $1,200/year on average
@@ -51,6 +52,13 @@ export function LeadCapturePopup({ isOpen, onClose, onSubmit, isSubmitting = fal
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    const digits = formData.phone.replace(/\D/g, "")
+    if (digits.length !== 10) {
+      setPhoneError("Veuillez entrer un numéro de téléphone à 10 chiffres (ex: 1234567890).")
+      return
+    }
+    setPhoneError(null)
+
     if (isFormValid()) {
       // Track lead submission
       track('Lead Submitted', {
@@ -102,6 +110,22 @@ export function LeadCapturePopup({ isOpen, onClose, onSubmit, isSubmitting = fal
 
         {/* Form container with max width to keep content contained */}
         <form onSubmit={handleSubmit} className="space-y-2 max-w-md mx-auto">
+          {/* Energy savings box - Top of form for immediate value prop */}
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-3 text-center">
+            <p className="text-sm font-semibold text-green-800 mb-1">
+              Selon notre analyse, vous pouvez économiser:
+            </p>
+            <p className="text-2xl sm:text-3xl font-bold text-green-700">
+              Jusqu'à {estimatedMaxSavings.toLocaleString()}$
+            </p>
+            <p className="text-sm text-green-600 font-medium mb-1">
+              par année
+            </p>
+            <p className="text-xs text-green-600">
+              Estimation IA basée sur votre toit.
+            </p>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
               <Label htmlFor="firstName" className="text-sm font-medium text-gray-700">
@@ -163,6 +187,9 @@ export function LeadCapturePopup({ isOpen, onClose, onSubmit, isSubmitting = fal
               placeholder="(514) 123-4567"
               required
             />
+            {phoneError && (
+              <p className="text-sm text-red-600 mt-1">{phoneError}</p>
+            )}
           </div>
 
           <div className="space-y-1.5">
@@ -220,22 +247,6 @@ export function LeadCapturePopup({ isOpen, onClose, onSubmit, isSubmitting = fal
               )}
             </Button>
             
-            {/* Energy savings box - Below CTA */}
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-3 mt-3 text-center">
-              <p className="text-sm font-semibold text-green-800 mb-1">
-                Économie d'énergie potentielle:
-              </p>
-              <p className="text-2xl sm:text-3xl font-bold text-green-700">
-                Jusqu'à {estimatedMaxSavings.toLocaleString()}$
-              </p>
-              <p className="text-sm text-green-600 font-medium mb-1">
-                par année
-              </p>
-              <p className="text-xs text-green-600">
-                Données estimées par notre IA.
-              </p>
-            </div>
-            
             {/* Trust indicators - Moved below CTA */}
             <div className="flex flex-wrap justify-center gap-3 py-2 mt-2">
               <div className="flex items-center space-x-1 text-xs sm:text-sm text-blue-700">
@@ -252,15 +263,6 @@ export function LeadCapturePopup({ isOpen, onClose, onSubmit, isSubmitting = fal
               </div>
             </div>
             
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={handleClose}
-              disabled={isSubmitting}
-              className="w-full mt-1 text-gray-500 hover:text-gray-700 text-sm"
-            >
-              Plus tard
-            </Button>
           </div>
         </form>
 

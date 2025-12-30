@@ -5,7 +5,7 @@ interface CalculationInputs {
   roofPitch?: number // Angle de pente en degrés
   currentInsulation: string // "aucune" | "partielle" | "complete" | "recente"
   atticAccess: string // "facile" | "trappe" | "difficile" | "aucun"
-  heatingSystem: string // "electricite" | "gaz" | "mazout" | "autre"
+  heatingSystem: string // "electricite" | "bi-energie" | "gaz" | "mazout" | "eau-chaude" | "autre"
   identifiedProblems: string[] // Liste des problèmes identifiés
 }
 
@@ -180,8 +180,10 @@ function calculateEnergySavings(
   // Tarif selon le système de chauffage
   const energyRates: { [key: string]: number } = {
     'electricite': 0.10, // $/kWh
+    'bi-energie': 0.09,
     'gaz': 0.08,
     'mazout': 0.12,
+    'eau-chaude': 0.11,
     'autre': 0.10,
   }
   

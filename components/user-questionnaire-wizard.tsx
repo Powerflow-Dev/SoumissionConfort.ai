@@ -297,8 +297,10 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
                 >
                   {[
                     { value: "electricite", label: "Électricité (plinthes, air pulsé, thermopompe)" },
+                    { value: "bi-energie", label: "Bi-énergie (Hydro + combustible)" },
                     { value: "gaz", label: "Gaz naturel" },
                     { value: "mazout", label: "Mazout" },
+                    { value: "eau-chaude", label: "Système à eau chaude (chaudière/radiateurs)" },
                     { value: "autre", label: "Autre/Combinaison" },
                   ].map((option) => (
                     <div

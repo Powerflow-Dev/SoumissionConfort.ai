@@ -83,7 +83,7 @@ property: {
 ```typescript
 projectDetails: {
   // ⚡ NOUVELLES QUESTIONS D'ISOLATION
-  heatingSystem: string,        // "electricite" | "gaz" | "mazout" | "autre"
+  heatingSystem: string,        // "electricite" | "bi-energie" | "gaz" | "mazout" | "eau-chaude" | "autre"
   currentInsulation: string,    // "aucune" | "partielle" | "complete" | "recente" | "inconnue"
   atticAccess: string,          // "facile" | "trappe" | "difficile" | "aucun" | "inconnue"
   identifiedProblems: string[], // ["moisissure", "courants-air", "factures-elevees", etc.]
@@ -122,8 +122,10 @@ projectDetails: {
 
 #### heatingSystem
 - `"electricite"` - Électricité (plinthes, air pulsé, thermopompe)
+- `"bi-energie"` - Bi-énergie (Hydro + combustible)
 - `"gaz"` - Gaz naturel
 - `"mazout"` - Mazout
+- `"eau-chaude"` - Système à eau chaude (chaudière/radiateurs)
 - `"autre"` - Autre/Combinaison
 
 #### currentInsulation

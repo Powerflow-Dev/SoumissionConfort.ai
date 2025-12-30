@@ -19,7 +19,7 @@ export interface GeometricData {
 export interface ThermalProfile {
   constructionYear: number
   insulationUpgraded: boolean  // Isolation refaite/améliorée?
-  currentHeatingType: 'electric' | 'forced-air' | 'oil-gas'
+  currentHeatingType: 'electric' | 'forced-air' | 'bi-energy' | 'hot-water' | 'oil-gas'
 }
 
 export interface SurfaceCalculation {
@@ -122,8 +122,10 @@ const HEATPUMP_COSTS = {
 const SAVINGS_PERCENTAGE = {
   'electric': 0.35,      // 35% d'économies vs plinthes électriques
   'forced-air': 0.35,    // 35% vs air pulsé électrique
+  'bi-energy': 0.40,     // Mix hydro + combustible
+  'hot-water': 0.45,     // Chaudière / radiateurs
   'oil-gas': 0.50        // 50% vs huile/gaz
-}
+} as const
 
 // ============================================================================
 // CALCUL DE LA SURFACE HABITABLE
@@ -256,13 +258,13 @@ export function calculateBTUNeeds(
  */
 export function calculateSavings(
   habitableArea: number,
-  currentHeatingType: 'electric' | 'forced-air' | 'oil-gas'
+  currentHeatingType: 'electric' | 'forced-air' | 'bi-energy' | 'hot-water' | 'oil-gas'
 ): SavingsCalculation {
   // Étape 1: Estimer le coût actuel (0.90$ par pi²)
   const estimatedCurrentCost = Math.round(habitableArea * 0.90)
   
   // Étape 2: Déterminer le pourcentage d'économies
-  const savingsPercentage = SAVINGS_PERCENTAGE[currentHeatingType]
+  const savingsPercentage = SAVINGS_PERCENTAGE[currentHeatingType] ?? SAVINGS_PERCENTAGE['electric']
   
   // Étape 3: Calculer les économies annuelles
   const annualSavings = Math.round(estimatedCurrentCost * savingsPercentage)
