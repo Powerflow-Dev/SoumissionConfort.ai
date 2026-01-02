@@ -12,11 +12,23 @@ export async function POST(request: NextRequest) {
     const leadData = await request.json()
     console.log('🔥 LEADS API: Received lead data:', JSON.stringify(leadData, null, 2))
 
-    // Validate required fields
-    const requiredFields = ["firstName", "lastName", "email", "phone", "roofData", "userAnswers", "pricingData"]
-    for (const field of requiredFields) {
-      if (!leadData[field]) {
-        return NextResponse.json({ error: `Missing required field: ${field}` }, { status: 400 })
+    const leadType = leadData.leadType || 'isolation'
+    const isHVAC = leadType === 'hvac'
+
+    // Validate required fields by lead type
+    if (isHVAC) {
+      const requiredFields = ["firstName", "lastName", "email", "phone", "address"]
+      for (const field of requiredFields) {
+        if (!leadData[field]) {
+          return NextResponse.json({ error: `Missing required field: ${field}` }, { status: 400 })
+        }
+      }
+    } else {
+      const requiredFields = ["firstName", "lastName", "email", "phone", "roofData", "userAnswers", "pricingData"]
+      for (const field of requiredFields) {
+        if (!leadData[field]) {
+          return NextResponse.json({ error: `Missing required field: ${field}` }, { status: 400 })
+        }
       }
     }
 
@@ -47,109 +59,144 @@ export async function POST(request: NextRequest) {
       console.log('🌐 LEADS API: Webhook URLs count:', webhookUrls.length)
       console.log('📋 LEADS API: Webhook URLs:', webhookUrls)
       
-      // Prepare clean webhook payload (matching the structure expected by webhook endpoint)
-      const webhookPayload = {
-        timestamp: new Date().toISOString(),
-        leadId: leadId, // Consistent leadId for webhook linking
-        webhookType: "initial_contact", // First webhook type
-        contact: {
-          firstName: leadData.firstName,
-          lastName: leadData.lastName,
-          email: leadData.email,
-          phone: leadData.phone,
-        },
-        property: {
-          address: leadData.roofData?.address || "",
-          city: leadData.roofData?.city || "",
-          postalCode: leadData.roofData?.postalCode || "",
-          roofArea: leadData.roofData?.roofArea || 0,
-          buildingHeight: leadData.roofData?.buildingHeight || 0,
-          pitchComplexity: leadData.roofData?.pitchComplexity || "",
-          obstacles: leadData.roofData?.obstacles || [],
-          coordinates: leadData.roofData?.coordinates || null,
-        },
-        projectDetails: {
-          // Questions d'isolation
-          heatingSystem: leadData.userAnswers?.heatingSystem || "",
-          currentInsulation: leadData.userAnswers?.currentInsulation || "",
-          atticAccess: leadData.userAnswers?.atticAccess || "",
-          identifiedProblems: leadData.userAnswers?.identifiedProblems || [],
-          
-          // Anciennes questions (pour compatibilité)
-          roofConditions: leadData.userAnswers?.roofConditions || leadData.userAnswers?.identifiedProblems || [],
-          roofAge: leadData.userAnswers?.roofAge || "",
-          roofMaterial: leadData.userAnswers?.roofMaterial || "",
-          propertyAccess: leadData.userAnswers?.propertyAccess || leadData.userAnswers?.atticAccess || "",
-          serviceType: leadData.userAnswers?.serviceType || [],
-          timeline: leadData.userAnswers?.timeline || "",
-          contactPreference: leadData.userAnswers?.contactPreference || "",
-          contactTime: leadData.userAnswers?.contactTime || "",
-        },
-        pricing: {
-          // Fourchette principale (Standard - recommandée)
-          estimatedCost: leadData.pricingData || null,
-          
-          // 3 Fourchettes de prix détaillées
-          ranges: {
-            economique: {
-              name: "Économique",
-              type: "Fibre de verre soufflée",
-              rValue: 50,
-              min: leadData.pricingData?.ranges?.economique?.totalCost?.min || null,
-              max: leadData.pricingData?.ranges?.economique?.totalCost?.max || null,
-              annualSavings: {
-                min: leadData.pricingData?.ranges?.economique?.annualSavings?.min || null,
-                max: leadData.pricingData?.ranges?.economique?.annualSavings?.max || null,
+      // Prepare webhook payload depending on lead type
+      const webhookPayload = isHVAC
+        ? {
+            timestamp: new Date().toISOString(),
+            leadId,
+            webhookType: "hvac_contact",
+            leadType,
+            contact: {
+              firstName: leadData.firstName,
+              lastName: leadData.lastName,
+              email: leadData.email,
+              phone: leadData.phone,
+            },
+            property: {
+              address: leadData.address || leadData.roofData?.address || "",
+              postalCode: leadData.postalCode || leadData.roofData?.postalCode || "",
+              city: leadData.city || leadData.roofData?.city || "",
+              roofArea: leadData.finalArea || leadData.roofData?.roofArea || 0,
+              coordinates: leadData.roofData?.coordinates || null,
+            },
+            projectDetails: {
+              constructionYear: leadData.thermal?.constructionYear || "",
+              insulationUpgraded: leadData.thermal?.insulationUpgraded,
+              currentHeatingType: leadData.thermal?.currentHeatingType || "",
+              garageType: leadData.geometric?.garageType || "",
+              floors: leadData.geometric?.floors || 0,
+              hasFinishedBasement: leadData.geometric?.hasFinishedBasement,
+            },
+            pricing: {
+              estimatedPrice: leadData.estimatedPrice || null,
+              estimatedPriceMin: leadData.estimatedPriceMin || null,
+              estimatedPriceMax: leadData.estimatedPriceMax || null,
+            },
+            utmParams,
+            source: "soumission-hvac-ai",
+          }
+        : {
+            timestamp: new Date().toISOString(),
+            leadId: leadId, // Consistent leadId for webhook linking
+            webhookType: "initial_contact", // First webhook type
+            contact: {
+              firstName: leadData.firstName,
+              lastName: leadData.lastName,
+              email: leadData.email,
+              phone: leadData.phone,
+            },
+            property: {
+              address: leadData.roofData?.address || "",
+              city: leadData.roofData?.city || "",
+              postalCode: leadData.roofData?.postalCode || "",
+              roofArea: leadData.roofData?.roofArea || 0,
+              buildingHeight: leadData.roofData?.buildingHeight || 0,
+              pitchComplexity: leadData.roofData?.pitchComplexity || "",
+              obstacles: leadData.roofData?.obstacles || [],
+              coordinates: leadData.roofData?.coordinates || null,
+            },
+            projectDetails: {
+              // Questions d'isolation
+              heatingSystem: leadData.userAnswers?.heatingSystem || "",
+              currentInsulation: leadData.userAnswers?.currentInsulation || "",
+              atticAccess: leadData.userAnswers?.atticAccess || "",
+              identifiedProblems: leadData.userAnswers?.identifiedProblems || [],
+              
+              // Anciennes questions (pour compatibilité)
+              roofConditions: leadData.userAnswers?.roofConditions || leadData.userAnswers?.identifiedProblems || [],
+              roofAge: leadData.userAnswers?.roofAge || "",
+              roofMaterial: leadData.userAnswers?.roofMaterial || "",
+              propertyAccess: leadData.userAnswers?.propertyAccess || leadData.userAnswers?.atticAccess || "",
+              serviceType: leadData.userAnswers?.serviceType || [],
+              timeline: leadData.userAnswers?.timeline || "",
+              contactPreference: leadData.userAnswers?.contactPreference || "",
+              contactTime: leadData.userAnswers?.contactTime || "",
+            },
+            pricing: {
+              // Fourchette principale (Standard - recommandée)
+              estimatedCost: leadData.pricingData || null,
+              
+              // 3 Fourchettes de prix détaillées
+              ranges: {
+                economique: {
+                  name: "Économique",
+                  type: "Fibre de verre soufflée",
+                  rValue: 50,
+                  min: leadData.pricingData?.ranges?.economique?.totalCost?.min || null,
+                  max: leadData.pricingData?.ranges?.economique?.totalCost?.max || null,
+                  annualSavings: {
+                    min: leadData.pricingData?.ranges?.economique?.annualSavings?.min || null,
+                    max: leadData.pricingData?.ranges?.economique?.annualSavings?.max || null,
+                  },
+                  paybackPeriod: {
+                    min: leadData.pricingData?.ranges?.economique?.paybackPeriod?.min || null,
+                    max: leadData.pricingData?.ranges?.economique?.paybackPeriod?.max || null,
+                  },
+                },
+                standard: {
+                  name: "Standard",
+                  type: "Cellulose soufflée",
+                  rValue: 55,
+                  recommended: true,
+                  min: leadData.pricingData?.ranges?.standard?.totalCost?.min || null,
+                  max: leadData.pricingData?.ranges?.standard?.totalCost?.max || null,
+                  annualSavings: {
+                    min: leadData.pricingData?.ranges?.standard?.annualSavings?.min || null,
+                    max: leadData.pricingData?.ranges?.standard?.annualSavings?.max || null,
+                  },
+                  paybackPeriod: {
+                    min: leadData.pricingData?.ranges?.standard?.paybackPeriod?.min || null,
+                    max: leadData.pricingData?.ranges?.standard?.paybackPeriod?.max || null,
+                  },
+                },
+                premium: {
+                  name: "Premium",
+                  type: "Uréthane giclé",
+                  rValue: 60,
+                  min: leadData.pricingData?.ranges?.premium?.totalCost?.min || null,
+                  max: leadData.pricingData?.ranges?.premium?.totalCost?.max || null,
+                  annualSavings: {
+                    min: leadData.pricingData?.ranges?.premium?.annualSavings?.min || null,
+                    max: leadData.pricingData?.ranges?.premium?.annualSavings?.max || null,
+                  },
+                  paybackPeriod: {
+                    min: leadData.pricingData?.ranges?.premium?.paybackPeriod?.min || null,
+                    max: leadData.pricingData?.ranges?.premium?.paybackPeriod?.max || null,
+                  },
+                },
               },
-              paybackPeriod: {
-                min: leadData.pricingData?.ranges?.economique?.paybackPeriod?.min || null,
-                max: leadData.pricingData?.ranges?.economique?.paybackPeriod?.max || null,
+              
+              // Détails supplémentaires
+              adjustedArea: leadData.pricingData?.adjustedArea || leadData.roofData?.roofArea || 0,
+              calculationFactors: {
+                pitchMultiplier: leadData.pricingData?.pitchMultiplier || 1.0,
+                accessMultiplier: leadData.pricingData?.accessMultiplier || 1.0,
+                currentRValue: leadData.pricingData?.currentRValue || 0,
               },
             },
-            standard: {
-              name: "Standard",
-              type: "Cellulose soufflée",
-              rValue: 55,
-              recommended: true,
-              min: leadData.pricingData?.ranges?.standard?.totalCost?.min || null,
-              max: leadData.pricingData?.ranges?.standard?.totalCost?.max || null,
-              annualSavings: {
-                min: leadData.pricingData?.ranges?.standard?.annualSavings?.min || null,
-                max: leadData.pricingData?.ranges?.standard?.annualSavings?.max || null,
-              },
-              paybackPeriod: {
-                min: leadData.pricingData?.ranges?.standard?.paybackPeriod?.min || null,
-                max: leadData.pricingData?.ranges?.standard?.paybackPeriod?.max || null,
-              },
-            },
-            premium: {
-              name: "Premium",
-              type: "Uréthane giclé",
-              rValue: 60,
-              min: leadData.pricingData?.ranges?.premium?.totalCost?.min || null,
-              max: leadData.pricingData?.ranges?.premium?.totalCost?.max || null,
-              annualSavings: {
-                min: leadData.pricingData?.ranges?.premium?.annualSavings?.min || null,
-                max: leadData.pricingData?.ranges?.premium?.annualSavings?.max || null,
-              },
-              paybackPeriod: {
-                min: leadData.pricingData?.ranges?.premium?.paybackPeriod?.min || null,
-                max: leadData.pricingData?.ranges?.premium?.paybackPeriod?.max || null,
-              },
-            },
-          },
-          
-          // Détails supplémentaires
-          adjustedArea: leadData.pricingData?.adjustedArea || leadData.roofData?.roofArea || 0,
-          calculationFactors: {
-            pitchMultiplier: leadData.pricingData?.pitchMultiplier || 1.0,
-            accessMultiplier: leadData.pricingData?.accessMultiplier || 1.0,
-            currentRValue: leadData.pricingData?.currentRValue || 0,
-          },
-        },
-        utmParams: utmParams, // Include UTM parameters in webhook payload
-        source: "soumission-toiture-ai",
-      }
+            utmParams: utmParams, // Include UTM parameters in webhook payload
+            source: "soumission-toiture-ai",
+          }
       
       console.log('🔍 LEADS API: EXACT WEBHOOK PAYLOAD BEING SENT:')
       console.log('📦 LEADS API: Full payload:', JSON.stringify(webhookPayload, null, 2))
@@ -161,63 +208,89 @@ export async function POST(request: NextRequest) {
       console.log('🏷️ LEADS API: UTM Parameters:', webhookPayload.utmParams)
       
       // Prepare formatted payload for Make.com (matching Google Sheets structure)
-      const makeComPayload = {
-        // Contact (A-D)
-        "Prénom (A)": webhookPayload.contact.firstName,
-        "Nom (B)": webhookPayload.contact.lastName,
-        "Adresse courriel (C)": webhookPayload.contact.email,
-        "Téléphone (D)": webhookPayload.contact.phone,
-        
-        // Propriété (E-I)
-        "Adresse (E)": webhookPayload.property.address || "",
-        "Code postal (F)": webhookPayload.property.postalCode || "",
-        "Ville (G)": webhookPayload.property.city || "",
-        "Superficie entretoit (H)": webhookPayload.property.roofArea || 0,
-        "Hauteur du bâtiment (I)": webhookPayload.property.buildingHeight || 0,
-        
-        // Questions d'isolation (J-M)
-        "Système de chauffage (J)": webhookPayload.projectDetails.heatingSystem || "",
-        "Isolation actuelle (K)": webhookPayload.projectDetails.currentInsulation || "",
-        "Accès entretoit (L)": webhookPayload.projectDetails.atticAccess || "",
-        "Problèmes identifiés (M)": Array.isArray(webhookPayload.projectDetails.identifiedProblems) 
-          ? webhookPayload.projectDetails.identifiedProblems.join(", ") 
-          : webhookPayload.projectDetails.identifiedProblems || "",
-        
-        // Gamme Économique (N-S)
-        "Économique - Prix min (N)": webhookPayload.pricing?.ranges?.economique?.min || 0,
-        "Économique - Prix max (O)": webhookPayload.pricing?.ranges?.economique?.max || 0,
-        "Économique - Économies min (P)": webhookPayload.pricing?.ranges?.economique?.annualSavings?.min || 0,
-        "Économique - Économies max (Q)": webhookPayload.pricing?.ranges?.economique?.annualSavings?.max || 0,
-        "Économique - Retour min (R)": webhookPayload.pricing?.ranges?.economique?.paybackPeriod?.min || 0,
-        "Économique - Retour max (S)": webhookPayload.pricing?.ranges?.economique?.paybackPeriod?.max || 0,
-        
-        // Gamme Standard (T-Y)
-        "Standard - Prix min (T)": webhookPayload.pricing?.ranges?.standard?.min || 0,
-        "Standard - Prix max (U)": webhookPayload.pricing?.ranges?.standard?.max || 0,
-        "Standard - Économies min (V)": webhookPayload.pricing?.ranges?.standard?.annualSavings?.min || 0,
-        "Standard - Économies max (W)": webhookPayload.pricing?.ranges?.standard?.annualSavings?.max || 0,
-        "Standard - Retour min (X)": webhookPayload.pricing?.ranges?.standard?.paybackPeriod?.min || 0,
-        "Standard - Retour max (Y)": webhookPayload.pricing?.ranges?.standard?.paybackPeriod?.max || 0,
-        
-        // Gamme Premium (Z-AE)
-        "Premium - Prix min (Z)": webhookPayload.pricing?.ranges?.premium?.min || 0,
-        "Premium - Prix max (AA)": webhookPayload.pricing?.ranges?.premium?.max || 0,
-        "Premium - Économies min (AB)": webhookPayload.pricing?.ranges?.premium?.annualSavings?.min || 0,
-        "Premium - Économies max (AC)": webhookPayload.pricing?.ranges?.premium?.annualSavings?.max || 0,
-        "Premium - Retour min (AD)": webhookPayload.pricing?.ranges?.premium?.paybackPeriod?.min || 0,
-        "Premium - Retour max (AE)": webhookPayload.pricing?.ranges?.premium?.paybackPeriod?.max || 0,
-        
-        // UTM Parameters (AF-AJ)
-        "UTM Source (AF)": webhookPayload.utmParams?.utm_source || "",
-        "UTM Campaign (AG)": webhookPayload.utmParams?.utm_campaign || "",
-        "UTM Content (AH)": webhookPayload.utmParams?.utm_content || "",
-        "UTM Medium (AI)": webhookPayload.utmParams?.utm_medium || "",
-        "UTM Term (AJ)": webhookPayload.utmParams?.utm_term || "",
-        
-        // Métadonnées (AK-AL)
-        "Lead ID (AK)": leadId,
-        "Webhook Type (AL)": "initial_contact"
-      }
+      const makeComPayload = isHVAC
+        ? {
+            "Prénom (A)": webhookPayload.contact.firstName,
+            "Nom (B)": webhookPayload.contact.lastName,
+            "Adresse courriel (C)": webhookPayload.contact.email,
+            "Téléphone (D)": webhookPayload.contact.phone,
+            "Adresse (E)": webhookPayload.property.address || "",
+            "Code postal (F)": webhookPayload.property.postalCode || "",
+            "Ville (G)": webhookPayload.property.city || "",
+            "Superficie (H)": webhookPayload.property.roofArea || 0,
+            "Type chauffage actuel (I)": webhookPayload.projectDetails.currentHeatingType || "",
+            "Année construction (J)": webhookPayload.projectDetails.constructionYear || "",
+            "Isolation améliorée (K)": typeof webhookPayload.projectDetails.insulationUpgraded === 'boolean' ? webhookPayload.projectDetails.insulationUpgraded : "",
+            "Garage (L)": webhookPayload.projectDetails.garageType || "",
+            "Étages (M)": webhookPayload.projectDetails.floors || 0,
+            "Sous-sol fini (N)": typeof webhookPayload.projectDetails.hasFinishedBasement === 'boolean' ? webhookPayload.projectDetails.hasFinishedBasement : "",
+            "Prix estimé min (O)": webhookPayload.pricing?.estimatedPriceMin || 0,
+            "Prix estimé max (P)": webhookPayload.pricing?.estimatedPriceMax || 0,
+            "UTM Source (AF)": webhookPayload.utmParams?.utm_source || "",
+            "UTM Campaign (AG)": webhookPayload.utmParams?.utm_campaign || "",
+            "UTM Content (AH)": webhookPayload.utmParams?.utm_content || "",
+            "UTM Medium (AI)": webhookPayload.utmParams?.utm_medium || "",
+            "UTM Term (AJ)": webhookPayload.utmParams?.utm_term || "",
+            "Lead ID (AK)": leadId,
+            "Webhook Type (AL)": "hvac_contact"
+          }
+        : {
+            // Contact (A-D)
+            "Prénom (A)": webhookPayload.contact.firstName,
+            "Nom (B)": webhookPayload.contact.lastName,
+            "Adresse courriel (C)": webhookPayload.contact.email,
+            "Téléphone (D)": webhookPayload.contact.phone,
+            
+            // Propriété (E-I)
+            "Adresse (E)": webhookPayload.property.address || "",
+            "Code postal (F)": webhookPayload.property.postalCode || "",
+            "Ville (G)": webhookPayload.property.city || "",
+            "Superficie entretoit (H)": webhookPayload.property.roofArea || 0,
+            "Hauteur du bâtiment (I)": webhookPayload.property.buildingHeight || 0,
+            
+            // Questions d'isolation (J-M)
+            "Système de chauffage (J)": webhookPayload.projectDetails.heatingSystem || "",
+            "Isolation actuelle (K)": webhookPayload.projectDetails.currentInsulation || "",
+            "Accès entretoit (L)": webhookPayload.projectDetails.atticAccess || "",
+            "Problèmes identifiés (M)": Array.isArray(webhookPayload.projectDetails.identifiedProblems) 
+              ? webhookPayload.projectDetails.identifiedProblems.join(", ") 
+              : webhookPayload.projectDetails.identifiedProblems || "",
+            
+            // Gamme Économique (N-S)
+            "Économique - Prix min (N)": webhookPayload.pricing?.ranges?.economique?.min || 0,
+            "Économique - Prix max (O)": webhookPayload.pricing?.ranges?.economique?.max || 0,
+            "Économique - Économies min (P)": webhookPayload.pricing?.ranges?.economique?.annualSavings?.min || 0,
+            "Économique - Économies max (Q)": webhookPayload.pricing?.ranges?.economique?.annualSavings?.max || 0,
+            "Économique - Retour min (R)": webhookPayload.pricing?.ranges?.economique?.paybackPeriod?.min || 0,
+            "Économique - Retour max (S)": webhookPayload.pricing?.ranges?.economique?.paybackPeriod?.max || 0,
+            
+            // Gamme Standard (T-Y)
+            "Standard - Prix min (T)": webhookPayload.pricing?.ranges?.standard?.min || 0,
+            "Standard - Prix max (U)": webhookPayload.pricing?.ranges?.standard?.max || 0,
+            "Standard - Économies min (V)": webhookPayload.pricing?.ranges?.standard?.annualSavings?.min || 0,
+            "Standard - Économies max (W)": webhookPayload.pricing?.ranges?.standard?.annualSavings?.max || 0,
+            "Standard - Retour min (X)": webhookPayload.pricing?.ranges?.standard?.paybackPeriod?.min || 0,
+            "Standard - Retour max (Y)": webhookPayload.pricing?.ranges?.standard?.paybackPeriod?.max || 0,
+            
+            // Gamme Premium (Z-AE)
+            "Premium - Prix min (Z)": webhookPayload.pricing?.ranges?.premium?.min || 0,
+            "Premium - Prix max (AA)": webhookPayload.pricing?.ranges?.premium?.max || 0,
+            "Premium - Économies min (AB)": webhookPayload.pricing?.ranges?.premium?.annualSavings?.min || 0,
+            "Premium - Économies max (AC)": webhookPayload.pricing?.ranges?.premium?.annualSavings?.max || 0,
+            "Premium - Retour min (AD)": webhookPayload.pricing?.ranges?.premium?.paybackPeriod?.min || 0,
+            "Premium - Retour max (AE)": webhookPayload.pricing?.ranges?.premium?.paybackPeriod?.max || 0,
+            
+            // UTM Parameters (AF-AJ)
+            "UTM Source (AF)": webhookPayload.utmParams?.utm_source || "",
+            "UTM Campaign (AG)": webhookPayload.utmParams?.utm_campaign || "",
+            "UTM Content (AH)": webhookPayload.utmParams?.utm_content || "",
+            "UTM Medium (AI)": webhookPayload.utmParams?.utm_medium || "",
+            "UTM Term (AJ)": webhookPayload.utmParams?.utm_term || "",
+            
+            // Métadonnées (AK-AL)
+            "Lead ID (AK)": leadId,
+            "Webhook Type (AL)": "initial_contact"
+          }
       
       console.log('📦 LEADS API: Make.com formatted payload:', JSON.stringify(makeComPayload, null, 2))
       

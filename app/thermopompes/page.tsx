@@ -45,6 +45,8 @@ export default function ThermopompesPage() {
   // État du funnel
   const [currentStep, setCurrentStep] = useState<FunnelStep>(1)
   const [address, setAddress] = useState("")
+  const [postalCode, setPostalCode] = useState("")
+  const [city, setCity] = useState("")
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   
   // Données collectées
@@ -63,6 +65,11 @@ export default function ThermopompesPage() {
   const [showLeadCapture, setShowLeadCapture] = useState(false)
   const [leadData, setLeadData] = useState<LeadData | null>(null)
   const [utmParams, setUtmParams] = useState<UTMParameters>({})
+
+  const extractPostalCode = (input: string) => {
+    const match = input.match(/[A-Za-z]\d[A-Za-z]\s?\d[A-Za-z]\d/)
+    return match ? match[0].toUpperCase().replace(/\s+/, " ") : ""
+  }
 
   const getPriceRange = (total?: number) => {
     if (!total || total <= 0) return null
@@ -121,8 +128,12 @@ export default function ThermopompesPage() {
       
       const data = await response.json()
       const roofArea = data.roofData?.roofArea || 2000
+      const detectedPostal = data.roofData?.postalCode || extractPostalCode(data.roofData?.address || address)
+      const detectedCity = data.roofData?.city || ""
       
       setSolarArea(roofArea)
+      if (detectedPostal) setPostalCode(detectedPostal)
+      if (detectedCity) setCity(detectedCity)
       track('HeatPump_Solar_Analysis_Complete', { roofArea })
       
       // Transition immédiate vers Step 2
@@ -239,41 +250,14 @@ export default function ThermopompesPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...data,
-          leadType: 'heatpump',
+          leadType: 'hvac',
           address,
+          postalCode,
+          city,
           solarArea,
           geometric,
           thermal,
           finalArea,
-          // Fields required by /api/leads validation
-          roofData: {
-            address,
-            roofArea: finalArea || estimatedArea || solarArea,
-            postalCode: '',
-            city: '',
-            coordinates: null
-          },
-          userAnswers: {
-            heatingSystem: thermal.currentHeatingType || '',
-            currentInsulation: thermal.insulationUpgraded === true ? 'amelioree' : thermal.insulationUpgraded === false ? 'standard' : '',
-            atticAccess: '',
-            identifiedProblems: [],
-            serviceType: [],
-            timeline: '',
-            contactPreference: ''
-          },
-          pricingData: {
-            ranges: {
-              standard: {
-                totalCost: {
-                  min: priceRange?.min ?? basePrice ?? 0,
-                  max: priceRange?.max ?? basePrice ?? 0
-                },
-                annualSavings: {},
-                paybackPeriod: {}
-              }
-            }
-          },
           estimatedPrice: basePrice,
           estimatedPriceMin: priceRange?.min,
           estimatedPriceMax: priceRange?.max,
@@ -388,8 +372,12 @@ export default function ThermopompesPage() {
                 </Label>
                 <div className="flex flex-col md:flex-row gap-4">
                   <div className="flex-1">
-                    <AddressInput
-                      onAddressSelect={setAddress}
+                  <AddressInput
+                      onAddressSelect={(value) => {
+                        setAddress(value)
+                        const pc = extractPostalCode(value)
+                        if (pc) setPostalCode(pc)
+                      }}
                       onAnalyze={handleAddressSubmit}
                       isLoading={isAnalyzing}
                       className="max-w-full"
