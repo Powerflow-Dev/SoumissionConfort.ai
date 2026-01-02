@@ -311,7 +311,7 @@ export default function ThermopompesPage() {
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
               <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                Obtenez votre estimation gratuite en{" "}
+                Obtenez une estimation de thermopompe en{" "}
                 <span className="text-green-600">60 secondes</span>
               </h1>
               
@@ -354,16 +354,14 @@ export default function ThermopompesPage() {
                   </Button>
                 </div>
                 
-                <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-gray-700 border border-blue-100 rounded-md p-3 bg-blue-50/70">
-                  <div className="flex items-center gap-2 bg-white px-3 py-1 rounded-md border">
+                <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-gray-700 p-1">
+                  <div className="flex items-center bg-white px-3 py-1 rounded-md border">
                     <img src="/hydro-quebec.svg" alt="Hydro-Québec" className="h-6 w-auto" />
-                    <span className="text-xs font-medium">Hydro-Québec</span>
                   </div>
-                  <div className="flex items-center gap-2 bg-white px-3 py-1 rounded-md border">
+                  <div className="flex items-center bg-white px-3 py-1 rounded-md border">
                     <img src="/Rénoclimat.jpg" alt="Rénoclimat" className="h-6 w-auto" />
-                    <span className="text-xs font-medium">Rénoclimat</span>
                   </div>
-                  <div className="flex items-center gap-2 bg-white px-3 py-1 rounded-md border">
+                  <div className="flex items-center bg-white px-3 py-1 rounded-md border">
                     <img src="/Gouvernement_du_Canada_logo.svg" alt="Gouvernement du Canada" className="h-6 w-auto" />
                   </div>
                 </div>
@@ -909,10 +907,10 @@ export default function ThermopompesPage() {
                 </p>
                 <Button
                   size="lg"
-                  className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 h-14 px-8 text-lg w-full max-w-xl mx-auto shadow-lg hover:shadow-xl transition"
+                  className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 h-14 px-14 md:px-16 text-lg w-full max-w-xl mx-auto shadow-lg hover:shadow-xl transition"
                   onClick={() => router.push('/success')}
                 >
-                  Obtenir mes soumissions gratuites
+                  Obtenir soumissions gratuites
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </CardContent>
