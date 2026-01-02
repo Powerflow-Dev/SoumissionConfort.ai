@@ -28,6 +28,7 @@ import type {
   ThermalProfile, 
   HeatPumpRecommendation 
 } from "@/lib/heatpump-calculator"
+import { getCurrentUTMParameters, type UTMParameters } from "@/lib/utm-utils"
 import {
   formatBTU,
   formatPrice,
@@ -61,6 +62,14 @@ export default function ThermopompesPage() {
   const [recommendation, setRecommendation] = useState<HeatPumpRecommendation | null>(null)
   const [showLeadCapture, setShowLeadCapture] = useState(false)
   const [leadData, setLeadData] = useState<LeadData | null>(null)
+  const [utmParams, setUtmParams] = useState<UTMParameters>({})
+
+  const getPriceRange = (total?: number) => {
+    if (!total || total <= 0) return null
+    const min = Math.round(total * 0.95)
+    const max = Math.round(total * 1.05)
+    return { min, max }
+  }
 
   // Calcul du progrès
   const getProgress = () => {
@@ -79,6 +88,14 @@ export default function ThermopompesPage() {
       setIsEditingSurface(false)
     }
   }, [estimatedArea])
+
+  // Capture UTM parameters from URL/session once on mount
+  useEffect(() => {
+    const params = getCurrentUTMParameters()
+    if (Object.keys(params).length > 0) {
+      setUtmParams(params)
+    }
+  }, [])
 
   // ============================================================================
   // STEP 1: DÉTECTION & HOOK (AUTO)
@@ -198,6 +215,7 @@ export default function ThermopompesPage() {
     
     track('HeatPump_Thermal_Complete', merged as ThermalProfile)
     setCurrentStep(5)
+    setShowLeadCapture(true)
   }
 
   // ============================================================================
@@ -209,7 +227,10 @@ export default function ThermopompesPage() {
     track('HeatPump_Lead_Captured', { email: data.email })
     
     // Calculer la recommandation
-    await calculateRecommendation()
+    const rec = await calculateRecommendation()
+    const resolvedRec = rec ?? recommendation
+    const basePrice = resolvedRec?.recommendation?.totalInvestment
+    const priceRange = getPriceRange(basePrice)
     
     // Envoyer le lead au CRM
     try {
@@ -223,7 +244,44 @@ export default function ThermopompesPage() {
           solarArea,
           geometric,
           thermal,
-          finalArea
+          finalArea,
+          // Fields required by /api/leads validation
+          roofData: {
+            address,
+            roofArea: finalArea || estimatedArea || solarArea,
+            postalCode: '',
+            city: '',
+            coordinates: null
+          },
+          userAnswers: {
+            heatingSystem: thermal.currentHeatingType || '',
+            currentInsulation: thermal.insulationUpgraded === true ? 'amelioree' : thermal.insulationUpgraded === false ? 'standard' : '',
+            atticAccess: '',
+            identifiedProblems: [],
+            serviceType: [],
+            timeline: '',
+            contactPreference: ''
+          },
+          pricingData: {
+            ranges: {
+              standard: {
+                totalCost: {
+                  min: priceRange?.min ?? basePrice ?? 0,
+                  max: priceRange?.max ?? basePrice ?? 0
+                },
+                annualSavings: {},
+                paybackPeriod: {}
+              }
+            }
+          },
+          estimatedPrice: basePrice,
+          estimatedPriceMin: priceRange?.min,
+          estimatedPriceMax: priceRange?.max,
+          utmParams: {
+            utm_source: utmParams.utm_source,
+            utm_campaign: utmParams.utm_campaign,
+            utm_content: utmParams.utm_content
+          }
         })
       })
     } catch (error) {
@@ -265,15 +323,18 @@ export default function ThermopompesPage() {
         btu: data.recommendation.btu.totalBTU,
         tonnage: data.recommendation.btu.recommendedTonnage
       })
+      return data.recommendation
       
     } catch (error) {
       console.error('Erreur calcul:', error)
+      return null
     }
   }
 
   // ============================================================================
   // RENDU DES STEPS
   // ============================================================================
+  const priceRange = getPriceRange(recommendation?.recommendation?.totalInvestment)
 
   return (
     <div className="min-h-screen bg-white">
@@ -829,45 +890,7 @@ export default function ThermopompesPage() {
         )}
 
         {/* STEP 5: LEAD CAPTURE */}
-        {currentStep === 5 && (
-          <Card className="max-w-2xl mx-auto shadow-xl">
-            <CardHeader className="text-center">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle className="w-8 h-8 text-green-600" />
-              </div>
-              <CardTitle className="text-2xl">
-                Analyse terminée !
-              </CardTitle>
-              <p className="text-gray-600 text-lg">
-                Où souhaitez-vous recevoir votre rapport d'économies personnalisé ?
-              </p>
-            </CardHeader>
-            <CardContent>
-              <Button
-                onClick={() => setShowLeadCapture(true)}
-                className="w-full bg-blue-600 hover:bg-blue-700 h-14 text-lg"
-              >
-                Recevoir mon rapport gratuit
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-              
-              <div className="mt-6 grid grid-cols-3 gap-4 text-center text-sm">
-                <div className="flex flex-col items-center">
-                  <CheckCircle className="w-6 h-6 text-green-600 mb-2" />
-                  <span className="text-gray-600">100% Gratuit</span>
-                </div>
-                <div className="flex flex-col items-center">
-                  <CheckCircle className="w-6 h-6 text-green-600 mb-2" />
-                  <span className="text-gray-600">Sans engagement</span>
-                </div>
-                <div className="flex flex-col items-center">
-                  <CheckCircle className="w-6 h-6 text-green-600 mb-2" />
-                  <span className="text-gray-600">Instantané</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        {currentStep === 5 && showLeadCapture && null}
 
         {/* STEP 6: RÉSULTATS */}
         {currentStep === 6 && recommendation && (
@@ -888,9 +911,16 @@ export default function ThermopompesPage() {
                     <span>Installation:</span>
                     <span className="font-semibold">{formatPrice(recommendation.recommendation.installationCost)}</span>
                   </div>
-                  <div className="flex justify-between items-center text-lg font-bold border-t-2 border-green-200 pt-3 bg-white rounded-lg px-4 py-3 shadow-sm">
-                    <span className="text-2xl text-green-800 font-extrabold">Total</span>
-                    <span className="text-green-600 text-3xl font-extrabold">{formatPrice(recommendation.recommendation.totalInvestment)}</span>
+                  <div className="flex justify-center text-lg font-bold border-t-2 border-green-200 pt-3 bg-white rounded-lg px-4 py-3 shadow-sm">
+                    {priceRange ? (
+                      <span className="text-green-600 text-3xl font-extrabold">
+                        {formatPrice(priceRange.min)} - {formatPrice(priceRange.max)}
+                      </span>
+                    ) : (
+                      <span className="text-green-600 text-3xl font-extrabold">
+                        {formatPrice(recommendation.recommendation.totalInvestment)}
+                      </span>
+                    )}
                   </div>
                 </div>
               </CardContent>
