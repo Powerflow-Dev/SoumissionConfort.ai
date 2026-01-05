@@ -41,6 +41,27 @@ export async function POST(request: NextRequest) {
     const randomString = Math.random().toString(36).substring(2, 10) // 8 character random string
     const leadId = `LEAD${timestamp}${randomString}`
 
+    // Helpers to present data in French for HVAC leads
+    const formatBoolFr = (val: any) => val === true ? 'Oui' : val === false ? 'Non' : ''
+    const translateHeatingType = (type?: string) => {
+      switch (type) {
+        case 'electric': return 'Électricité'
+        case 'oil-gas': return 'Mazout / Gaz'
+        case 'gas': return 'Gaz'
+        case 'bi-energy': return 'Bi-énergie'
+        case 'forced-air': return 'Air pulsé'
+        default: return type || ''
+      }
+    }
+    const translateGarage = (type?: string) => {
+      switch (type) {
+        case 'double': return 'Garage double'
+        case 'single': return 'Garage simple'
+        case 'none': return 'Aucun garage'
+        default: return type || ''
+      }
+    }
+
     // Send to webhook endpoints - DIRECT CALL TO MAKE.COM
     try {
       console.log('🚨 LEADS API: ENTERING WEBHOOK TRY BLOCK')
@@ -86,6 +107,7 @@ export async function POST(request: NextRequest) {
               garageType: leadData.geometric?.garageType || "",
               floors: leadData.geometric?.floors || 0,
               hasFinishedBasement: leadData.geometric?.hasFinishedBasement,
+              wantsOilTankRemoval: leadData.wantsOilTankRemoval,
             },
             pricing: {
               estimatedPrice: leadData.estimatedPrice || null,
@@ -98,7 +120,7 @@ export async function POST(request: NextRequest) {
         : {
             timestamp: new Date().toISOString(),
             leadId: leadId, // Consistent leadId for webhook linking
-            webhookType: "initial_contact", // First webhook type
+            webhookType: "isolation_contact", // First webhook type
             contact: {
               firstName: leadData.firstName,
               lastName: leadData.lastName,
@@ -218,14 +240,15 @@ export async function POST(request: NextRequest) {
             "Code postal (F)": webhookPayload.property.postalCode || "",
             "Ville (G)": webhookPayload.property.city || "",
             "Superficie (H)": webhookPayload.property.roofArea || 0,
-            "Type chauffage actuel (I)": webhookPayload.projectDetails.currentHeatingType || "",
+            "Type chauffage actuel (I)": translateHeatingType(webhookPayload.projectDetails.currentHeatingType),
             "Année construction (J)": webhookPayload.projectDetails.constructionYear || "",
-            "Isolation améliorée (K)": typeof webhookPayload.projectDetails.insulationUpgraded === 'boolean' ? webhookPayload.projectDetails.insulationUpgraded : "",
-            "Garage (L)": webhookPayload.projectDetails.garageType || "",
+            "Isolation améliorée (K)": formatBoolFr(webhookPayload.projectDetails.insulationUpgraded),
+            "Garage (L)": translateGarage(webhookPayload.projectDetails.garageType),
             "Étages (M)": webhookPayload.projectDetails.floors || 0,
-            "Sous-sol fini (N)": typeof webhookPayload.projectDetails.hasFinishedBasement === 'boolean' ? webhookPayload.projectDetails.hasFinishedBasement : "",
-            "Prix estimé min (O)": webhookPayload.pricing?.estimatedPriceMin || 0,
-            "Prix estimé max (P)": webhookPayload.pricing?.estimatedPriceMax || 0,
+            "Sous-sol fini (N)": formatBoolFr(webhookPayload.projectDetails.hasFinishedBasement),
+            "Retrait réservoir mazout (O)": formatBoolFr(webhookPayload.projectDetails.wantsOilTankRemoval),
+            "Prix estimé min (P)": webhookPayload.pricing?.estimatedPriceMin || 0,
+            "Prix estimé max (Q)": webhookPayload.pricing?.estimatedPriceMax || 0,
             "UTM Source (AF)": webhookPayload.utmParams?.utm_source || "",
             "UTM Campaign (AG)": webhookPayload.utmParams?.utm_campaign || "",
             "UTM Content (AH)": webhookPayload.utmParams?.utm_content || "",

@@ -258,6 +258,7 @@ export default function ThermopompesPage() {
           geometric,
           thermal,
           finalArea,
+          wantsOilTankRemoval: thermal.wantsOilTankRemoval ?? null,
           estimatedPrice: basePrice,
           estimatedPriceMin: priceRange?.min,
           estimatedPriceMax: priceRange?.max,
