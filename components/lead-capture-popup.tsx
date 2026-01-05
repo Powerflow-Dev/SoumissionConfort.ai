@@ -110,22 +110,6 @@ export function LeadCapturePopup({ isOpen, onClose, onSubmit, isSubmitting = fal
 
         {/* Form container with max width to keep content contained */}
         <form onSubmit={handleSubmit} className="space-y-2 max-w-md mx-auto">
-          {/* Energy savings box - Top of form for immediate value prop */}
-          <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-3 text-center">
-            <p className="text-sm font-semibold text-green-800 mb-1">
-              Selon notre analyse, vous pouvez économiser:
-            </p>
-            <p className="text-2xl sm:text-3xl font-bold text-green-700">
-              Jusqu'à {estimatedMaxSavings.toLocaleString()}$
-            </p>
-            <p className="text-sm text-green-600 font-medium mb-1">
-              par année
-            </p>
-            <p className="text-xs text-green-600">
-              Estimation IA basée sur votre toit.
-            </p>
-          </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
               <Label htmlFor="firstName" className="text-sm font-medium text-gray-700">
@@ -229,6 +213,20 @@ export function LeadCapturePopup({ isOpen, onClose, onSubmit, isSubmitting = fal
 
           {/* Action button - Full width CTA */}
           <div className="pt-2">
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-3 text-center mb-3">
+              <p className="text-sm font-semibold text-green-800 mb-1">
+                Selon notre analyse, vous pouvez économiser:
+              </p>
+              <p className="text-2xl sm:text-3xl font-bold text-green-700">
+                Jusqu'à {estimatedMaxSavings.toLocaleString()}$
+              </p>
+              <p className="text-sm text-green-600 font-medium mb-1">
+                par année
+              </p>
+              <p className="text-xs text-green-600">
+                Estimation IA basée sur votre toit.
+              </p>
+            </div>
             <Button
               type="submit"
               disabled={!isFormValid() || isSubmitting}
