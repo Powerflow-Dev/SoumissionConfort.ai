@@ -84,7 +84,7 @@ function getCurrentRValue(currentInsulation: string): number {
   return rValues[currentInsulation] || 20
 }
 
-// Étape 3: Gammes d'isolation (prix ajustés pour bungalows québécois 1000-1800 pi²)
+// Étape 3: Gammes d'isolation (prix de base avant multiplicateurs d'accès)
 const INSULATION_RANGES: { [key: string]: InsulationRange } = {
   economique: {
     name: 'Économique',
@@ -92,7 +92,7 @@ const INSULATION_RANGES: { [key: string]: InsulationRange } = {
     rValue: 50,
     thickness: '12 pouces',
     durability: '20-25 ans',
-    pricePerSqFt: { min: 2.50, max: 3.20 },
+    pricePerSqFt: { min: 2.20, max: 2.70 },
     features: [
       'Valeur R: 3,2-4,2 par pouce',
       'Installation rapide',
@@ -107,7 +107,7 @@ const INSULATION_RANGES: { [key: string]: InsulationRange } = {
     rValue: 55,
     thickness: '15 pouces',
     durability: '25-30 ans',
-    pricePerSqFt: { min: 3.00, max: 4.20 },
+    pricePerSqFt: { min: 2.70, max: 3.60 },
     features: [
       'Valeur R: 3,6-3,8 par pouce',
       'Matériau écologique (recyclé)',
@@ -122,7 +122,7 @@ const INSULATION_RANGES: { [key: string]: InsulationRange } = {
     rValue: 60,
     thickness: '10 pouces',
     durability: '30-50 ans',
-    pricePerSqFt: { min: 4.50, max: 6.50 },
+    pricePerSqFt: { min: 4.00, max: 5.50 },
     features: [
       'Valeur R: 6,0-7,0 par pouce',
       'Barrière d\'air et d\'humidité',
@@ -147,10 +147,8 @@ function getAccessMultiplier(atticAccess: string): number {
 
 // Étape 4B: Supplément de retrait
 function getRemovalSupplement(currentInsulation: string, adjustedArea: number): number {
-  // Si l'isolation doit être retirée complètement
-  if (currentInsulation === 'complete' || currentInsulation === 'recente') {
-    return adjustedArea * 3.00 // $3/pi²
-  }
+  // La plupart des entrepreneurs laissent l'ancienne laine et ajoutent par-dessus
+  // Pas de supplément de retrait sauf si vermiculite (géré dans problemSupplements)
   return 0
 }
 
