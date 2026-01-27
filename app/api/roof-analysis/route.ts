@@ -395,7 +395,7 @@ function assessRoofShape(segments: any[]): string {
 
 function generateRealisticFallbackData(address: string, coordinates: { lat: number; lng: number; city?: string; postalCode?: string; formattedAddress?: string } | null) {
   // Generate realistic data based on typical Canadian residential properties
-  const roofArea = 1800 + Math.floor(Math.random() * 800) // 1800-2600 sq ft (typical range)
+  const roofArea = 1000 + Math.floor(Math.random() * 800) // 1000-1800 sq ft (typical range for Quebec bungalows)
   const usableArea = Math.floor(roofArea * (0.85 + Math.random() * 0.1)) // 85-95% usable
 
   // Realistic segment count (most homes have 2-4 main roof sections)
