@@ -153,6 +153,7 @@ export class MetaConversionAPI {
     clientIp?: string;
     userAgent?: string;
     sourceUrl?: string;
+    customData?: Record<string, any>;
   }) {
     try {
       const userData: any = {
@@ -186,7 +187,8 @@ export class MetaConversionAPI {
           content_type: 'lead_form',
           content_name: 'Roof Quote Request',
           value: leadData.value || 0,
-          currency: 'CAD'
+          currency: 'CAD',
+          ...(leadData.customData || {})
         },
         event_source_url: leadData.sourceUrl || (typeof window !== 'undefined' ? window.location.href : undefined)
       };
@@ -355,6 +357,7 @@ export async function trackLead(leadData: {
   clientIp?: string;
   userAgent?: string;
   sourceUrl?: string;
+  customData?: Record<string, any>;
 }) {
   if (metaAPI) {
     return await metaAPI.trackLead(leadData);

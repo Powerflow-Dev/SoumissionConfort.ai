@@ -273,6 +273,14 @@ export default function ThermopompesPage() {
       console.error('Erreur envoi lead:', error)
     }
     
+    // Facebook Pixel tracking
+    if (typeof window !== 'undefined' && (window as any).fbq) {
+      const eventId = crypto.randomUUID();
+      (window as any).fbq('track', 'Lead', {
+        service_type: 'thermopompe'
+      }, { eventID: eventId });
+    }
+    
     setShowLeadCapture(false)
     setCurrentStep(6)
   }

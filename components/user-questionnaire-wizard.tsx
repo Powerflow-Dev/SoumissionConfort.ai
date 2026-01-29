@@ -183,13 +183,15 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
 
       // Fire Meta Pixel event (client-side)
       if (typeof window.fbq === 'function' && pricingData?.ranges?.standard) {
+        const eventId = crypto.randomUUID();
         const standardRange = pricingData.ranges.standard
         const estimatedValue = (standardRange.totalCost.min + standardRange.totalCost.max) / 2;
         console.log(`📱 Firing Meta Pixel "Lead" event (client-side) with value: ${estimatedValue}`);
         window.fbq('track', 'Lead', {
             value: estimatedValue.toFixed(2),
             currency: 'CAD',
-        });
+            service_type: 'isolation'
+        }, { eventID: eventId });
       }
 
       // Now prepare complete lead data with pricing included

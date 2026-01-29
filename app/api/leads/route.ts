@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { initializeMetaConversionAPI } from "@/lib/meta-conversion-api"
 
 console.log('🔥🔥🔥 LEADS API FILE LOADED - THIS SHOULD SHOW ON SERVER START 🔥🔥🔥')
 
@@ -366,6 +367,51 @@ export async function POST(request: NextRequest) {
         console.log('✅ LEADS API: At least one webhook sent successfully')
       } else {
         console.error('❌ LEADS API: All webhooks failed')
+      }
+      
+      // Server-side Meta Conversion API tracking for HVAC leads
+      if (isHVAC && successfulWebhooks > 0) {
+        try {
+          const metaPixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID
+          const metaAccessToken = process.env.META_CONVERSION_ACCESS_TOKEN
+          
+          if (metaPixelId && metaAccessToken) {
+            const metaAPI = initializeMetaConversionAPI(metaPixelId, metaAccessToken)
+            
+            // Get client IP and user agent from request headers
+            const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0] || 
+                            request.headers.get('x-real-ip') || 
+                            'unknown'
+            const userAgent = request.headers.get('user-agent') || 'unknown'
+            
+            // Calculate estimated value for tracking
+            const estimatedValue = leadData.estimatedPrice || 
+                                  ((leadData.estimatedPriceMin || 0) + (leadData.estimatedPriceMax || 0)) / 2
+            
+            console.log('📊 LEADS API: Sending server-side Meta Lead event for thermopompe')
+            
+            await metaAPI.trackLead({
+              email: leadData.email,
+              phone: leadData.phone,
+              firstName: leadData.firstName,
+              lastName: leadData.lastName,
+              value: estimatedValue,
+              clientIp,
+              userAgent,
+              sourceUrl: `${request.headers.get('origin') || 'https://soumissionconfort.ai'}/thermopompes`,
+              customData: {
+                service_type: 'thermopompe'
+              }
+            })
+            
+            console.log('✅ LEADS API: Server-side Meta Lead event sent successfully')
+          } else {
+            console.warn('⚠️ LEADS API: Meta Pixel credentials not configured for server-side tracking')
+          }
+        } catch (metaError) {
+          console.error('❌ LEADS API: Meta Conversion API error:', metaError)
+          // Don't fail the request if Meta tracking fails
+        }
       }
       
       // Return success with webhook results
