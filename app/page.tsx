@@ -16,6 +16,12 @@ export default function HomePage() {
 
   // Initialize Meta Conversion API and track ViewContent on page load
   useEffect(() => {
+    // Check if Meta Pixel is loaded
+    console.log('🔍 Meta Pixel Check:', {
+      fbqExists: typeof window !== 'undefined' && typeof (window as any).fbq === 'function',
+      pixelId: process.env.NEXT_PUBLIC_META_PIXEL_ID || 'NOT SET'
+    })
+    
     // Initialize Meta Conversion API
     initializeMeta()
     
@@ -24,14 +30,16 @@ export default function HomePage() {
       trackViewContent('Homepage', 'website')
         .then(result => {
           if (result.success) {
-            console.log('ViewContent event tracked successfully')
+            console.log('✅ ViewContent event tracked successfully')
           } else {
-            console.error('Failed to track ViewContent event:', result.error)
+            console.error('❌ Failed to track ViewContent event:', result.error)
           }
         })
         .catch(error => {
-          console.error('Error tracking ViewContent event:', error)
+          console.error('❌ Error tracking ViewContent event:', error)
         })
+    } else {
+      console.warn('⚠️ Meta Conversion API not configured')
     }
   }, [])
 
