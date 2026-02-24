@@ -2,10 +2,7 @@
 
 import { useSearchParams, useRouter } from "next/navigation"
 import { useState, useEffect, useMemo } from "react"
-import { RoofAnalysisResults } from "@/components/roof-analysis-results"
-//import { UserQuestionnaire } from "@/components/user-questionnaire"
 import { UserQuestionnaire } from "@/components/user-questionnaire-wizard"
-import { PricingCalculator } from "@/components/pricing-calculator"
 import { InsulationResults } from "@/components/insulation-results"
 import { LeadCaptureForm } from "@/components/lead-capture-form"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -53,7 +50,7 @@ export default function AnalysisPage() {
         try {
           const parsedRoofData = JSON.parse(decodeURIComponent(dataParam))
           setRoofData({ ...parsedRoofData, address })
-          setCurrentStep("results")
+          setCurrentStep("questionnaire")
           return
         } catch (error) {
           console.error("Error parsing roof data from URL:", error)
@@ -87,7 +84,7 @@ export default function AnalysisPage() {
         const data = await response.json()
         console.log("Roof analysis successful:", data)
         setRoofData({ ...data.roofData, address })
-        setCurrentStep("results")
+        setCurrentStep("questionnaire")
       } catch (error) {
         console.error("Roof analysis error:", error)
         
@@ -100,11 +97,11 @@ export default function AnalysisPage() {
           errorMessage = error.message
         }
         
-        setCurrentStep("results")
+        setCurrentStep("questionnaire")
         setRoofData({
           address,
           error: errorMessage,
-          roofArea: 2400,
+          roofArea: 1400,
           segments: 4,
           pitchComplexity: "moderate",
           buildingHeight: 25,
@@ -126,9 +123,7 @@ export default function AnalysisPage() {
   const getStepProgress = () => {
     switch (currentStep) {
       case "loading":
-        return 25
-      case "results":
-        return 40
+        return 33
       case "questionnaire":
         return 50
       case "lead-capture":
@@ -225,9 +220,15 @@ export default function AnalysisPage() {
 
           {/* Enhanced Progress Bar */}
           <div className="mt-4">
+            {roofData && roofData.roofArea && currentStep !== "loading" && (
+              <div className="text-center mb-3">
+                <p className="text-base md:text-lg text-gray-700">
+                  <span className="font-semibold text-teal-600">Superficie estimée par IA:</span> {roofData.roofArea.toLocaleString()} pi²
+                </p>
+              </div>
+            )}
             <div className="flex justify-between text-xs text-gray-600 mb-2">
               <span className={currentStep === "loading" ? "text-teal-600 font-medium" : ""}>Analyse</span>
-              <span className={currentStep === "results" ? "text-teal-600 font-medium" : ""}>Résultats</span>
               <span className={currentStep === "questionnaire" ? "text-teal-600 font-medium" : ""}>Questions</span>
               <span className={currentStep === "lead-capture" ? "text-teal-600 font-medium" : ""}>Connexion</span>
               <span className={currentStep === "pricing" ? "text-teal-600 font-medium" : ""}>Prix</span>
@@ -276,10 +277,6 @@ export default function AnalysisPage() {
               </div>
             </CardContent>
           </Card>
-        )}
-
-        {currentStep === "results" && roofData && (
-          <RoofAnalysisResults roofData={roofData} onContinue={() => setCurrentStep("questionnaire")} />
         )}
 
         {currentStep === "questionnaire" && roofData && (

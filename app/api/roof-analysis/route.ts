@@ -227,28 +227,55 @@ function processGoogleSolarResponse(buildingData: any, address: string, coordina
 
   // Convert square meters to square feet (1 m² = 10.764 sq ft)
   const totalRoofArea = totalRoofAreaM2 * 10.764
-  console.log("Total roof area (sq ft):", totalRoofArea)
+  console.log("Total roof area sloped (sq ft):", totalRoofArea)
 
-  // For usable area, use a percentage of the total roof area (typically 85-90%)
-  const usableArea = totalRoofArea * 0.87 // 87% is typical for residential roofs
-  console.log("Usable area (sq ft):", usableArea)
-
-  // Validate that we got meaningful data
+  // Validate that we got meaningful data (check against sloped area)
   if (totalRoofArea < 500 || totalRoofArea > 15000) {
     console.log("Roof area seems unrealistic, using fallback calculation")
     return generateRealisticFallbackData(address, coordinates)
   }
+
+  // Extract average pitch from segments
+  const pitchAngles = roofSegmentStats
+    .map((s: any) => s.pitchDegrees)
+    .filter((p: any) => p !== undefined && p !== null && p >= 0)
+  const avgPitch = pitchAngles.length > 0
+    ? pitchAngles.reduce((a: number, b: number) => a + b, 0) / pitchAngles.length
+    : 30
+  console.log("Average roof pitch (degrees):", avgPitch.toFixed(1))
+
+  // Convert sloped area → attic floor area (horizontal)
+  // Google Solar API returns 3D surface area; insulation is applied on the horizontal floor.
+  // The pitch multiplier converts floor area → sloped area, so we divide to get floor area.
+  const slopedToFloorMultiplier =
+    avgPitch <= 15 ? 1.00 :
+    avgPitch <= 20 ? 1.06 :
+    avgPitch <= 25 ? 1.10 :
+    avgPitch <= 30 ? 1.15 :
+    avgPitch <= 35 ? 1.20 :
+    avgPitch <= 40 ? 1.31 :
+    avgPitch <= 45 ? 1.41 :
+    avgPitch <= 50 ? 1.56 :
+    avgPitch <= 55 ? 1.74 : 1.93
+  const atticFloorArea = totalRoofArea / slopedToFloorMultiplier
+  console.log("Attic floor area (sq ft):", atticFloorArea.toFixed(0))
+
+  // Usable area: 87-90% of floor area (excluding edges, obstructions)
+  const usableArea = atticFloorArea * 0.87
+  console.log("Usable area (sq ft):", usableArea.toFixed(0))
 
   // Rest of the function remains the same...
   const segments = roofSegmentStats.length
   const pitchComplexity = calculatePitchComplexity(roofSegmentStats)
   const buildingHeight = estimateBuildingHeight(buildingData, roofSegmentStats)
   const obstacles = extractObstacles(solarPotential, roofSegmentStats)
-  const accessDifficulty = assessAccessDifficulty(buildingData, totalRoofArea)
+  const accessDifficulty = assessAccessDifficulty(buildingData, atticFloorArea)
   const roofShape = assessRoofShape(roofSegmentStats)
 
   console.log("Processed roof data:", {
-    roofArea: Math.round(totalRoofArea),
+    roofArea: Math.round(atticFloorArea),
+    slopedRoofArea: Math.round(totalRoofArea),
+    pitch: Math.round(avgPitch),
     usableArea: Math.round(usableArea),
     segments,
     pitchComplexity,
@@ -259,7 +286,9 @@ function processGoogleSolarResponse(buildingData: any, address: string, coordina
   })
 
   const result = {
-    roofArea: Math.round(totalRoofArea),
+    roofArea: Math.round(atticFloorArea),       // Attic floor area for insulation pricing
+    slopedRoofArea: Math.round(totalRoofArea),  // Raw sloped area from Google Solar API
+    pitch: Math.round(avgPitch),                // Average pitch in degrees
     usableArea: Math.round(usableArea),
     segments,
     pitchComplexity,
@@ -426,8 +455,8 @@ function generateRealisticFallbackData(address: string, coordinates: { lat: numb
     accessDifficulty,
     roofShape: pitchComplexity, // Keep consistent
     coordinates: coordinates || {
-      lat: 43.6532 + (Math.random() - 0.5) * 0.1,
-      lng: -79.3832 + (Math.random() - 0.5) * 0.1,
+      lat: 45.5017 + (Math.random() - 0.5) * 0.3,  // Région de Montréal (Québec)
+      lng: -73.5673 + (Math.random() - 0.5) * 0.3,
     },
     address: coordinates?.formattedAddress || address,
     city: coordinates?.city || extractCityFromAddress(address),

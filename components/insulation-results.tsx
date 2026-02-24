@@ -24,7 +24,7 @@ export function InsulationResults({ roofData, userAnswers, leadData, onComplete 
     // Calculer les résultats avec le nouvel algorithme
     const calculationInputs = {
       roofArea: roofData.roofArea || 2000,
-      roofPitch: roofData.pitch || 30,
+      roofPitch: roofData.pitch,
       currentInsulation: userAnswers.currentInsulation || 'partielle',
       atticAccess: userAnswers.atticAccess || 'facile',
       heatingSystem: userAnswers.heatingSystem || 'electricite',

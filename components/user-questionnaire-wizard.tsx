@@ -147,7 +147,7 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
         
         const calculationInputs = {
           roofArea: roofData.roofArea || 2000,
-          roofPitch: roofData.pitch || 30,
+          roofPitch: roofData.pitch,
           currentInsulation: answers.currentInsulation || 'partielle',
           atticAccess: answers.atticAccess || 'facile',
           heatingSystem: answers.heatingSystem || 'electricite',
