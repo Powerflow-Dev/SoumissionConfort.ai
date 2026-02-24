@@ -199,8 +199,6 @@ export function InsulationResults({ roofData, userAnswers, leadData, onComplete 
                   </p>
                   <ul className="text-xs text-gray-600 space-y-1">
                     <li>• Réduction de {formatPercentage(range.heatingReduction.min)}-{formatPercentage(range.heatingReduction.max)} des coûts de chauffage</li>
-                    <li>• Économies sur 25 ans: {formatPrice(range.savings25Years.min)} - {formatPrice(range.savings25Years.max)}</li>
-                    <li>• Gain net sur 25 ans: <span className="text-green-600 font-semibold">+{formatPrice(range.netGain25Years.min)} à +{formatPrice(range.netGain25Years.max)}</span></li>
                   </ul>
                 </div>
               </CardContent>
