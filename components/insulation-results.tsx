@@ -138,9 +138,9 @@ export function InsulationResults({ roofData, userAnswers, leadData, onComplete 
         </CardContent>
       </Card>
 
-      {/* Comparaison des 3 gammes */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {Object.entries(results.ranges).map(([key, range]: [string, any]) => {
+      {/* Comparaison des gammes */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+        {Object.entries(results.ranges).filter(([key]) => key !== 'premium').map(([key, range]: [string, any]) => {
           const isRecommended = key === 'standard'
           
           return (
@@ -199,7 +199,6 @@ export function InsulationResults({ roofData, userAnswers, leadData, onComplete 
                   </p>
                   <ul className="text-xs text-gray-600 space-y-1">
                     <li>• Réduction de {formatPercentage(range.heatingReduction.min)}-{formatPercentage(range.heatingReduction.max)} des coûts de chauffage</li>
-                    <li>• Période de retour: {range.paybackPeriod.min}-{range.paybackPeriod.max} ans</li>
                     <li>• Économies sur 25 ans: {formatPrice(range.savings25Years.min)} - {formatPrice(range.savings25Years.max)}</li>
                     <li>• Gain net sur 25 ans: <span className="text-green-600 font-semibold">+{formatPrice(range.netGain25Years.min)} à +{formatPrice(range.netGain25Years.max)}</span></li>
                   </ul>
