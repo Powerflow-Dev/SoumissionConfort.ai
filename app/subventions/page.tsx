@@ -223,15 +223,15 @@ export default function SubventionsPage() {
     setIsSubmittingLead(true)
 
     const { eligible, criteria } = computeEligibility(answers)
+    const eventId = crypto.randomUUID()
 
     try {
-      // Fire Meta Pixel
+      // Fire Meta Pixel (client-side) with shared eventId for dedup
       if (typeof window !== "undefined" && (window as any).fbq) {
-        const eventId = crypto.randomUUID()
         ;(window as any).fbq(
           "track",
           "Lead",
-          { service_type: "subvention-isolation" },
+          { service_type: "subvention" },
           { eventID: eventId }
         )
       }
@@ -252,6 +252,7 @@ export default function SubventionsPage() {
           eligible,
           eligibilityCriteria: criteria,
           utmParams,
+          eventId,
         }),
       })
 

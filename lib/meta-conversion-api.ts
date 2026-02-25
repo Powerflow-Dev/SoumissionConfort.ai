@@ -1,5 +1,6 @@
 interface MetaConversionEvent {
   event_name: string;
+  event_id?: string;
   event_time: number;
   action_source: string;
   user_data?: {
@@ -153,6 +154,7 @@ export class MetaConversionAPI {
     clientIp?: string;
     userAgent?: string;
     sourceUrl?: string;
+    eventId?: string;
     customData?: Record<string, any>;
   }) {
     try {
@@ -180,6 +182,7 @@ export class MetaConversionAPI {
 
       const event: MetaConversionEvent = {
         event_name: 'Lead',
+        event_id: leadData.eventId,
         event_time: Math.floor(Date.now() / 1000),
         action_source: 'website',
         user_data: userData,

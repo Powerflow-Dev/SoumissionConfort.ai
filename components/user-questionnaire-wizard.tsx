@@ -184,12 +184,14 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
         }
       }
 
+      // Generate shared eventId for client/server deduplication
+      const eventId = crypto.randomUUID();
+
       // Fire Meta Pixel event (client-side)
       if (typeof window.fbq === 'function' && pricingData?.ranges?.standard) {
-        const eventId = crypto.randomUUID();
         const standardRange = pricingData.ranges.standard
         const estimatedValue = (standardRange.totalCost.min + standardRange.totalCost.max) / 2;
-        console.log(`📱 Firing Meta Pixel "Lead" event (client-side) with value: ${estimatedValue}`);
+        console.log(`📱 Firing Meta Pixel "Lead" event (client-side) with value: ${estimatedValue}, eventId: ${eventId}`);
         window.fbq('track', 'Lead', {
             value: estimatedValue.toFixed(2),
             currency: 'CAD',
@@ -206,7 +208,8 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
         roofData,
         userAnswers: answers,
         pricingData,
-        utmParams
+        utmParams,
+        eventId
       }
       
       console.log('📤 CALLING /api/leads with payload (including pricing):', leadPayload)

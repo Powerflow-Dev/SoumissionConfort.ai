@@ -15,10 +15,18 @@ export async function POST(request: NextRequest) {
 
     const leadType = leadData.leadType || 'isolation'
     const isHVAC = leadType === 'hvac'
+    const isSubvention = leadType === 'subvention'
 
     // Validate required fields by lead type
     if (isHVAC) {
       const requiredFields = ["firstName", "lastName", "email", "phone", "address"]
+      for (const field of requiredFields) {
+        if (!leadData[field]) {
+          return NextResponse.json({ error: `Missing required field: ${field}` }, { status: 400 })
+        }
+      }
+    } else if (isSubvention) {
+      const requiredFields = ["firstName", "lastName", "email", "phone"]
       for (const field of requiredFields) {
         if (!leadData[field]) {
           return NextResponse.json({ error: `Missing required field: ${field}` }, { status: 400 })
@@ -82,7 +90,30 @@ export async function POST(request: NextRequest) {
       console.log('📋 LEADS API: Webhook URLs:', webhookUrls)
       
       // Prepare webhook payload depending on lead type
-      const webhookPayload = isHVAC
+      const webhookPayload = isSubvention
+        ? {
+            timestamp: new Date().toISOString(),
+            leadId,
+            webhookType: "subvention_contact",
+            leadType,
+            contact: {
+              firstName: leadData.firstName,
+              lastName: leadData.lastName,
+              email: leadData.email,
+              phone: leadData.phone,
+            },
+            property: {
+              address: leadData.address || "",
+            },
+            subventionDetails: {
+              answers: leadData.subventionAnswers || {},
+              eligible: leadData.eligible || false,
+              eligibilityCriteria: leadData.eligibilityCriteria || [],
+            },
+            utmParams,
+            source: "soumission-subvention-ai",
+          }
+        : isHVAC
         ? {
             timestamp: new Date().toISOString(),
             leadId,
@@ -231,7 +262,25 @@ export async function POST(request: NextRequest) {
       console.log('🏷️ LEADS API: UTM Parameters:', webhookPayload.utmParams)
       
       // Prepare formatted payload for Make.com (matching Google Sheets structure)
-      const makeComPayload = isHVAC
+      const makeComPayload = isSubvention
+        ? {
+            "Prénom (A)": webhookPayload.contact.firstName,
+            "Nom (B)": webhookPayload.contact.lastName,
+            "Adresse courriel (C)": webhookPayload.contact.email,
+            "Téléphone (D)": webhookPayload.contact.phone,
+            "Adresse (E)": (webhookPayload as any).property?.address || "",
+            "Admissible (F)": (webhookPayload as any).subventionDetails?.eligible ? "Oui" : "Non",
+            "Réponses subvention (G)": JSON.stringify((webhookPayload as any).subventionDetails?.answers || {}),
+            "Critères éligibilité (H)": JSON.stringify((webhookPayload as any).subventionDetails?.eligibilityCriteria || []),
+            "UTM Source (AF)": webhookPayload.utmParams?.utm_source || "",
+            "UTM Campaign (AG)": webhookPayload.utmParams?.utm_campaign || "",
+            "UTM Content (AH)": webhookPayload.utmParams?.utm_content || "",
+            "UTM Medium (AI)": webhookPayload.utmParams?.utm_medium || "",
+            "UTM Term (AJ)": webhookPayload.utmParams?.utm_term || "",
+            "Lead ID (AK)": leadId,
+            "Webhook Type (AL)": "subvention_contact"
+          }
+        : isHVAC
         ? {
             "Prénom (A)": webhookPayload.contact.firstName,
             "Nom (B)": webhookPayload.contact.lastName,
@@ -241,13 +290,13 @@ export async function POST(request: NextRequest) {
             "Code postal (F)": webhookPayload.property.postalCode || "",
             "Ville (G)": webhookPayload.property.city || "",
             "Superficie (H)": webhookPayload.property.roofArea || 0,
-            "Type chauffage actuel (I)": translateHeatingType(webhookPayload.projectDetails.currentHeatingType),
-            "Année construction (J)": webhookPayload.projectDetails.constructionYear || "",
-            "Isolation améliorée (K)": formatBoolFr(webhookPayload.projectDetails.insulationUpgraded),
-            "Garage (L)": translateGarage(webhookPayload.projectDetails.garageType),
-            "Étages (M)": webhookPayload.projectDetails.floors || 0,
-            "Sous-sol fini (N)": formatBoolFr(webhookPayload.projectDetails.hasFinishedBasement),
-            "Retrait réservoir mazout (O)": formatBoolFr(webhookPayload.projectDetails.wantsOilTankRemoval),
+            "Type chauffage actuel (I)": translateHeatingType(webhookPayload.projectDetails?.currentHeatingType),
+            "Année construction (J)": webhookPayload.projectDetails?.constructionYear || "",
+            "Isolation améliorée (K)": formatBoolFr(webhookPayload.projectDetails?.insulationUpgraded),
+            "Garage (L)": translateGarage(webhookPayload.projectDetails?.garageType),
+            "Étages (M)": webhookPayload.projectDetails?.floors || 0,
+            "Sous-sol fini (N)": formatBoolFr(webhookPayload.projectDetails?.hasFinishedBasement),
+            "Retrait réservoir mazout (O)": formatBoolFr(webhookPayload.projectDetails?.wantsOilTankRemoval),
             "Prix estimé min (P)": webhookPayload.pricing?.estimatedPriceMin || 0,
             "Prix estimé max (Q)": webhookPayload.pricing?.estimatedPriceMax || 0,
             "UTM Source (AF)": webhookPayload.utmParams?.utm_source || "",
@@ -273,12 +322,12 @@ export async function POST(request: NextRequest) {
             "Hauteur du bâtiment (I)": webhookPayload.property.buildingHeight || 0,
             
             // Questions d'isolation (J-M)
-            "Système de chauffage (J)": webhookPayload.projectDetails.heatingSystem || "",
-            "Isolation actuelle (K)": webhookPayload.projectDetails.currentInsulation || "",
-            "Accès entretoit (L)": webhookPayload.projectDetails.atticAccess || "",
-            "Problèmes identifiés (M)": Array.isArray(webhookPayload.projectDetails.identifiedProblems) 
-              ? webhookPayload.projectDetails.identifiedProblems.join(", ") 
-              : webhookPayload.projectDetails.identifiedProblems || "",
+            "Système de chauffage (J)": webhookPayload.projectDetails?.heatingSystem || "",
+            "Isolation actuelle (K)": webhookPayload.projectDetails?.currentInsulation || "",
+            "Accès entretoit (L)": webhookPayload.projectDetails?.atticAccess || "",
+            "Problèmes identifiés (M)": Array.isArray(webhookPayload.projectDetails?.identifiedProblems) 
+              ? webhookPayload.projectDetails?.identifiedProblems.join(", ") 
+              : webhookPayload.projectDetails?.identifiedProblems || "",
             
             // Gamme Économique (N-S)
             "Économique - Prix min (N)": webhookPayload.pricing?.ranges?.economique?.min || 0,
@@ -369,8 +418,8 @@ export async function POST(request: NextRequest) {
         console.error('❌ LEADS API: All webhooks failed')
       }
       
-      // Server-side Meta Conversion API tracking for HVAC leads
-      if (isHVAC && successfulWebhooks > 0) {
+      // Server-side Meta Conversion API tracking for ALL lead types
+      if (successfulWebhooks > 0) {
         try {
           const metaPixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID
           const metaAccessToken = process.env.META_CONVERSION_ACCESS_TOKEN
@@ -384,11 +433,38 @@ export async function POST(request: NextRequest) {
                             'unknown'
             const userAgent = request.headers.get('user-agent') || 'unknown'
             
-            // Calculate estimated value for tracking
-            const estimatedValue = leadData.estimatedPrice || 
-                                  ((leadData.estimatedPriceMin || 0) + (leadData.estimatedPriceMax || 0)) / 2
+            // Determine service_type and value based on lead type
+            const serviceTypeMap: Record<string, string> = {
+              'isolation': 'isolation',
+              'subvention': 'subvention',
+              'hvac': 'thermopompe',
+            }
+            const serviceType = serviceTypeMap[leadType] || 'isolation'
             
-            console.log('📊 LEADS API: Sending server-side Meta Lead event for thermopompe')
+            // Calculate estimated value for tracking
+            let estimatedValue = 0
+            if (isHVAC) {
+              estimatedValue = leadData.estimatedPrice || 
+                              ((leadData.estimatedPriceMin || 0) + (leadData.estimatedPriceMax || 0)) / 2
+            } else if (isSubvention) {
+              estimatedValue = 1500 // Subvention value
+            } else {
+              // Isolation: use standard range average
+              const stdMin = leadData.pricingData?.ranges?.standard?.totalCost?.min || 0
+              const stdMax = leadData.pricingData?.ranges?.standard?.totalCost?.max || 0
+              estimatedValue = (stdMin + stdMax) / 2
+            }
+            
+            // Determine source URL based on lead type
+            const sourceUrlMap: Record<string, string> = {
+              'isolation': '/analysis',
+              'subvention': '/subventions',
+              'hvac': '/thermopompes',
+            }
+            const sourcePath = sourceUrlMap[leadType] || '/'
+            const origin = request.headers.get('origin') || 'https://soumissionconfort.ai'
+            
+            console.log(`📊 LEADS API: Sending server-side Meta Lead event for ${serviceType} (eventId: ${leadData.eventId || 'none'})`)
             
             await metaAPI.trackLead({
               email: leadData.email,
@@ -398,13 +474,14 @@ export async function POST(request: NextRequest) {
               value: estimatedValue,
               clientIp,
               userAgent,
-              sourceUrl: `${request.headers.get('origin') || 'https://soumissionconfort.ai'}/thermopompes`,
+              sourceUrl: `${origin}${sourcePath}`,
+              eventId: leadData.eventId || undefined,
               customData: {
-                service_type: 'thermopompe'
+                service_type: serviceType
               }
             })
             
-            console.log('✅ LEADS API: Server-side Meta Lead event sent successfully')
+            console.log(`✅ LEADS API: Server-side Meta Lead event sent successfully for ${serviceType}`)
           } else {
             console.warn('⚠️ LEADS API: Meta Pixel credentials not configured for server-side tracking')
           }

@@ -243,6 +243,16 @@ export default function ThermopompesPage() {
     const basePrice = resolvedRec?.recommendation?.totalInvestment
     const priceRange = getPriceRange(basePrice)
     
+    // Generate shared eventId for client/server deduplication
+    const eventId = crypto.randomUUID();
+
+    // Facebook Pixel tracking (client-side) — fire before API for reliability
+    if (typeof window !== 'undefined' && (window as any).fbq) {
+      (window as any).fbq('track', 'Lead', {
+        service_type: 'thermopompe'
+      }, { eventID: eventId });
+    }
+
     // Envoyer le lead au CRM
     try {
       await fetch('/api/leads', {
@@ -262,6 +272,7 @@ export default function ThermopompesPage() {
           estimatedPrice: basePrice,
           estimatedPriceMin: priceRange?.min,
           estimatedPriceMax: priceRange?.max,
+          eventId,
           utmParams: {
             utm_source: utmParams.utm_source,
             utm_campaign: utmParams.utm_campaign,
@@ -271,14 +282,6 @@ export default function ThermopompesPage() {
       })
     } catch (error) {
       console.error('Erreur envoi lead:', error)
-    }
-    
-    // Facebook Pixel tracking
-    if (typeof window !== 'undefined' && (window as any).fbq) {
-      const eventId = crypto.randomUUID();
-      (window as any).fbq('track', 'Lead', {
-        service_type: 'thermopompe'
-      }, { eventID: eventId });
     }
     
     setShowLeadCapture(false)
