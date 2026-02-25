@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { useLanguage } from "@/lib/language-context"
-import { ArrowLeft, MapPin, Zap, Clock, CheckCircle } from 'lucide-react'
+import { ArrowLeft, MapPin, Zap, Clock, CheckCircle, Pencil, Check } from 'lucide-react'
 import Link from "next/link"
 import type { LeadData } from "@/components/lead-capture-popup"
 import { Analytics } from "@vercel/analytics/next"
@@ -28,6 +28,15 @@ export default function AnalysisPage() {
   const [leadData, setLeadData] = useState<LeadData | null>(null)
   const [pricingData, setPricingData] = useState<any>(null)
   const [hasAnalyzed, setHasAnalyzed] = useState(false)
+  const [isEditingArea, setIsEditingArea] = useState(false)
+  const [areaInputValue, setAreaInputValue] = useState("")
+
+  const confirmAreaEdit = () => {
+    const val = parseInt(areaInputValue)
+    if (val > 100) setRoofData((prev: any) => ({ ...prev, roofArea: val }))
+    else setAreaInputValue(String(roofData?.roofArea || ""))
+    setIsEditingArea(false)
+  }
 
   // Ensure viewport resets to top on step change (especially when navigating to questionnaire/pricing pages)
   useEffect(() => {
@@ -221,10 +230,37 @@ export default function AnalysisPage() {
           {/* Enhanced Progress Bar */}
           <div className="mt-4">
             {roofData && roofData.roofArea && currentStep !== "loading" && (
-              <div className="text-center mb-3">
-                <p className="text-base md:text-lg text-gray-700">
-                  <span className="font-semibold text-teal-600">Superficie estimée par IA:</span> {roofData.roofArea.toLocaleString()} pi²
-                </p>
+              <div className="flex items-center justify-center gap-2 mb-3">
+                <span className="text-sm md:text-base text-gray-600 font-semibold text-teal-600">Superficie estimée par IA :</span>
+                {isEditingArea ? (
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="number"
+                      value={areaInputValue}
+                      onChange={(e) => setAreaInputValue(e.target.value)}
+                      onBlur={confirmAreaEdit}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') confirmAreaEdit()
+                        if (e.key === 'Escape') { setAreaInputValue(String(roofData.roofArea)); setIsEditingArea(false) }
+                      }}
+                      className="w-24 text-sm font-semibold text-center border border-teal-400 rounded px-2 py-0.5 focus:outline-none focus:ring-2 focus:ring-teal-300"
+                      autoFocus
+                    />
+                    <span className="text-sm text-gray-600">pi²</span>
+                    <button onClick={confirmAreaEdit} className="text-green-600 hover:text-green-700" aria-label="Confirmer">
+                      <Check className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => { setAreaInputValue(String(roofData.roofArea)); setIsEditingArea(true) }}
+                    className="flex items-center gap-1 text-sm md:text-base font-bold text-teal-700 hover:text-teal-900 transition-colors"
+                    aria-label="Modifier la superficie"
+                  >
+                    {roofData.roofArea.toLocaleString('fr-CA')} pi²
+                    <Pencil className="w-3 h-3 text-teal-400" />
+                  </button>
+                )}
               </div>
             )}
             <div className="flex justify-between text-xs text-gray-600 mb-2">

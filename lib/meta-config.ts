@@ -16,7 +16,10 @@ export function initializeMeta() {
       META_CONFIG.TEST_EVENT_CODE
     );
   } else {
-    console.warn('Meta Conversion API not configured. Please set NEXT_PUBLIC_META_PIXEL_ID and META_CONVERSION_ACCESS_TOKEN environment variables.');
+    // ACCESS_TOKEN is server-only — this warning is expected in the browser
+    if (typeof window === 'undefined') {
+      console.warn('Meta Conversion API not configured. Please set NEXT_PUBLIC_META_PIXEL_ID and META_CONVERSION_ACCESS_TOKEN environment variables.');
+    }
     return null;
   }
 }
