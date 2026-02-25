@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { LeadCapturePopup, type LeadData } from "@/components/lead-capture-popup"
 import { getCurrentUTMParameters, type UTMParameters } from "@/lib/utm-utils"
-import { ArrowLeft, ArrowRight, CheckCircle, Clock } from "lucide-react"
+import { ArrowLeft, ArrowRight, CheckCircle, Clock, Pencil, Check } from "lucide-react"
 import { track } from '@vercel/analytics'
 
 declare global {
@@ -35,6 +35,9 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
     atticAccess: "",
     identifiedProblems: [] as string[],
   })
+  const [roofAreaOverride, setRoofAreaOverride] = useState<number>(roofData.roofArea || 1200)
+  const [isEditingArea, setIsEditingArea] = useState(false)
+  const [areaInputValue, setAreaInputValue] = useState<string>(String(roofData.roofArea || 1200))
 
   // Extract UTM parameters on component mount
   useEffect(() => {
@@ -146,7 +149,7 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
         const { calculateInsulationPricing } = await import('@/lib/insulation-calculator')
         
         const calculationInputs = {
-          roofArea: roofData.roofArea || 2000,
+          roofArea: roofAreaOverride,
           roofPitch: roofData.pitch,
           currentInsulation: answers.currentInsulation || 'partielle',
           atticAccess: answers.atticAccess || 'facile',
@@ -267,6 +270,73 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
             <Clock className="w-4 h-4 mr-2" />
             Question {currentStep + 1} sur {steps.length}
           </Badge>
+
+          {/* Superficie modifiable — persiste tout au long du questionnaire */}
+          <div className="flex items-center justify-center gap-2 mb-5">
+            <div className="inline-flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-full px-4 py-2 text-sm">
+              <span className="text-gray-500">Superficie estimée :</span>
+              {isEditingArea ? (
+                <div className="flex items-center gap-1">
+                  <input
+                    type="number"
+                    value={areaInputValue}
+                    onChange={(e) => setAreaInputValue(e.target.value)}
+                    onBlur={() => {
+                      const val = parseInt(areaInputValue)
+                      if (val > 100) setRoofAreaOverride(val)
+                      else setAreaInputValue(String(roofAreaOverride))
+                      setIsEditingArea(false)
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        const val = parseInt(areaInputValue)
+                        if (val > 100) setRoofAreaOverride(val)
+                        else setAreaInputValue(String(roofAreaOverride))
+                        setIsEditingArea(false)
+                      }
+                      if (e.key === 'Escape') {
+                        setAreaInputValue(String(roofAreaOverride))
+                        setIsEditingArea(false)
+                      }
+                    }}
+                    className="w-20 text-sm font-semibold text-center border border-blue-400 rounded px-2 py-0.5 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                    autoFocus
+                  />
+                  <span className="text-gray-600 font-medium">pi²</span>
+                  <button
+                    onClick={() => {
+                      const val = parseInt(areaInputValue)
+                      if (val > 100) setRoofAreaOverride(val)
+                      else setAreaInputValue(String(roofAreaOverride))
+                      setIsEditingArea(false)
+                    }}
+                    className="text-green-600 hover:text-green-700"
+                    aria-label="Confirmer"
+                  >
+                    <Check className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => {
+                    setAreaInputValue(String(roofAreaOverride))
+                    setIsEditingArea(true)
+                  }}
+                  className="flex items-center gap-1 font-semibold text-blue-700 hover:text-blue-900 transition-colors"
+                  aria-label="Modifier la superficie"
+                >
+                  {roofAreaOverride.toLocaleString('fr-CA')} pi²
+                  <Pencil className="w-3 h-3 text-blue-400" />
+                </button>
+              )}
+            </div>
+            {roofData.source === 'fallback' && !isEditingArea && (
+              <span className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-full px-2 py-1">
+                Estimation approximative
+              </span>
+            )}
+          </div>
+
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">{steps[currentStep].title}</h1>
           <p className="text-lg text-gray-600 mb-6">
             {steps[currentStep].description}
