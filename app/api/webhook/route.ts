@@ -149,10 +149,13 @@ export async function POST(request: NextRequest) {
       "UTM Content (AH)": utmParams.utm_content || "",
       "UTM Medium (AI)": utmParams.utm_medium || "",
       "UTM Term (AJ)": utmParams.utm_term || "",
-      
-      // Métadonnées (AK-AL)
-      "Lead ID (AK)": leadData.leadId || "",
-      "Webhook Type (AL)": leadData.webhookType || "initial_contact"
+
+      // Facebook Click ID (AK)
+      "Facebook Click ID (AK)": utmParams.fbclid || null,
+
+      // Métadonnées (AL-AM)
+      "Lead ID (AL)": leadData.leadId || "",
+      "Webhook Type (AM)": leadData.webhookType || "initial_contact"
     }
 
     // Get webhook URLs from environment

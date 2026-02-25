@@ -8,6 +8,7 @@ export interface UTMParameters {
   utm_content?: string
   utm_medium?: string
   utm_term?: string
+  fbclid?: string
 }
 
 /**
@@ -26,9 +27,9 @@ export function extractUTMParameters(searchParams?: URLSearchParams): UTMParamet
 
   const utmParams: UTMParameters = {}
   
-  // Extract all UTM parameters
-  const utmKeys = ['utm_source', 'utm_campaign', 'utm_content', 'utm_medium', 'utm_term']
-  
+  // Extract UTM parameters and Facebook Click ID
+  const utmKeys = ['utm_source', 'utm_campaign', 'utm_content', 'utm_medium', 'utm_term', 'fbclid']
+
   utmKeys.forEach(key => {
     const value = params.get(key)
     if (value) {
