@@ -230,8 +230,8 @@ export default function AnalysisPage() {
           {/* Enhanced Progress Bar */}
           <div className="mt-4">
             {roofData && roofData.roofArea && currentStep !== "loading" && (
-              <div className="flex items-center justify-center gap-2 mb-3">
-                <span className="text-sm md:text-base text-gray-600 font-semibold text-teal-600">Superficie estimée par IA :</span>
+              <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 mb-3">
+                <span className="text-sm text-gray-600 font-semibold text-teal-600 whitespace-nowrap">Superficie estimée par IA :</span>
                 {isEditingArea ? (
                   <div className="flex items-center gap-1">
                     <input
@@ -243,22 +243,22 @@ export default function AnalysisPage() {
                         if (e.key === 'Enter') confirmAreaEdit()
                         if (e.key === 'Escape') { setAreaInputValue(String(roofData.roofArea)); setIsEditingArea(false) }
                       }}
-                      className="w-24 text-sm font-semibold text-center border border-teal-400 rounded px-2 py-0.5 focus:outline-none focus:ring-2 focus:ring-teal-300"
+                      className="w-24 text-sm font-semibold text-center border border-teal-400 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-teal-300"
                       autoFocus
                     />
                     <span className="text-sm text-gray-600">pi²</span>
-                    <button onClick={confirmAreaEdit} className="text-green-600 hover:text-green-700" aria-label="Confirmer">
-                      <Check className="w-4 h-4" />
+                    <button onClick={confirmAreaEdit} className="p-1 text-green-600 hover:text-green-700" aria-label="Confirmer">
+                      <Check className="w-5 h-5" />
                     </button>
                   </div>
                 ) : (
                   <button
                     onClick={() => { setAreaInputValue(String(roofData.roofArea)); setIsEditingArea(true) }}
-                    className="flex items-center gap-1 text-sm md:text-base font-bold text-teal-700 hover:text-teal-900 transition-colors"
+                    className="flex items-center gap-1 text-sm font-bold text-teal-700 hover:text-teal-900 transition-colors"
                     aria-label="Modifier la superficie"
                   >
                     {roofData.roofArea.toLocaleString('fr-CA')} pi²
-                    <Pencil className="w-3 h-3 text-teal-400" />
+                    <Pencil className="w-3.5 h-3.5 text-teal-400" />
                   </button>
                 )}
               </div>

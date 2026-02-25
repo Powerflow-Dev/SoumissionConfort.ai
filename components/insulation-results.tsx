@@ -88,7 +88,7 @@ export function InsulationResults({ roofData, userAnswers, leadData, onComplete 
           </div>
 
           <div className="text-center mb-6">
-            <div className="text-5xl md:text-6xl font-bold mb-2">
+            <div className="text-3xl sm:text-4xl md:text-5xl font-bold mb-2">
               {formatPrice(standard.totalCost.min)} - {formatPrice(standard.totalCost.max)}
             </div>
             <p className="text-blue-100 text-sm">
@@ -146,7 +146,7 @@ export function InsulationResults({ roofData, userAnswers, leadData, onComplete 
           return (
             <Card 
               key={key} 
-              className={`border-2 ${isRecommended ? 'border-blue-500 shadow-xl scale-105' : 'border-gray-200'} relative`}
+              className={`border-2 ${isRecommended ? 'border-blue-500 shadow-xl md:scale-105' : 'border-gray-200'} relative`}
             >
               {isRecommended && (
                 <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
@@ -156,7 +156,7 @@ export function InsulationResults({ roofData, userAnswers, leadData, onComplete 
                 </div>
               )}
               
-              <CardContent className="p-6">
+              <CardContent className="p-4 sm:p-6">
                 <div className="text-center mb-4">
                   <div className="text-4xl mb-2">{range.icon}</div>
                   <h3 className="text-xl font-bold text-gray-900 mb-1">GAMME {range.name.toUpperCase()}</h3>
