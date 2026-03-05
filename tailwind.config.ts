@@ -12,6 +12,11 @@ const config: Config = {
   ],
   theme: {
   	extend: {
+  		fontFamily: {
+  			display: ['var(--font-radio-canada-big)', 'sans-serif'],
+  			'source-serif': ['var(--font-source-serif)', 'Georgia', 'serif'],
+  			'geist-mono': ['var(--font-geist-mono)', 'monospace'],
+  		},
   		colors: {
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',

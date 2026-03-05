@@ -15,6 +15,7 @@ interface AddressInputProps {
   onAnalyze?: () => void
   isLoading?: boolean
   className?: string
+  compact?: boolean
 }
 
 export function AddressInput({
@@ -22,6 +23,7 @@ export function AddressInput({
   onAnalyze = () => {},
   isLoading = false,
   className = "",
+  compact = false,
 }: AddressInputProps) {
   const { language } = useLanguage()
   const t = translations[language]
@@ -128,7 +130,7 @@ export function AddressInput({
   const canAnalyze = address.trim().length > 0 && !isLoading
 
   return (
-    <div className={`relative w-full max-w-2xl mx-auto ${className}`}>
+    <div className={`relative w-full ${!compact ? 'max-w-2xl mx-auto' : ''} ${className}`}>
       <div className="relative">
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
           <MapPin className="h-5 w-5 text-gray-400" />
@@ -206,7 +208,7 @@ export function AddressInput({
       )}
 
       {/* Help text */}
-      <p className="mt-2 text-sm text-gray-600 text-center">{t.addressHelpText}</p>
+      {!compact && <p className="mt-2 text-sm text-gray-600 text-center">{t.addressHelpText}</p>}
     </div>
   )
 }

@@ -1,11 +1,14 @@
 import type React from "react"
 import type { Metadata, Viewport } from "next"
-import { Inter } from 'next/font/google'
+import { Inter, Radio_Canada_Big, Source_Serif_4, Geist_Mono } from 'next/font/google'
 import "./globals.css"
 import { LanguageProvider } from "@/lib/language-context"
 import { Analytics } from "@vercel/analytics/next"
 
 const inter = Inter({ subsets: ["latin"] })
+const radioCanadaBig = Radio_Canada_Big({ subsets: ["latin"], variable: "--font-radio-canada-big", weight: ["400", "600", "700"] })
+const sourceSerif4 = Source_Serif_4({ subsets: ["latin"], variable: "--font-source-serif", weight: ["400", "600", "700"] })
+const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono", weight: ["400", "500"] })
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -173,7 +176,7 @@ export default function RootLayout({
           </>
         )}
       </head>
-      <body className={inter.className}>
+      <body className={`${inter.className} ${radioCanadaBig.variable} ${sourceSerif4.variable} ${geistMono.variable}`}>
         <LanguageProvider>{children}</LanguageProvider>
         <Analytics />
       </body>

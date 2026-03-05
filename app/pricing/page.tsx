@@ -3,10 +3,9 @@
 import { useSearchParams, useRouter } from "next/navigation"
 import { useState, useEffect, Suspense } from "react"
 import { InsulationResults } from "@/components/insulation-results"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { MapPin, Loader2 } from 'lucide-react'
 import Link from "next/link"
+import { NavLogo } from "@/components/nav-logo"
 
 function PricingContent() {
   const searchParams = useSearchParams()
@@ -27,7 +26,7 @@ function PricingContent() {
 
       try {
         const response = await fetch(`/api/pricing-data?leadId=${leadId}`)
-        
+
         if (!response.ok) {
           throw new Error("Impossible de récupérer les données de pricing")
         }
@@ -47,31 +46,32 @@ function PricingContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <Card className="max-w-md mx-auto border-0 shadow-2xl">
-          <CardContent className="p-8 text-center">
-            <Loader2 className="w-16 h-16 text-blue-600 animate-spin mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Chargement de votre estimation...</h2>
-            <p className="text-gray-600">Veuillez patienter</p>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-[#fffff6] flex items-center justify-center">
+        <div className="max-w-md mx-auto bg-white border border-[#f2f2f7] rounded-[20px] shadow-[0_4px_4px_rgba(0,0,0,0.25)] p-8 text-center">
+          <div className="w-16 h-16 bg-[#002042] rounded-full flex items-center justify-center mx-auto mb-4">
+            <Loader2 className="w-8 h-8 text-white animate-spin" />
+          </div>
+          <h2 className="font-display text-2xl font-bold text-[#10002c] mb-2">Chargement de votre estimation...</h2>
+          <p className="font-source-serif text-[#10002c]/70">Veuillez patienter</p>
+        </div>
       </div>
     )
   }
 
   if (error || !pricingData) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center p-4">
-        <Card className="max-w-md mx-auto border-0 shadow-2xl">
-          <CardContent className="p-8 text-center">
-            <div className="text-red-600 text-5xl mb-4">⚠️</div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Erreur</h2>
-            <p className="text-gray-600 mb-4">{error || "Données introuvables"}</p>
-            <Link href="/" className="text-blue-600 hover:underline">
-              Retour à l'accueil
-            </Link>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-[#fffff6] flex items-center justify-center p-4">
+        <div className="max-w-md mx-auto bg-white border border-[#f2f2f7] rounded-[20px] shadow-[0_4px_4px_rgba(0,0,0,0.25)] p-8 text-center">
+          <div className="text-5xl mb-4">⚠️</div>
+          <h2 className="font-display text-2xl font-bold text-[#10002c] mb-2">Erreur</h2>
+          <p className="font-source-serif text-[#10002c]/70 mb-4">{error || "Données introuvables"}</p>
+          <Link
+            href="/"
+            className="bg-[#b9e15c] border-2 border-[#002042] text-[#002042] font-source-serif font-bold py-3 px-6 rounded-full shadow-[-2px_4px_0px_0px_#002042] hover:brightness-105 transition-all inline-block"
+          >
+            Retour à l'accueil
+          </Link>
+        </div>
       </div>
     )
   }
@@ -79,23 +79,20 @@ function PricingContent() {
   const { roofData, userAnswers, leadData } = pricingData
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#fffff6]">
       {/* Header */}
-      <header className="border-b bg-white/95 backdrop-blur-sm sticky top-0 z-50 shadow-sm">
-        <div className="container mx-auto px-4 py-3">
+      <header className="sticky top-0 z-50 border-b border-black/10 bg-[#fffff6]/95 backdrop-blur-sm">
+        <div className="max-w-[1200px] mx-auto px-4 md:px-8 py-3">
           <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center space-x-3">
-              <img src="/images/logosoumissionconfort-1.png" alt="Soumission Confort AI" className="h-[120px] md:h-[140px] w-auto" />
-            </Link>
-
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <MapPin className="w-4 h-4 text-gray-400" />
-                <span className="text-sm text-gray-600 truncate max-w-xs">{roofData?.address || "Adresse"}</span>
+            <NavLogo />
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-[#002042]/40" />
+                <span className="font-source-serif text-sm text-[#10002c] truncate max-w-xs">{roofData?.address || "Adresse"}</span>
               </div>
-              <Badge className="bg-green-100 text-green-800 border-green-200">
+              <span className="bg-[#b9e15c] text-[#002042] font-source-serif font-semibold text-sm px-3 py-1.5 rounded-full border border-[#002042]">
                 Estimation Prête
-              </Badge>
+              </span>
             </div>
           </div>
         </div>
@@ -116,8 +113,8 @@ function PricingContent() {
 export default function PricingPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <Loader2 className="w-16 h-16 text-blue-600 animate-spin" />
+      <div className="min-h-screen bg-[#fffff6] flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-[#002042] border-t-transparent rounded-full animate-spin" />
       </div>
     }>
       <PricingContent />

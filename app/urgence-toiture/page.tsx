@@ -1,259 +1,184 @@
 "use client"
 
-import { AddressInput } from "@/components/address-input"
-import { useLanguage } from "@/lib/language-context"
-import { Badge } from "@/components/ui/badge"
-import { Calculator, TrendingDown, Shield, Clock, Users, CheckCircle, Award } from 'lucide-react'
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { AddressInput } from "@/components/address-input"
+import { NavLogo } from "@/components/nav-logo"
 import { getCurrentUTMParameters } from "@/lib/utm-utils"
+import { track } from "@vercel/analytics"
+
+const repairTypes = [
+  {
+    title: "Fuites et Infiltrations",
+    description: "Réparation rapide des fuites d'eau et infiltrations dans votre toiture",
+  },
+  {
+    title: "Bardeaux Endommagés",
+    description: "Remplacement de bardeaux cassés, décollés ou manquants",
+  },
+  {
+    title: "Gouttières",
+    description: "Réparation et nettoyage de gouttières et descentes pluviales",
+  },
+  {
+    title: "Isolation",
+    description: "Amélioration de l'isolation pour réduire les pertes énergétiques",
+  },
+  {
+    title: "Ventilation",
+    description: "Installation et réparation de systèmes de ventilation de toiture",
+  },
+  {
+    title: "Urgences",
+    description: "Interventions rapides pour dommages causés par intempéries",
+  },
+]
 
 export default function UrgenceToiturePage() {
-  const { t } = useLanguage()
   const router = useRouter()
   const [address, setAddress] = useState("")
 
-  // Capture and persist UTM params so they survive navigation
   useEffect(() => {
     try {
       const utm = getCurrentUTMParameters()
-      if (Object.keys(utm).length > 0) {
-        console.log('🏷️ UTM captured on urgent page:', utm)
-      }
-    } catch (e) {
-      console.warn('UTM capture failed on urgent page:', e)
-    }
+      if (Object.keys(utm).length > 0) console.log("🏷️ UTM captured on urgent page:", utm)
+    } catch {}
   }, [])
 
   const navigateToAnalysis = () => {
     if (!address.trim()) return
+    track("Analysis Started", { address: address.trim(), source: "urgence-toiture" })
     const utm = getCurrentUTMParameters()
-    const origin = typeof window !== 'undefined' ? window.location.origin : ''
-    const url = new URL('/analysis', origin || 'http://localhost')
-    url.searchParams.set('address', address.trim())
-    ;(['utm_source','utm_campaign','utm_content','utm_medium','utm_term'] as const).forEach((k) => {
+    const url = new URL("/analysis", window.location.origin)
+    url.searchParams.set("address", address.trim())
+    ;(["utm_source", "utm_campaign", "utm_content", "utm_medium", "utm_term"] as const).forEach((k) => {
       const v = (utm as any)[k]
       if (v) url.searchParams.set(k, v)
     })
-    const href = origin ? url.toString().replace(origin, '') : url.toString()
-    router.push(href)
+    router.push(url.pathname + url.search)
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Professional Header */}
-      <header className="border-b bg-white/95 backdrop-blur-sm sticky top-0 z-50 shadow-sm">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <img src="/images/logosoumissionconfort-1.png" alt="Soumission Toiture AI" className="h-[120px] w-auto" />
-          </div>
-          <Badge className="bg-orange-500 text-white border-orange-500 px-4 py-2">
-            Comparateur #1 au Québec
-          </Badge>
+    <div className="min-h-screen bg-[#fffff6]">
+      {/* Navbar */}
+      <header className="sticky top-0 z-50 border-b border-black/10 bg-[#fffff6]/95 backdrop-blur-sm">
+        <div className="max-w-[1200px] mx-auto px-4 md:px-8 py-3 flex items-center justify-between">
+          <NavLogo />
+          <a
+            href="/"
+            className="hidden md:block border-2 border-[#002042] text-[#002042] font-source-serif font-bold py-3 px-6 rounded-full text-[16px] hover:bg-[#002042] hover:text-white transition-all"
+          >
+            Obtenir mon estimation gratuite
+          </a>
         </div>
       </header>
 
-      {/* Hero Section - Craver Style */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gray-900">
-        {/* Background Image */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-40"
-          style={{
-            backgroundImage: `url('/images/heroimage.jpg?v=${Date.now()}')`
-          }}
-        />
-        
-        {/* Main Content */}
-        <div className="relative z-10 container mx-auto px-6 flex items-center justify-center min-h-screen">
-          <div className="grid lg:grid-cols-2 gap-12 items-center max-w-7xl w-full">
-            
-            {/* Left Side - Content */}
-            <div className="text-white">
-              <div className="mb-6">
-                <Badge className="bg-orange-500 text-white border-orange-500 px-4 py-2 text-sm font-medium">
-                  Réparation Toiture Spécialisée
-                </Badge>
+      {/* Hero Section */}
+      <section className="px-4 md:px-8 bg-[#fffff6]">
+        <div className="max-w-[1320px] mx-auto">
+          <div className="relative rounded-[20px] overflow-hidden min-h-[500px] md:min-h-[640px] flex items-start justify-center">
+            <img
+              src="/images/heroimage.jpg"
+              alt="Réparation de toiture"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-black/35" />
+
+            <div className="relative z-10 flex flex-col items-center text-center px-4 pt-10 md:pt-16 pb-10 w-full max-w-[860px] mx-auto">
+              {/* Eyebrow pill */}
+              <div className="mb-6" style={{ transform: "rotate(-5.36deg)" }}>
+                <div className="bg-[#aedee5] inline-flex items-center gap-1.5 px-4 py-2 rounded-full shadow-[0_4px_4px_rgba(0,0,0,0.25)]">
+                  <span className="font-source-serif font-bold text-[16px] md:text-[18px] text-[#002042] tracking-tight">
+                    Réparation Toiture Spécialisée
+                  </span>
+                </div>
               </div>
 
-              <h1 className="text-5xl lg:text-6xl xl:text-7xl font-bold mb-6 leading-tight">
-                Réparation de
-                <br />
-                <span className="text-orange-400">Toiture</span> au Québec
+              <h1 className="font-display font-semibold text-[36px] md:text-[52px] lg:text-[56px] text-[#fffff6] tracking-tight leading-none mb-4 drop-shadow-[0_0_4px_rgba(0,0,0,0.4)]">
+                Réparation de Toiture au Québec
               </h1>
 
-              <p className="text-xl lg:text-2xl text-gray-300 mb-8 leading-relaxed">
-                Comparez les prix de réparation de toiture et obtenez les meilleures soumissions d'entrepreneurs certifiés au Québec.
+              <p className="font-source-serif font-semibold text-[18px] md:text-[20px] text-[#fffff6] tracking-tight mb-8">
+                Comparez les prix et obtenez les meilleures soumissions d'entrepreneurs certifiés.
               </p>
 
-              {/* Key Benefits */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-                <div className="flex items-center space-x-3">
-                  <Calculator className="w-6 h-6 text-orange-400 flex-shrink-0" />
-                  <span className="text-sm font-medium">Estimation Gratuite</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <TrendingDown className="w-6 h-6 text-green-400 flex-shrink-0" />
-                  <span className="text-sm font-medium">Économisez 30%</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <Award className="w-6 h-6 text-blue-400 flex-shrink-0" />
-                  <span className="text-sm font-medium">Entrepreneurs Certifiés</span>
-                </div>
-              </div>
-
-              {/* Trust Indicators */}
-              <div className="flex flex-wrap items-center gap-6 text-sm text-gray-400">
-                <div className="flex items-center space-x-2">
-                  <Shield className="w-4 h-4 text-green-400" />
-                  <span>100% Gratuit</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Clock className="w-4 h-4 text-blue-400" />
-                  <span>Résultats en 60 Secondes</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <CheckCircle className="w-4 h-4 text-purple-400" />
-                  <span>Aucune Inscription</span>
+              {/* Form card */}
+              <div className="bg-white rounded-[20px] border border-[#f2f2f7] shadow-[0_4px_4px_rgba(0,0,0,0.25)] p-6 md:p-8 flex flex-col gap-4 w-full">
+                <AddressInput
+                  onAddressSelect={setAddress}
+                  onAnalyze={navigateToAnalysis}
+                  compact
+                  className="max-w-none"
+                />
+                <button
+                  onClick={navigateToAnalysis}
+                  disabled={!address.trim()}
+                  className="w-full bg-[#b9e15c] border-2 border-[#002042] text-[#002042] font-source-serif font-bold py-4 px-8 rounded-full shadow-[-2px_4px_0px_0px_#002042] text-lg disabled:opacity-50 hover:brightness-105 transition-all"
+                >
+                  Obtenir mon estimation gratuite
+                </button>
+                <div className="flex flex-wrap gap-4 justify-center">
+                  {["Analyse IA de votre toiture", "Spécialistes en réparation", "Entrepreneurs certifiés RBQ"].map((text) => (
+                    <div key={text} className="flex items-center gap-1.5">
+                      <img src="/icons/icon-check.svg" alt="" className="w-5 h-5 shrink-0" />
+                      <span className="text-[#10002c] font-source-serif text-[16px]">{text}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
-
-            {/* Right Side - Solid Box Form */}
-            <div className="w-full">
-              <div className="bg-white rounded-3xl shadow-2xl p-8 lg:p-10 max-w-lg mx-auto">
-                <div className="text-center mb-8">
-                  <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-3">
-                    Comparez les Prix de Réparation
-                  </h2>
-                  <p className="text-gray-600">
-                    Obtenez 3 soumissions d'entrepreneurs spécialisés en réparation de toiture
-                  </p>
-                </div>
-
-                {/* Address Input */}
-                <div className="mb-6">
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
-                    Entrez votre adresse
-                  </label>
-                  <AddressInput
-                    onAddressSelect={setAddress}
-                    onAnalyze={navigateToAnalysis}
-                  />
-                </div>
-
-                {/* Features List */}
-                <div className="space-y-3 mb-6">
-                  <div className="flex items-center space-x-3 text-sm text-gray-600">
-                    <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-                    <span>Analyse IA de votre toiture</span>
-                  </div>
-                  <div className="flex items-center space-x-3 text-sm text-gray-600">
-                    <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-                    <span>Spécialistes en réparation</span>
-                  </div>
-                  <div className="flex items-center space-x-3 text-sm text-gray-600">
-                    <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-                    <span>Comparaison transparente des prix</span>
-                  </div>
-                </div>
-
-                {/* Trust Badge */}
-                <div className="text-center text-xs text-gray-500">
-                  <div className="flex items-center justify-center space-x-1 mb-2">
-                    <Shield className="w-4 h-4 text-green-500" />
-                    <span>Vos données sont protégées et sécurisées</span>
-                  </div>
-                  <p>Service 100% gratuit • Aucune inscription requise</p>
-                </div>
-              </div>
-            </div>
-
           </div>
         </div>
       </section>
 
-      {/* Repair Types Section */}
-      <section className="py-20 px-4 bg-gray-50">
-        <div className="container mx-auto max-w-7xl">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-              Types de Réparations Couvertes
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Nos entrepreneurs partenaires sont spécialisés dans tous types de réparations de toiture
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
-              {
-                title: "Fuites et Infiltrations",
-                description: "Réparation rapide des fuites d'eau et infiltrations dans votre toiture",
-                color: "text-blue-500",
-                bgColor: "bg-blue-50"
-              },
-              {
-                title: "Bardeaux Endommagés",
-                description: "Remplacement de bardeaux cassés, décollés ou manquants",
-                color: "text-green-500",
-                bgColor: "bg-green-50"
-              },
-              {
-                title: "Gouttières",
-                description: "Réparation et nettoyage de gouttières et descentes pluviales",
-                color: "text-purple-500",
-                bgColor: "bg-purple-50"
-              },
-              {
-                title: "Isolation",
-                description: "Amélioration de l'isolation pour réduire les pertes énergétiques",
-                color: "text-orange-500",
-                bgColor: "bg-orange-50"
-              },
-              {
-                title: "Ventilation",
-                description: "Installation et réparation de systèmes de ventilation de toiture",
-                color: "text-indigo-500",
-                bgColor: "bg-indigo-50"
-              },
-              {
-                title: "Urgences",
-                description: "Interventions rapides pour dommages causés par intempéries",
-                color: "text-red-500",
-                bgColor: "bg-red-50"
-              }
-            ].map((repair, index) => (
-              <div key={index} className={`${repair.bgColor} rounded-2xl p-6 hover:shadow-lg transition-shadow`}>
-                <h3 className={`text-xl font-bold ${repair.color} mb-3`}>{repair.title}</h3>
-                <p className="text-gray-600">{repair.description}</p>
+      {/* Repair Types */}
+      <section className="bg-white py-16">
+        <div className="max-w-[900px] mx-auto px-4 md:px-8 flex flex-col gap-8">
+          <h2 className="font-display font-bold text-[32px] md:text-[40px] text-[#10002c] text-center tracking-tight">
+            Types de réparations couvertes
+          </h2>
+          <p className="font-source-serif font-semibold text-[18px] md:text-[20px] text-[#10002c] text-center tracking-tight -mt-4">
+            Nos entrepreneurs partenaires sont spécialisés dans tous types de réparations de toiture
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {repairTypes.map(({ title, description }) => (
+              <div
+                key={title}
+                className="bg-white border border-[#f2f2f7] rounded-[20px] shadow-[0_4px_4px_rgba(0,0,0,0.25)] p-6"
+              >
+                <p className="font-source-serif font-bold text-[18px] text-[#002042] mb-2">{title}</p>
+                <p className="font-source-serif text-[16px] text-[#10002c] leading-snug">{description}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 px-4 bg-gray-900 text-white">
-        <div className="container mx-auto max-w-4xl text-center">
-          <h2 className="text-4xl lg:text-5xl font-bold mb-6">
-            Besoin de Réparations Rapidement?
-          </h2>
-          <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-            Comparez les prix et trouvez le meilleur entrepreneur pour vos réparations de toiture
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <div className="flex items-center space-x-2 text-green-400">
-              <CheckCircle className="w-5 h-5" />
-              <span>Estimation Gratuite</span>
+      {/* CTA block */}
+      <section className="bg-white py-16 pb-24">
+        <div className="max-w-[900px] mx-auto px-4 md:px-8">
+          <div
+            className="rounded-[20px] shadow-[0_4px_4px_rgba(0,0,0,0.25)] px-6 md:px-12 py-16 flex flex-col items-center gap-6"
+            style={{ background: "linear-gradient(135deg, #002042 0%, #002042 100%)" }}
+          >
+            <h2 className="font-display font-semibold text-[32px] md:text-[48px] text-white text-center tracking-tight leading-none">
+              Besoin de réparations rapidement ?
+            </h2>
+            <div className="flex flex-wrap gap-6 justify-center">
+              {["Estimation Gratuite", "Entrepreneurs Vérifiés", "Économisez 30%"].map((text) => (
+                <div key={text} className="flex items-center gap-2">
+                  <img src="/icons/icon-check.svg" alt="" className="w-5 h-5 shrink-0 brightness-200" />
+                  <span className="font-source-serif text-white text-[17px]">{text}</span>
+                </div>
+              ))}
             </div>
-            <div className="flex items-center space-x-2 text-blue-400">
-              <CheckCircle className="w-5 h-5" />
-              <span>Entrepreneurs Vérifiés</span>
-            </div>
-            <div className="flex items-center space-x-2 text-orange-400">
-              <CheckCircle className="w-5 h-5" />
-              <span>Économisez 30%</span>
-            </div>
+            <a
+              href="#"
+              onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }) }}
+              className="bg-[#b9e15c] border-2 border-[#002042] text-[#002042] font-source-serif font-bold py-4 px-8 rounded-full shadow-[-2px_4px_0px_0px_#002042] text-lg hover:brightness-105 transition-all"
+            >
+              Obtenir mon estimation gratuite
+            </a>
           </div>
         </div>
       </section>
