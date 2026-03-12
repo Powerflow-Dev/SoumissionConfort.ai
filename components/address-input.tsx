@@ -12,6 +12,7 @@ import { translations } from "@/lib/i18n"
 
 interface AddressInputProps {
   onAddressSelect?: (address: string) => void
+  onValidAddressSelect?: (address: string) => void
   onAnalyze?: () => void
   isLoading?: boolean
   className?: string
@@ -19,6 +20,7 @@ interface AddressInputProps {
 
 export function AddressInput({
   onAddressSelect = () => {},
+  onValidAddressSelect,
   onAnalyze = () => {},
   isLoading = false,
   className = "",
@@ -61,6 +63,7 @@ export function AddressInput({
   const handlePredictionSelect = (prediction: any) => {
     setAddress(prediction.description)
     onAddressSelect?.(prediction.description)
+    onValidAddressSelect?.(prediction.description)
     setIsDropdownOpen(false)
     clearPredictions()
     inputRef.current?.focus()

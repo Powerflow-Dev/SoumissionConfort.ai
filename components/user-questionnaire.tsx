@@ -44,7 +44,6 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
   useEffect(() => {
     const params = getCurrentUTMParameters()
     setUtmParams(params)
-    console.log('🏷️ UTM Parameters captured:', params)
   }, [])
 
   const steps = [
@@ -80,14 +79,9 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
 
   const handleLeadSubmit = async (leadData: LeadData) => {
     setIsSubmittingLead(true)
-    console.log('🟢 POPUP FORM SUBMITTED! Starting webhook process...')
-    console.log('📝 Lead data:', leadData)
-    console.log('🏠 Roof data:', roofData)
-    console.log('❓ User answers:', answers)
 
     try {
       // First calculate pricing
-      console.log('💰 Calculating pricing first...')
       let pricingData = null
       
       try {
@@ -104,7 +98,6 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
         
         if (pricingResponse.ok) {
           pricingData = await pricingResponse.json()
-          console.log('✅ PRICING CALCULATED:', pricingData)
         } else {
           console.error('❌ Pricing calculation failed, using fallback')
           // Use fallback pricing if API fails
@@ -129,7 +122,6 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
       // Fire Meta Pixel event (client-side)
       if (typeof window.fbq === 'function' && pricingData) {
         const estimatedValue = (pricingData.lowEstimate + pricingData.highEstimate) / 2;
-        console.log(`📱 Firing Meta Pixel "Lead" event (client-side) with value: ${estimatedValue}`);
         window.fbq('track', 'Lead', {
             value: estimatedValue.toFixed(2),
             currency: 'CAD',
@@ -148,7 +140,6 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
         utmParams // Include UTM parameters for tracking
       }
       
-      console.log('📤 CALLING /api/leads with payload (including pricing):', leadPayload)
       
       const response = await fetch('/api/leads', {
         method: 'POST',
@@ -158,8 +149,6 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
         body: JSON.stringify(leadPayload),
       })
       
-      console.log('📥 Response status:', response.status)
-      console.log('📥 Response ok:', response.ok)
       
       if (!response.ok) {
         const errorText = await response.text()
@@ -169,7 +158,6 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
       }
       
       const result = await response.json()
-      console.log('✅ WEBHOOK SUBMITTED SUCCESSFULLY:', result)
       
       // Add leadId to leadData for future reference
       const leadDataWithId = {
@@ -199,7 +187,6 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
       onComplete(answers, leadData, fallbackPricing)
     } finally {
       setIsSubmittingLead(false)
-      console.log('🏁 Popup submission process COMPLETED')
     }
   }
 

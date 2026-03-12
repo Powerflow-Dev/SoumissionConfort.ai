@@ -47,31 +47,27 @@ function PricingContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <Card className="max-w-md mx-auto border-0 shadow-2xl">
-          <CardContent className="p-8 text-center">
-            <Loader2 className="w-16 h-16 text-blue-600 animate-spin mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Chargement de votre estimation...</h2>
-            <p className="text-gray-600">Veuillez patienter</p>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-[#fffff6] flex items-center justify-center">
+        <div className="bg-white border border-[#aedee5] rounded-[20px] shadow-xl p-10 max-w-md mx-auto text-center">
+          <div className="w-16 h-16 border-4 border-[#aedee5] border-t-[#002042] rounded-full animate-spin mx-auto mb-6" />
+          <h2 className="font-heading text-2xl font-bold text-[#10002c] mb-2">Chargement de votre estimation...</h2>
+          <p className="font-serif-body text-[#375371]">Veuillez patienter</p>
+        </div>
       </div>
     )
   }
 
   if (error || !pricingData) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center p-4">
-        <Card className="max-w-md mx-auto border-0 shadow-2xl">
-          <CardContent className="p-8 text-center">
-            <div className="text-red-600 text-5xl mb-4">⚠️</div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Erreur</h2>
-            <p className="text-gray-600 mb-4">{error || "Données introuvables"}</p>
-            <Link href="/" className="text-blue-600 hover:underline">
-              Retour à l'accueil
-            </Link>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-[#fffff6] flex items-center justify-center p-4">
+        <div className="bg-white border border-[#aedee5] rounded-[20px] shadow-xl p-10 max-w-md mx-auto text-center">
+          <div className="text-5xl mb-4">⚠️</div>
+          <h2 className="font-heading text-2xl font-bold text-[#10002c] mb-2">Erreur</h2>
+          <p className="font-serif-body text-[#375371] mb-6">{error || "Données introuvables"}</p>
+          <Link href="/" className="font-serif-body font-semibold text-[#002042] underline hover:opacity-70">
+            Retour à l'accueil
+          </Link>
+        </div>
       </div>
     )
   }
@@ -79,23 +75,29 @@ function PricingContent() {
   const { roofData, userAnswers, leadData } = pricingData
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#fffff6]">
       {/* Header */}
-      <header className="border-b bg-white/95 backdrop-blur-sm sticky top-0 z-50 shadow-sm">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center space-x-3">
-              <img src="/images/logosoumissionconfort-1.png" alt="Soumission Confort AI" className="h-[120px] md:h-[140px] w-auto" />
-            </Link>
-
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <MapPin className="w-4 h-4 text-gray-400" />
-                <span className="text-sm text-gray-600 truncate max-w-xs">{roofData?.address || "Adresse"}</span>
+      <header className="bg-[#fffff6] border-b border-[#e8e8e0] sticky top-0 z-50">
+        <div className="container mx-auto px-4 sm:px-6 py-3 flex items-center justify-between max-w-7xl">
+          <Link href="/" className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
+              <img src="/images/logo-icon.svg" alt="" className="h-7 md:h-[48px] w-auto" />
+              <div className="font-heading font-bold text-[#002042] leading-[0.9] tracking-[-0.04em] text-[18px] md:text-[26px] whitespace-nowrap">
+                <p>Soumission</p>
+                <p>Confort</p>
               </div>
-              <Badge className="bg-green-100 text-green-800 border-green-200">
-                Estimation Prête
-              </Badge>
+            </div>
+          </Link>
+
+          <div className="flex items-center gap-3">
+            {roofData?.address && (
+              <div className="flex items-center gap-1.5 font-serif-body text-sm text-[#375371]">
+                <MapPin className="w-3.5 h-3.5 text-[#002042]" />
+                <span className="truncate max-w-[130px] md:max-w-xs">{roofData.address}</span>
+              </div>
+            )}
+            <div className="flex items-center gap-1.5 bg-[#b9e15c]/30 border border-[#b9e15c] rounded-full px-3 py-1">
+              <span className="font-serif-body font-semibold text-[#002042] text-xs">Estimation prête</span>
             </div>
           </div>
         </div>
@@ -116,8 +118,8 @@ function PricingContent() {
 export default function PricingPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <Loader2 className="w-16 h-16 text-blue-600 animate-spin" />
+      <div className="min-h-screen bg-[#fffff6] flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-[#aedee5] border-t-[#002042] rounded-full animate-spin" />
       </div>
     }>
       <PricingContent />

@@ -33,7 +33,6 @@ export function QuoteModal({ isOpen, onClose, serviceName = "Isolation" }: Quote
       // Simuler l'envoi - tu pourras connecter à ton API plus tard
       await new Promise(resolve => setTimeout(resolve, 1000))
       
-      console.log('Soumission envoyée:', { ...formData, service: serviceName })
       
       setIsSubmitted(true)
       

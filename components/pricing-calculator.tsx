@@ -78,7 +78,6 @@ export function PricingCalculator({ roofData, userAnswers, leadData, onComplete 
       // Get leadId from leadData (it should be passed from the previous step)
       const leadId = (leadData as any).leadId || 'UNKNOWN_LEAD_ID'
       
-      console.log('🔄 User clicked CTA button, updating lead:', leadId)
       
       // Send lead update to webhook
       const response = await fetch('/api/leads/update', {
@@ -93,7 +92,6 @@ export function PricingCalculator({ roofData, userAnswers, leadData, onComplete 
       })
 
       if (response.ok) {
-        console.log('✅ Lead update sent successfully')
       } else {
         console.error('❌ Lead update failed:', response.status)
       }

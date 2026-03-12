@@ -11,10 +11,8 @@ export function FeatureCards() {
   const [selectedService, setSelectedService] = useState("")
 
   const handleOpenModal = (serviceName: string) => {
-    console.log('🔵 handleOpenModal called with:', serviceName)
     setSelectedService(serviceName)
     setIsModalOpen(true)
-    console.log('🔵 Modal should be open now')
   }
   // Top 3 features with colored backgrounds
   const topFeatures = [
@@ -235,7 +233,6 @@ export function FeatureCards() {
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
-                      console.log('🟢 Button clicked for:', service.name)
                       handleOpenModal(service.name)
                     }}
                     className="w-full bg-gray-900 hover:bg-gray-800 text-white py-2 rounded-full text-sm font-semibold"

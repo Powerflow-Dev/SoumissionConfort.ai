@@ -2,121 +2,80 @@
 
 import { Star } from 'lucide-react'
 
-export function ReviewsSection() {
-  const reviews = [
-    {
-      id: 1,
-      name: "Brian Grant Rogers",
-      text: "Isolation de l'entre-toit impeccable! J'ai économisé 35% sur mes factures de chauffage. Service professionnel et rapide.",
-      rating: 5,
-      avatar: "/images/placeholder-user.jpg"
-    },
-    {
-      id: 2,
-      name: "Sophie Tremblay",
-      text: "Trois soumissions reçues en 24h pour l'isolation de mon sous-sol. Prix compétitifs et entrepreneurs certifiés. Très satisfaite!",
-      rating: 5,
-      avatar: "/images/placeholder-user.jpg"
-    },
-    {
-      id: 3,
-      name: "Marc Leblanc",
-      text: "Plateforme simple et efficace. J'ai comparé les prix facilement et choisi le meilleur entrepreneur pour isoler mes murs. Excellent!",
-      rating: 5,
-      avatar: "/images/placeholder-user.jpg"
-    }
-  ]
+const reviews = [
+  {
+    id: 1,
+    name: "Brian Grant Rogers",
+    text: "Isolation de l'entre-toit impeccable! J'ai économisé 35% sur mes factures de chauffage. Service professionnel et rapide.",
+    rating: 5,
+  },
+  {
+    id: 2,
+    name: "Sophie Tremblay",
+    text: "Trois soumissions reçues en 24h pour l'isolation de mon sous-sol. Prix compétitifs et entrepreneurs certifiés. Très satisfaite!",
+    rating: 5,
+  },
+  {
+    id: 3,
+    name: "Marc Leblanc",
+    text: "Plateforme simple et efficace. J'ai comparé les prix facilement et choisi le meilleur entrepreneur pour isoler mes murs. Excellent!",
+    rating: 5,
+  },
+]
 
+export function ReviewsSection() {
   return (
-    <section className="relative py-20 overflow-hidden">
-      {/* Background Image */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: `url('/images/heroimage.jpg')`
-        }}
-      />
-      
-      {/* Dark Overlay */}
-      <div className="absolute inset-0 bg-black/60" />
-      
-      {/* Content */}
-      <div className="relative z-10 container mx-auto px-6">
+    <section className="bg-[#fffff6] py-16 sm:py-20 border-t border-[#e8e8e0]">
+      <div className="container mx-auto px-4 sm:px-6 max-w-5xl flex flex-col items-center gap-10">
         {/* Header */}
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Ce Que Disent Nos Clients
+        <div className="flex flex-col items-center gap-4 text-center">
+          <h2 className="font-heading font-bold text-3xl sm:text-4xl text-[#10002c] tracking-tight">
+            Ce que disent nos clients
           </h2>
-          <p className="text-xl text-gray-200 mb-6">
+          <p className="font-serif-body font-semibold text-lg text-[#375371] tracking-tight">
             Plus de 800 propriétaires ont amélioré leur confort grâce à notre plateforme
           </p>
-          
-          {/* Google Reviews Badge */}
-          <div className="flex items-center justify-center space-x-2 bg-white/10 backdrop-blur-sm rounded-full px-6 py-3 inline-flex">
-            <div className="flex items-center space-x-1">
-              <span className="text-white font-semibold">Google</span>
-              <span className="text-blue-400 font-bold">Reviews</span>
-            </div>
-            <div className="flex items-center space-x-1">
+          {/* Google badge */}
+          <div className="flex items-center gap-2 bg-white border border-[#f2f2f7] rounded-full px-5 py-2 shadow-sm">
+            <span className="font-serif-body font-semibold text-[#002042]">Google Reviews</span>
+            <div className="flex items-center gap-0.5">
               {[...Array(5)].map((_, i) => (
                 <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
               ))}
             </div>
-            <span className="text-white font-semibold">4.9/5</span>
+            <span className="font-serif-body font-bold text-[#002042]">4.9/5</span>
           </div>
         </div>
 
-        {/* Reviews Grid */}
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        {/* Reviews grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
           {reviews.map((review) => (
-            <div 
+            <div
               key={review.id}
-              className="bg-white rounded-2xl p-6 shadow-xl transform hover:scale-105 transition-all duration-300"
+              className="bg-white border border-[#f2f2f7] rounded-[20px] shadow-md p-6 flex flex-col gap-4 hover:shadow-lg transition-shadow"
             >
-              {/* Quote Icon */}
-              <div className="text-orange-400 text-4xl font-serif mb-4">"</div>
-              
-              {/* Review Text */}
-              <p className="text-gray-700 mb-6 leading-relaxed">
+              <div className="font-serif-body text-[#b9e15c] text-4xl font-bold leading-none">"</div>
+              <p className="font-serif-body text-[#375371] text-base leading-relaxed tracking-tight flex-1">
                 {review.text}
               </p>
-              
-              {/* Rating */}
-              <div className="flex items-center space-x-1 mb-4">
+              <div className="flex items-center gap-1">
                 {[...Array(review.rating)].map((_, i) => (
                   <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                 ))}
               </div>
-              
-              {/* Author */}
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 bg-[#002042] rounded-full flex items-center justify-center shrink-0">
+                  <span className="text-white font-heading font-bold text-base">
                     {review.name.split(' ').map(n => n[0]).join('')}
                   </span>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-gray-800">{review.name}</h4>
-                  <p className="text-sm text-gray-500">Client vérifié</p>
+                  <p className="font-serif-body font-semibold text-[#10002c] text-base">{review.name}</p>
+                  <p className="font-serif-body text-[#375371] text-sm">Client vérifié</p>
                 </div>
               </div>
             </div>
           ))}
-        </div>
-
-        {/* Call to Action */}
-        <div className="text-center mt-16">
-          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 max-w-2xl mx-auto">
-            <h3 className="text-2xl font-bold text-white mb-4">
-              Rejoignez nos clients satisfaits
-            </h3>
-            <p className="text-gray-200 mb-6">
-              Plus de 800 propriétaires ont fait confiance à notre plateforme pour leurs projets d'isolation
-            </p>
-            <button className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 px-8 rounded-full transition-colors duration-300 shadow-lg">
-              Obtenir ma soumission gratuite
-            </button>
-          </div>
         </div>
       </div>
     </section>

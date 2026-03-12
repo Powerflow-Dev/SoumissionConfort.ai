@@ -1,10 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { CheckCircle2, Home, Phone, ArrowRight } from "lucide-react"
+import { CheckCircle2, Home, Phone, ArrowRight, Clock, Users, Star } from "lucide-react"
 import { track } from '@vercel/analytics'
 import { useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
@@ -14,131 +11,168 @@ function SuccessContent() {
   const type = searchParams.get('type')
   const isContractor = type === 'contractor'
 
-  // Track conversion on success page
   useEffect(() => {
     track(isContractor ? 'Contractor Lead Submitted' : 'Conversion Completed')
   }, [isContractor])
-  
+
+  const nextStepsClient = [
+    {
+      num: "1",
+      icon: CheckCircle2,
+      title: "Validation de votre projet",
+      desc: "Un membre de notre équipe valide rapidement les détails pour assurer un bon appariement avec les entrepreneurs.",
+    },
+    {
+      num: "2",
+      icon: Users,
+      title: "Appariement avec 3 entrepreneurs",
+      desc: "Nous sélectionnons des entrepreneurs certifiés et bien notés disponibles dans votre secteur pour votre type de projet.",
+    },
+    {
+      num: "3",
+      icon: Star,
+      title: "Réception de soumissions détaillées",
+      desc: "Comparez les prix, les matériaux et les délais. Notre objectif est de vous aider à économiser et choisir en confiance.",
+    },
+  ]
+
+  const nextStepsContractor = [
+    {
+      num: "1",
+      icon: CheckCircle2,
+      title: "Vérification de votre profil",
+      desc: "Notre équipe vérifie vos informations et votre licence RBQ pour assurer la qualité de notre réseau.",
+    },
+    {
+      num: "2",
+      icon: Users,
+      title: "Configuration de votre compte",
+      desc: "Nous créons votre profil d'entrepreneur et configurons vos préférences de zone de service et de projets.",
+    },
+    {
+      num: "3",
+      icon: Star,
+      title: "Réception de vos premiers leads",
+      desc: "Commencez à recevoir des leads qualifiés correspondant à votre expertise et votre zone de service.",
+    },
+  ]
+
+  const steps = isContractor ? nextStepsContractor : nextStepsClient
+
   return (
-    <div className="min-h-screen flex flex-col bg-white">
-      {/* Hero with background image */}
-      <section className="relative isolate">
-        <div className="absolute inset-0 -z-10">
-          <Image
-            src="/images/heroimage.jpg"
-            alt="Travaux de toiture par des entrepreneurs professionnels"
-            fill
-            priority
-            className="object-cover"
-          />
-          <div className="absolute inset-0 bg-black/60" />
-        </div>
-
-        <div className="container mx-auto px-4 py-16 md:py-24">
-          <div className="max-w-3xl text-white">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-full bg-green-500/20 border border-green-400/40 flex items-center justify-center">
-                <CheckCircle2 className="w-6 h-6 text-green-400" />
-              </div>
-              <p className="text-green-300 font-medium">Demande bien reçue</p>
+    <div className="min-h-screen bg-[#fffff6] flex flex-col">
+      {/* Hero */}
+      <section className="bg-[#002042] text-white py-16 md:py-24 px-4">
+        <div className="max-w-3xl mx-auto text-center">
+          {/* Animated checkmark */}
+          <div className="relative w-24 h-24 mx-auto mb-6">
+            <div className="absolute inset-0 rounded-full bg-[#b9e15c]/20 animate-ping" />
+            <div className="relative w-24 h-24 rounded-full bg-[#b9e15c]/20 border-2 border-[#b9e15c]/40 flex items-center justify-center">
+              <CheckCircle2 className="w-12 h-12 text-[#b9e15c]" />
             </div>
+          </div>
 
-            <h1 className="text-3xl md:text-5xl font-bold leading-tight mb-4">
-              {isContractor 
-                ? "Merci de votre intérêt pour rejoindre notre réseau!" 
-                : "Merci! Votre demande de soumission a été transmise"}
-            </h1>
-            <p className="text-base md:text-lg text-blue-100 max-w-2xl">
-              {isContractor
-                ? "Notre équipe examinera votre demande et vous contactera dans les prochaines 24-48 heures pour discuter des opportunités de collaboration."
-                : "Nous contactons les meilleurs entrepreneurs de votre région. Vous recevrez jusqu'à 3 soumissions détaillées dans les prochaines 24 heures."}
-            </p>
+          <div className="inline-flex items-center gap-2 bg-[#b9e15c]/20 border border-[#b9e15c]/30 rounded-full px-4 py-1.5 mb-5">
+            <CheckCircle2 className="w-4 h-4 text-[#b9e15c]" />
+            <span className="font-serif-body text-sm font-medium text-[#b9e15c]">Demande bien reçue</span>
+          </div>
 
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/" className="inline-flex">
-                <Button size="lg" variant="secondary" className="bg-white text-gray-900 hover:bg-gray-100">
-                  <Home className="w-4 h-4 mr-2" /> Retour à l'accueil
-                </Button>
-              </Link>
-              <a href="tel:+15149091526" className="inline-flex">
-                <Button size="lg" className="bg-orange-500 hover:bg-orange-600">
-                  <Phone className="w-4 h-4 mr-2" /> Nous contacter
-                </Button>
-              </a>
-            </div>
+          <h1 className="font-heading text-3xl md:text-5xl font-bold leading-tight mb-4">
+            {isContractor
+              ? "Merci de votre intérêt pour rejoindre notre réseau!"
+              : "Merci ! Votre demande a été transmise avec succès"}
+          </h1>
+
+          <p className="font-serif-body text-[#aedee5] text-lg max-w-xl mx-auto mb-8">
+            {isContractor
+              ? "Notre équipe examinera votre demande et vous contactera dans les prochaines 24-48 heures."
+              : <>Nous contactons les meilleurs entrepreneurs de votre région. Vous recevrez jusqu'à{" "}<strong className="text-white">3 soumissions détaillées</strong>{" "}dans les prochaines 24 heures.</>}
+          </p>
+
+          {/* Trust badges */}
+          <div className="flex flex-wrap justify-center gap-3 mb-10">
+            {["🔒 100% confidentiel", "⚡ Réponse sous 24h", "🤝 Sans engagement", "⭐ Entrepreneurs vérifiés"].map((b) => (
+              <span
+                key={b}
+                className="flex items-center gap-1 bg-white/10 border border-white/20 rounded-full px-3 py-1.5 font-serif-body text-sm font-medium"
+              >
+                {b}
+              </span>
+            ))}
+          </div>
+
+          <div className="flex flex-wrap justify-center gap-3">
+            <Link href="/">
+              <button className="flex items-center gap-2 bg-white text-[#002042] font-heading font-bold py-3 px-6 rounded-full hover:bg-[#fffff6] transition-colors">
+                <Home className="w-4 h-4" />
+                Retour à l'accueil
+              </button>
+            </Link>
+            <a href="tel:+15149091526">
+              <button className="flex items-center gap-2 bg-[#b9e15c] border-2 border-[#b9e15c] text-[#002042] font-heading font-bold py-3 px-6 rounded-full shadow-[-2px_4px_0_0_rgba(0,0,0,0.2)] hover:shadow-[-1px_2px_0_0_rgba(0,0,0,0.2)] hover:translate-y-0.5 transition-all">
+                <Phone className="w-4 h-4" />
+                Nous contacter
+              </button>
+            </a>
           </div>
         </div>
       </section>
 
       {/* What happens next */}
-      <section className="container mx-auto px-4 py-10 md:py-14">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {(isContractor ? [
-            {
-              title: "Vérification de votre profil",
-              desc:
-                "Notre équipe vérifie vos informations et votre licence RBQ pour assurer la qualité de notre réseau.",
-            },
-            {
-              title: "Configuration de votre compte",
-              desc:
-                "Nous créons votre profil d'entrepreneur et configurons vos préférences de zone de service et de projets.",
-            },
-            {
-              title: "Réception de vos premiers leads",
-              desc:
-                "Commencez à recevoir des leads qualifiés correspondant à votre expertise et votre zone de service.",
-            },
-          ] : [
-            {
-              title: "Validation de votre projet",
-              desc:
-                "Un membre de notre équipe valide rapidement les détails pour assurer un bon appariement avec les entrepreneurs.",
-            },
-            {
-              title: "Appariement avec 3 entrepreneurs",
-              desc:
-                "Nous sélectionnons des entrepreneurs certifiés et bien notés disponibles dans votre secteur pour votre type de projet.",
-            },
-            {
-              title: "Réception de soumissions détaillées",
-              desc:
-                "Comparez les prix, les matériaux et les délais. Notre objectif est de vous aider à économiser et choisir en confiance.",
-            },
-          ]).map((item, idx) => (
-            <Card key={idx} className="border-0 shadow-lg">
-              <CardContent className="p-6">
-                <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 font-semibold flex items-center justify-center mb-4">
-                  {idx + 1}
+      <section className="py-14 md:py-20 px-4 bg-[#fffff6]">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center gap-2 text-[#002042] font-serif-body font-medium text-sm mb-3">
+              <Clock className="w-4 h-4" />
+              Prochaines étapes
+            </div>
+            <h2 className="font-heading text-2xl md:text-3xl font-bold text-[#10002c]">
+              Voici ce qui se passe maintenant
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {steps.map((step, idx) => {
+              const Icon = step.icon
+              return (
+                <div
+                  key={idx}
+                  className="bg-white rounded-[20px] p-6 shadow-md border border-[#f2f2f7] flex flex-col"
+                >
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-9 h-9 rounded-full bg-[#aedee5]/40 text-[#002042] font-heading font-bold text-sm flex items-center justify-center flex-shrink-0 border border-[#aedee5]">
+                      {step.num}
+                    </div>
+                    <Icon className="w-5 h-5 text-[#002042]" />
+                  </div>
+                  <h3 className="font-serif-body font-bold text-[#10002c] text-base mb-2">{step.title}</h3>
+                  <p className="font-serif-body text-[#375371] text-sm leading-relaxed">{step.desc}</p>
                 </div>
-                <h3 className="text-lg font-semibold mb-2">{item.title}</h3>
-                <p className="text-gray-600 text-sm leading-relaxed">{item.desc}</p>
-              </CardContent>
-            </Card>
-          ))}
+              )
+            })}
+          </div>
         </div>
       </section>
 
-      {/* Call to action */}
-      <section className="bg-gray-50 border-t">
-        <div className="container mx-auto px-4 py-12 md:py-16">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-2xl md:text-3xl font-bold mb-3">
-              {isContractor 
-                ? "Préparez-vous à recevoir des leads" 
-                : "Optimisez vos chances d'obtenir le meilleur prix"}
-            </h2>
-            <p className="text-gray-600 mb-6 md:mb-8">
-              {isContractor
-                ? "Assurez-vous que votre profil est complet et que vous êtes prêt à répondre rapidement aux demandes de soumission."
-                : "Préparez quelques photos de votre toiture et vos préférences de matériaux. Cela accélère l'obtention de soumissions précises."}
-            </p>
-            <Link href="/">
-              <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
-                {isContractor ? "Retour à l'accueil" : "Parcourir nos conseils"} <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </Link>
-          </div>
+      {/* CTA */}
+      <section className="py-12 px-4 border-t border-[#e8e8e0] bg-white">
+        <div className="max-w-2xl mx-auto text-center">
+          <h2 className="font-heading text-xl md:text-2xl font-bold text-[#10002c] mb-3">
+            {isContractor
+              ? "Préparez-vous à recevoir des leads"
+              : "Optimisez vos chances d'obtenir le meilleur prix"}
+          </h2>
+          <p className="font-serif-body text-[#375371] text-sm mb-6">
+            {isContractor
+              ? "Assurez-vous que votre profil est complet et que vous êtes prêt à répondre rapidement aux demandes."
+              : "Préparez quelques photos et précisez vos préférences de matériaux pour accélérer l'obtention de soumissions précises."}
+          </p>
+          <Link href="/">
+            <button className="flex items-center gap-2 mx-auto bg-[#b9e15c] border-2 border-[#002042] text-[#002042] font-heading font-bold py-3 px-8 rounded-full shadow-[-2px_4px_0_0_#002042] hover:shadow-[-1px_2px_0_0_#002042] hover:translate-y-0.5 transition-all">
+              {isContractor ? "Retour à l'accueil" : "Retour à l'accueil"}
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </Link>
         </div>
       </section>
     </div>
@@ -148,11 +182,8 @@ function SuccessContent() {
 export default function SuccessPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Chargement...</p>
-        </div>
+      <div className="min-h-screen bg-[#fffff6] flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-[#aedee5] border-t-[#002042] rounded-full animate-spin"></div>
       </div>
     }>
       <SuccessContent />

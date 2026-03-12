@@ -67,8 +67,6 @@ export default function AnalysisPage() {
       }
 
       // Log the fetch attempt for debugging
-      console.log("Attempting to fetch roof analysis for:", address)
-      console.log("API endpoint:", window.location.origin + "/api/roof-analysis")
 
       try {
         // Use absolute URL to avoid any routing issues
@@ -91,7 +89,6 @@ export default function AnalysisPage() {
         }
 
         const data = await response.json()
-        console.log("Roof analysis successful:", data)
         setRoofData({ ...data.roofData, address })
         setCurrentStep("questionnaire")
       } catch (error) {
@@ -203,35 +200,25 @@ export default function AnalysisPage() {
   const StepIcon = stepInfo.icon
 
   return (
-    <div className="min-h-screen bg-white overflow-x-hidden">
+    <div className="min-h-screen bg-[#fffff6] overflow-x-hidden">
       {/* Header */}
-      <header className="border-b bg-white/95 backdrop-blur-sm sticky top-0 z-50 shadow-sm">
-        <div className="container mx-auto px-4 py-2 md:py-3">
-          <div className="flex items-center justify-between min-w-0">
-            <Link
-              href="/"
-              className="flex items-center space-x-3"
-            >
-              <img src="/images/logosoumissionconfort-1.png" alt="Soumission Confort AI" className="h-[120px] md:h-[140px] w-auto" />
-            </Link>
-
-            <div className="flex items-center space-x-2 md:space-x-4 min-w-0 flex-shrink">
-              <div className="flex items-center space-x-1 md:space-x-2 min-w-0">
-                <MapPin className="w-3 h-3 md:w-4 md:h-4 text-gray-400 flex-shrink-0" />
-                <span className="text-xs md:text-sm text-gray-600 truncate max-w-[120px] md:max-w-xs">{address}</span>
+      <header className="bg-[#fffff6] border-b border-[#e8e8e0] sticky top-0 z-50">
+        <div className="container mx-auto px-4 sm:px-6 py-3 flex items-center justify-between max-w-7xl">
+          <Link href="/" className="flex items-center gap-2">
+            <ArrowLeft className="w-4 h-4 text-[#375371]" />
+            <div className="flex items-center gap-3">
+              <img src="/images/logo-icon.svg" alt="" className="h-7 md:h-[48px] w-auto" />
+              <div className="font-heading font-bold text-[#002042] leading-[0.9] tracking-[-0.04em] text-[18px] md:text-[26px] whitespace-nowrap">
+                <p>Soumission</p>
+                <p>Confort</p>
               </div>
-              <Badge className="bg-teal-100 text-teal-800 border-teal-200 text-xs md:text-sm flex-shrink-0">
-                <StepIcon className="w-3 h-3 mr-1" />
-                <span className="hidden sm:inline">{stepInfo.title}</span>
-              </Badge>
             </div>
-          </div>
+          </Link>
 
-          {/* Enhanced Progress Bar */}
-          <div className="mt-4">
+          <div className="flex items-center gap-3 min-w-0">
             {roofData && roofData.roofArea && currentStep !== "loading" && (
-              <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 mb-3">
-                <span className="text-sm text-gray-600 font-semibold text-teal-600 whitespace-nowrap">Superficie estimée par IA :</span>
+              <div className="flex items-center gap-1 font-serif-body text-sm text-[#375371]">
+                <span className="font-semibold text-[#002042]">Superficie :</span>
                 {isEditingArea ? (
                   <div className="flex items-center gap-1">
                     <input
@@ -243,76 +230,73 @@ export default function AnalysisPage() {
                         if (e.key === 'Enter') confirmAreaEdit()
                         if (e.key === 'Escape') { setAreaInputValue(String(roofData.roofArea)); setIsEditingArea(false) }
                       }}
-                      className="w-24 text-sm font-semibold text-center border border-teal-400 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-teal-300"
+                      className="w-20 text-sm font-semibold text-center border-2 border-[#aedee5] rounded px-2 py-1 focus:outline-none focus:border-[#002042]"
                       autoFocus
                     />
-                    <span className="text-sm text-gray-600">pi²</span>
-                    <button onClick={confirmAreaEdit} className="p-1 text-green-600 hover:text-green-700" aria-label="Confirmer">
-                      <Check className="w-5 h-5" />
+                    <span className="text-sm">pi²</span>
+                    <button onClick={confirmAreaEdit} className="p-1 text-[#002042]" aria-label="Confirmer">
+                      <Check className="w-4 h-4" />
                     </button>
                   </div>
                 ) : (
                   <button
                     onClick={() => { setAreaInputValue(String(roofData.roofArea)); setIsEditingArea(true) }}
-                    className="flex items-center gap-1 text-sm font-bold text-teal-700 hover:text-teal-900 transition-colors"
-                    aria-label="Modifier la superficie"
+                    className="flex items-center gap-1 font-bold text-[#002042] hover:opacity-70 transition-opacity"
                   >
                     {roofData.roofArea.toLocaleString('fr-CA')} pi²
-                    <Pencil className="w-3.5 h-3.5 text-teal-400" />
+                    <Pencil className="w-3 h-3 text-[#375371]" />
                   </button>
                 )}
               </div>
             )}
-            <div className="flex justify-between text-xs text-gray-600 mb-2">
-              <span className={currentStep === "loading" ? "text-teal-600 font-medium" : ""}>Analyse</span>
-              <span className={currentStep === "questionnaire" ? "text-teal-600 font-medium" : ""}>Questions</span>
-              <span className={currentStep === "lead-capture" ? "text-teal-600 font-medium" : ""}>Connexion</span>
-              <span className={currentStep === "pricing" ? "text-teal-600 font-medium" : ""}>Prix</span>
+            {address && (
+              <div className="flex items-center gap-1.5 font-serif-body text-sm text-[#375371]">
+                <MapPin className="w-3.5 h-3.5 text-[#002042] shrink-0" />
+                <span className="truncate max-w-[120px] md:max-w-xs">{address}</span>
+              </div>
+            )}
+            <div className="flex items-center gap-1.5 bg-[#aedee5]/30 border border-[#aedee5] rounded-full px-3 py-1">
+              <StepIcon className="w-3 h-3 text-[#002042]" />
+              <span className="font-serif-body font-semibold text-[#002042] text-xs hidden sm:inline">{stepInfo.title}</span>
             </div>
-            <Progress value={getStepProgress()} className="h-3 bg-gray-200" />
-            <p className="text-xs text-gray-500 mt-1 text-center">{stepInfo.subtitle}</p>
           </div>
+        </div>
+
+        {/* Progress bar */}
+        <div className="w-full bg-[#e8e8e0] h-1">
+          <div
+            className="bg-[#b9e15c] h-1 transition-all duration-500"
+            style={{ width: `${getStepProgress()}%` }}
+          />
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-8 overflow-x-hidden">
         {currentStep === "loading" && (
-          <Card className="max-w-3xl mx-auto border-0 shadow-2xl bg-gradient-to-br from-teal-50 to-blue-50">
-            <CardHeader className="text-center pb-6">
-              <div className="w-20 h-20 bg-gradient-to-r from-teal-500 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-                <div className="w-10 h-10 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+          <div className="max-w-3xl mx-auto">
+            <div className="bg-white border border-[#aedee5] rounded-[20px] shadow-md p-10 text-center">
+              <div className="w-20 h-20 bg-[#aedee5]/40 rounded-full flex items-center justify-center mx-auto mb-6">
+                <div className="w-10 h-10 border-4 border-[#aedee5] border-t-[#002042] rounded-full animate-spin"></div>
               </div>
-              <CardTitle className="text-3xl font-bold text-gray-900 mb-2">Analyse de Votre Propriété...</CardTitle>
-              <p className="text-gray-600 text-lg">Traitement des données par intelligence artificielle</p>
-            </CardHeader>
-            <CardContent className="text-center py-8">
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                  <div className="flex items-center justify-center space-x-2 text-green-600 bg-green-50 p-4 rounded-xl">
-                    <CheckCircle className="w-5 h-5" />
-                    <span className="font-medium">Données Récupérées</span>
-                  </div>
-                  <div className="flex items-center justify-center space-x-2 text-teal-600 bg-teal-50 p-4 rounded-xl">
-                    <div className="w-5 h-5 border-2 border-teal-600 border-t-transparent rounded-full animate-spin"></div>
-                    <span className="font-medium">Analyse de la Structure</span>
-                  </div>
-                  <div className="flex items-center justify-center space-x-2 text-gray-400 bg-gray-50 p-4 rounded-xl">
-                    <Clock className="w-5 h-5" />
-                    <span className="font-medium">Calcul de Complexité</span>
-                  </div>
+              <h2 className="font-heading text-2xl font-bold text-[#10002c] mb-3">Analyse de votre propriété...</h2>
+              <p className="font-serif-body text-[#375371] text-lg mb-8">Traitement des données par intelligence artificielle</p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm mb-8">
+                <div className="flex items-center justify-center gap-2 text-[#002042] bg-[#fffff6] p-4 rounded-xl border border-[#e8e8e0]">
+                  <CheckCircle className="w-5 h-5 text-[#b9e15c]" />
+                  <span className="font-serif-body font-medium">Données récupérées</span>
                 </div>
-                <div className="bg-white rounded-xl p-6 border border-teal-100">
-                  <p className="text-gray-600 mb-2">
-                    <strong>Technologie IA Avancée</strong>
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    Notre système analyse plus de 47 points de données incluant la superficie, les obstacles, la difficulté d'accès et les conditions du marché local pour fournir l'estimation la plus précise possible pour votre projet d'isolation.
-                  </p>
+                <div className="flex items-center justify-center gap-2 text-[#002042] bg-[#aedee5]/20 p-4 rounded-xl border border-[#aedee5]">
+                  <div className="w-5 h-5 border-2 border-[#002042] border-t-transparent rounded-full animate-spin"></div>
+                  <span className="font-serif-body font-medium">Analyse de la structure</span>
                 </div>
-                <p className="text-gray-500">Cela prend généralement 30-60 secondes...</p>
+                <div className="flex items-center justify-center gap-2 text-[#375371] bg-[#fffff6] p-4 rounded-xl border border-[#e8e8e0] opacity-50">
+                  <Clock className="w-5 h-5" />
+                  <span className="font-serif-body font-medium">Calcul de complexité</span>
+                </div>
               </div>
-            </CardContent>
-          </Card>
+              <p className="font-serif-body text-[#375371] text-sm">Cela prend généralement 30-60 secondes...</p>
+            </div>
+          </div>
         )}
 
         {currentStep === "questionnaire" && roofData && (

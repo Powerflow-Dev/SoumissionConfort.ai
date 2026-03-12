@@ -285,17 +285,17 @@ export default function SubventionsPage() {
   // -----------------------------------------------------------------------
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#fffff6]">
       {/* Header — always visible */}
-      <header className="border-b bg-white/95 backdrop-blur-sm sticky top-0 z-50 shadow-sm">
-        <div className="container mx-auto px-4 py-2 md:py-3 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <img
-              src="/images/logosoumissionconfort-1.png"
-              alt="Soumission Confort AI"
-              className="h-[80px] md:h-[100px] w-auto"
-            />
-          </div>
+      <header className="sticky top-0 z-50 bg-[#fffff6] border-b border-[#e8e8e0]">
+        <div className="container mx-auto px-6 py-4 flex items-center justify-between max-w-7xl">
+          <a href="/" className="flex items-center gap-3">
+            <img src="/images/logo-icon.svg" alt="" className="h-7 md:h-[48px] w-auto" />
+            <div className="font-heading font-bold text-[#002042] leading-[0.9] tracking-[-0.04em] text-[18px] md:text-[26px] whitespace-nowrap">
+              <p>Soumission</p>
+              <p>Confort</p>
+            </div>
+          </a>
           {step !== "hero" && (
             <button
               onClick={goBack}
@@ -311,7 +311,7 @@ export default function SubventionsPage() {
         {step !== "hero" && (
           <div className="h-1 bg-gray-100">
             <div
-              className="h-full bg-green-500 transition-all duration-500 ease-out"
+              className="h-full bg-[#b9e15c] transition-all duration-500 ease-out"
               style={{ width: `${progress}%` }}
             />
           </div>

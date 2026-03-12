@@ -13,14 +13,18 @@ function ToitureShawiniganPage() {
   const [address, setAddress] = useState("")
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#fffff6]">
       {/* Professional Header */}
-      <header className="border-b bg-white/95 backdrop-blur-sm sticky top-0 z-50 shadow-sm">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <img src="/images/logosoumissionconfort-1.png" alt="Toiture Shawinigan" className="h-[120px] w-auto" />
-          </div>
-          <Badge className="bg-orange-500 text-white border-orange-500 px-4 py-2">
+      <header className="sticky top-0 z-50 bg-[#fffff6] border-b border-[#e8e8e0]">
+        <div className="container mx-auto px-6 py-4 flex items-center justify-between max-w-7xl">
+          <a href="/" className="flex items-center gap-3">
+            <img src="/images/logo-icon.svg" alt="" className="h-7 md:h-[48px] w-auto" />
+            <div className="font-heading font-bold text-[#002042] leading-[0.9] tracking-[-0.04em] text-[18px] md:text-[26px] whitespace-nowrap">
+              <p>Soumission</p>
+              <p>Confort</p>
+            </div>
+          </a>
+          <Badge className="bg-[#aedee5] text-[#002042] border-[#aedee5] px-4 py-2 font-serif-body font-semibold">
             Service Local Shawinigan
           </Badge>
         </div>
@@ -43,7 +47,7 @@ function ToitureShawiniganPage() {
             {/* Left Side - Content */}
             <div className="text-white">
               <div className="mb-6">
-                <Badge className="bg-orange-500 text-white border-orange-500 px-4 py-2 text-sm font-medium">
+                <Badge className="bg-[#b9e15c] text-[#002042] border-[#002042] px-4 py-2 text-sm font-medium">
                   Entrepreneurs Locaux Shawinigan
                 </Badge>
               </div>
@@ -179,7 +183,7 @@ function ToitureShawiniganPage() {
               {
                 title: "Prix Compétitifs",
                 description: "Tarifs adaptés au marché local de Shawinigan, sans frais de déplacement élevés",
-                color: "text-orange-500",
+                color: "text-[#002042]",
                 bgColor: "bg-orange-50"
               },
               {
@@ -223,7 +227,7 @@ function ToitureShawiniganPage() {
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
             <div className="bg-gray-50 rounded-2xl p-8 hover:shadow-lg transition-shadow">
-              <div className="text-4xl lg:text-5xl font-bold text-orange-500 mb-3">500+</div>
+              <div className="text-4xl lg:text-5xl font-bold text-[#002042] mb-3">500+</div>
               <div className="text-gray-600 font-medium">Projets à Shawinigan</div>
             </div>
             <div className="bg-gray-50 rounded-2xl p-8 hover:shadow-lg transition-shadow">

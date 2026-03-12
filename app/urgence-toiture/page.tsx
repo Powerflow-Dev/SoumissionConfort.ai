@@ -17,9 +17,6 @@ export default function UrgenceToiturePage() {
   useEffect(() => {
     try {
       const utm = getCurrentUTMParameters()
-      if (Object.keys(utm).length > 0) {
-        console.log('🏷️ UTM captured on urgent page:', utm)
-      }
     } catch (e) {
       console.warn('UTM capture failed on urgent page:', e)
     }
@@ -40,14 +37,18 @@ export default function UrgenceToiturePage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#fffff6]">
       {/* Professional Header */}
-      <header className="border-b bg-white/95 backdrop-blur-sm sticky top-0 z-50 shadow-sm">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <img src="/images/logosoumissionconfort-1.png" alt="Soumission Toiture AI" className="h-[120px] w-auto" />
-          </div>
-          <Badge className="bg-orange-500 text-white border-orange-500 px-4 py-2">
+      <header className="sticky top-0 z-50 bg-[#fffff6] border-b border-[#e8e8e0]">
+        <div className="container mx-auto px-6 py-4 flex items-center justify-between max-w-7xl">
+          <a href="/" className="flex items-center gap-3">
+            <img src="/images/logo-icon.svg" alt="" className="h-7 md:h-[48px] w-auto" />
+            <div className="font-heading font-bold text-[#002042] leading-[0.9] tracking-[-0.04em] text-[18px] md:text-[26px] whitespace-nowrap">
+              <p>Soumission</p>
+              <p>Confort</p>
+            </div>
+          </a>
+          <Badge className="bg-[#aedee5] text-[#002042] border-[#aedee5] px-4 py-2 font-serif-body font-semibold">
             Comparateur #1 au Québec
           </Badge>
         </div>
@@ -70,7 +71,7 @@ export default function UrgenceToiturePage() {
             {/* Left Side - Content */}
             <div className="text-white">
               <div className="mb-6">
-                <Badge className="bg-orange-500 text-white border-orange-500 px-4 py-2 text-sm font-medium">
+                <Badge className="bg-[#b9e15c] text-[#002042] border-[#002042] px-4 py-2 text-sm font-medium">
                   Réparation Toiture Spécialisée
                 </Badge>
               </div>
@@ -207,7 +208,7 @@ export default function UrgenceToiturePage() {
               {
                 title: "Isolation",
                 description: "Amélioration de l'isolation pour réduire les pertes énergétiques",
-                color: "text-orange-500",
+                color: "text-[#002042]",
                 bgColor: "bg-orange-50"
               },
               {

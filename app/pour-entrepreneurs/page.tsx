@@ -80,13 +80,13 @@ export default function PourEntrepreneursPage() {
 
   if (isSubmitted) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center px-4">
+      <div className="min-h-screen bg-[#fffff6] flex items-center justify-center px-4">
         <div className="text-center max-w-2xl">
-          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle className="w-12 h-12 text-green-600" />
+          <div className="w-20 h-20 bg-[#b9e15c]/20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <CheckCircle className="w-12 h-12 text-[#002042]" />
           </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Merci de votre intérêt!</h1>
-          <p className="text-xl text-gray-600">
+          <h1 className="text-4xl font-heading font-bold text-[#10002c] mb-4">Merci de votre intérêt!</h1>
+          <p className="text-xl text-[#375371]">
             Notre équipe examinera votre demande et vous contactera sous peu.
           </p>
         </div>
@@ -95,23 +95,25 @@ export default function PourEntrepreneursPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#fffff6]">
       {/* Header */}
-      <header className="border-b bg-white/95 backdrop-blur-sm sticky top-0 z-50 shadow-sm">
-        <div className="container mx-auto px-4 py-2 md:py-3 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <a href="/">
-              <img src="/images/logosoumissionconfort-1.png" alt="Soumission Confort AI" className="h-[80px] md:h-[100px] w-auto" />
-            </a>
-          </div>
+      <header className="sticky top-0 z-50 bg-[#fffff6] border-b border-[#e8e8e0]">
+        <div className="container mx-auto px-6 py-4 flex items-center justify-between max-w-7xl">
+          <a href="/" className="flex items-center gap-3">
+            <img src="/images/logo-icon.svg" alt="" className="h-7 md:h-[48px] w-auto" />
+            <div className="font-heading font-bold text-[#002042] leading-[0.9] tracking-[-0.04em] text-[18px] md:text-[26px] whitespace-nowrap">
+              <p>Soumission</p>
+              <p>Confort</p>
+            </div>
+          </a>
           <nav className="hidden md:flex items-center space-x-8">
-            <a href="/" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">
+            <a href="/" className="text-[#375371] hover:text-[#002042] font-medium transition-colors">
               Accueil
             </a>
-            <a href="#avantages" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">
+            <a href="#avantages" className="text-[#375371] hover:text-[#002042] font-medium transition-colors">
               Avantages
             </a>
-            <a href="#formulaire" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">
+            <a href="#formulaire" className="text-[#375371] hover:text-[#002042] font-medium transition-colors">
               Rejoignez-nous
             </a>
           </nav>
@@ -119,80 +121,80 @@ export default function PourEntrepreneursPage() {
       </header>
 
       {/* Hero Section with Lead Form */}
-      <section className="relative bg-gradient-to-br from-blue-50 via-white to-teal-50 overflow-hidden py-12 md:py-20">
+      <section className="relative bg-[#fffff6] overflow-hidden py-12 md:py-20">
         <div className="container mx-auto px-4 max-w-7xl">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
-            
+
             {/* Left Side - Value Proposition */}
-            <div className="text-gray-900">
-              <Badge className="bg-teal-500 text-white border-teal-500 px-4 py-2 text-sm font-medium rounded-full mb-6">
+            <div className="text-[#10002c]">
+              <Badge className="bg-[#b9e15c] text-[#002042] border-[#002042] px-4 py-2 text-sm font-medium rounded-full mb-6">
                 Réseau #1 au Québec
               </Badge>
 
-              <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 leading-tight">
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-heading font-bold mb-6 leading-tight text-[#10002c]">
                 Développez votre entreprise avec{' '}
-                <span className="text-teal-600">Soumission Confort</span>
+                <span className="text-[#002042]">Soumission Confort</span>
               </h1>
 
-              <p className="text-xl text-gray-600 mb-8">
+              <p className="text-xl text-[#375371] font-serif-body mb-8">
                 Rejoignez notre réseau d'entrepreneurs certifiés et recevez des leads qualifiés pour vos projets d'isolation.
               </p>
 
               {/* Key Benefits */}
               <div className="space-y-4 mb-8">
                 <div className="flex items-start space-x-3">
-                  <div className="w-8 h-8 bg-teal-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <CheckCircle className="w-5 h-5 text-teal-600" />
+                  <div className="w-8 h-8 bg-[#b9e15c]/30 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                    <CheckCircle className="w-5 h-5 text-[#002042]" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-lg text-gray-900">Leads qualifiés</h3>
-                    <p className="text-gray-600">Recevez uniquement des clients prêts à démarrer leurs projets</p>
+                    <h3 className="font-bold text-lg text-[#10002c]">Leads qualifiés</h3>
+                    <p className="text-[#375371]">Recevez uniquement des clients prêts à démarrer leurs projets</p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start space-x-3">
-                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <TrendingUp className="w-5 h-5 text-blue-600" />
+                  <div className="w-8 h-8 bg-[#aedee5]/40 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                    <TrendingUp className="w-5 h-5 text-[#002042]" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-lg text-gray-900">Augmentez votre chiffre d'affaires</h3>
-                    <p className="text-gray-600">Accédez à un flux constant de nouveaux projets</p>
+                    <h3 className="font-bold text-lg text-[#10002c]">Augmentez votre chiffre d'affaires</h3>
+                    <p className="text-[#375371]">Accédez à un flux constant de nouveaux projets</p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start space-x-3">
-                  <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <Zap className="w-5 h-5 text-purple-600" />
+                  <div className="w-8 h-8 bg-[#b9e15c]/30 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                    <Zap className="w-5 h-5 text-[#002042]" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-lg text-gray-900">Aucun frais fixe</h3>
-                    <p className="text-gray-600">Payez uniquement pour les leads que vous acceptez</p>
+                    <h3 className="font-bold text-lg text-[#10002c]">Aucun frais fixe</h3>
+                    <p className="text-[#375371]">Payez uniquement pour les leads que vous acceptez</p>
                   </div>
                 </div>
               </div>
 
               {/* Social Proof */}
-              <div className="flex flex-wrap items-center gap-6 pt-6 border-t border-gray-200">
+              <div className="flex flex-wrap items-center gap-6 pt-6 border-t border-[#e8e8e0]">
                 <div className="flex items-center space-x-2">
                   <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
-                  <span className="font-bold text-lg">4.9/5</span>
-                  <span className="text-gray-500 text-sm">(150+ entrepreneurs)</span>
+                  <span className="font-bold text-lg text-[#10002c]">4.9/5</span>
+                  <span className="text-[#375371] text-sm">(150+ entrepreneurs)</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Users className="w-5 h-5 text-teal-600" />
-                  <span className="font-semibold text-gray-700">800+ projets complétés</span>
+                  <Users className="w-5 h-5 text-[#002042]" />
+                  <span className="font-semibold text-[#375371]">800+ projets complétés</span>
                 </div>
               </div>
             </div>
 
             {/* Right Side - Lead Form */}
             <div id="formulaire" className="lg:sticky lg:top-24">
-              <Card className="shadow-2xl border-2 border-gray-200 rounded-3xl overflow-hidden">
-                <div className="bg-gradient-to-r from-teal-600 to-blue-600 text-white p-6 text-center">
-                  <h2 className="text-2xl md:text-3xl font-bold mb-2">
+              <Card className="bg-white border border-[#f2f2f7] rounded-[20px] shadow-md overflow-hidden">
+                <div className="bg-[#002042] text-white p-6 text-center">
+                  <h2 className="text-2xl md:text-3xl font-heading font-bold mb-2">
                     Rejoignez notre réseau
                   </h2>
-                  <p className="text-teal-50">
+                  <p className="text-[#aedee5]">
                     Commencez à recevoir des leads dès aujourd'hui
                   </p>
                 </div>
@@ -348,7 +350,7 @@ export default function PourEntrepreneursPage() {
                     <Button
                       type="submit"
                       disabled={!isFormValid || isSubmitting}
-                      className="w-full bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-lg"
+                      className="w-full bg-[#b9e15c] border-2 border-[#002042] text-[#002042] font-serif-body font-bold py-4 px-8 rounded-full shadow-[-2px_4px_0_0_#002042] hover:shadow-[-1px_2px_0_0_#002042] hover:translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0 text-lg"
                     >
                       {isSubmitting ? (
                         <span className="flex items-center justify-center">
@@ -445,7 +447,7 @@ export default function PourEntrepreneursPage() {
       </section>
 
       {/* How It Works Section */}
-      <section className="py-16 md:py-24 bg-gradient-to-br from-gray-50 to-blue-50">
+      <section className="py-16 md:py-24 bg-[#fffff6]">
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
@@ -505,16 +507,16 @@ export default function PourEntrepreneursPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 md:py-24 bg-gradient-to-r from-teal-600 to-blue-600 text-white">
+      <section className="py-16 md:py-24 bg-[#002042] text-white">
         <div className="container mx-auto px-4 max-w-4xl text-center">
-          <h2 className="text-3xl md:text-5xl font-bold mb-6">
+          <h2 className="text-3xl md:text-5xl font-heading font-bold mb-6">
             Prêt à développer votre entreprise?
           </h2>
-          <p className="text-xl md:text-2xl text-teal-50 mb-8">
+          <p className="text-xl md:text-2xl text-[#aedee5] mb-8">
             Rejoignez les 150+ entrepreneurs qui font confiance à Soumission Confort
           </p>
           <a href="#formulaire">
-            <Button className="bg-white text-teal-600 hover:bg-gray-100 font-bold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 text-lg">
+            <Button className="bg-[#b9e15c] border-2 border-[#002042] text-[#002042] font-serif-body font-bold py-4 px-8 rounded-full shadow-[-2px_4px_0_0_#aedee5] text-lg">
               Rejoindre maintenant
             </Button>
           </a>

@@ -39,7 +39,6 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
   useEffect(() => {
     const params = getCurrentUTMParameters()
     setUtmParams(params)
-    console.log('🏷️ UTM Parameters captured:', params)
   }, [])
 
   const steps = [
@@ -130,14 +129,9 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
 
   const handleLeadSubmit = async (leadData: LeadData) => {
     setIsSubmittingLead(true)
-    console.log('🟢 POPUP FORM SUBMITTED! Starting webhook process...')
-    console.log('📝 Lead data:', leadData)
-    console.log('🏠 Roof data:', roofData)
-    console.log('❓ User answers:', answers)
 
     try {
       // First calculate pricing
-      console.log('💰 Calculating pricing first...')
       let pricingData = null
       
       try {
@@ -154,7 +148,6 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
         }
         
         pricingData = calculateInsulationPricing(calculationInputs)
-        console.log('✅ PRICING CALCULATED:', pricingData)
         
       } catch (pricingError) {
         console.error('💥 Pricing calculation error, using fallback:', pricingError)
@@ -187,7 +180,6 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
       if (typeof window.fbq === 'function' && pricingData?.ranges?.standard) {
         const standardRange = pricingData.ranges.standard
         const estimatedValue = (standardRange.totalCost.min + standardRange.totalCost.max) / 2;
-        console.log(`📱 Firing Meta Pixel "Lead" event (client-side) with value: ${estimatedValue}, eventId: ${eventId}`);
         window.fbq('track', 'Lead', {
             value: estimatedValue.toFixed(2),
             currency: 'CAD',
@@ -208,7 +200,6 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
         eventId
       }
       
-      console.log('📤 CALLING /api/leads with payload (including pricing):', leadPayload)
       
       const response = await fetch('/api/leads', {
         method: 'POST',
@@ -218,8 +209,6 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
         body: JSON.stringify(leadPayload),
       })
       
-      console.log('📥 Response status:', response.status)
-      console.log('📥 Response ok:', response.ok)
       
       if (!response.ok) {
         const errorText = await response.text()
@@ -229,7 +218,6 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
       }
       
       const result = await response.json()
-      console.log('✅ WEBHOOK SUBMITTED SUCCESSFULLY:', result)
       
       const leadDataWithId = {
         ...leadData,
@@ -256,30 +244,39 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
       onComplete(answers, leadData, fallbackPricing)
     } finally {
       setIsSubmittingLead(false)
-      console.log('🏁 Popup submission process COMPLETED')
     }
   }
 
   return (
     <>
-      <div className="max-w-3xl mx-auto px-4">
+      <div className="max-w-3xl mx-auto px-4 py-6">
         {/* Header with Progress */}
         <div className="text-center mb-8">
-          <Badge className="mb-4 bg-blue-100 text-blue-800 border-blue-200 px-4 py-2">
-            <Clock className="w-4 h-4 mr-2" />
-            Question {currentStep + 1} sur {steps.length}
-          </Badge>
+          <div className="inline-flex items-center gap-2 bg-[#aedee5]/30 border border-[#aedee5] rounded-full px-4 py-2 mb-4">
+            <Clock className="w-4 h-4 text-[#002042]" />
+            <span className="font-serif-body font-semibold text-[#002042] text-sm">
+              Question {currentStep + 1} sur {steps.length}
+            </span>
+          </div>
 
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">{steps[currentStep].title}</h1>
-          <p className="text-lg text-gray-600 mb-6">
+          {/* Progress bar */}
+          <div className="w-full bg-[#e8e8e0] rounded-full h-1.5 mb-6">
+            <div
+              className="bg-[#b9e15c] h-1.5 rounded-full transition-all duration-500"
+              style={{ width: `${getProgress()}%` }}
+            />
+          </div>
+
+          <h1 className="font-heading text-2xl md:text-3xl font-bold text-[#10002c] mb-2">{steps[currentStep].title}</h1>
+          <p className="font-serif-body text-lg text-[#375371]">
             {steps[currentStep].description}
           </p>
         </div>
 
-        {/* Wizard Card - Single card for all steps */}
-        <Card className="border-0 shadow-2xl bg-white">
-          <CardContent className="p-8 min-h-[450px] flex flex-col">
-            <div className="flex-1">
+        {/* Wizard Card */}
+        <div className="bg-white border border-[#aedee5] rounded-[20px] shadow-md">
+          <div className="p-8 min-h-[400px] flex flex-col">
+            <div className="flex-1 space-y-3">
               {/* Step 0: Système de chauffage */}
               {currentStep === 0 && (
                 <RadioGroup
@@ -299,13 +296,13 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
                       key={option.value}
                       className={`flex items-center space-x-3 p-4 rounded-xl border-2 transition-all cursor-pointer hover:shadow-md ${
                         answers.heatingSystem === option.value
-                          ? "border-blue-500 bg-blue-50"
-                          : "border-gray-200 bg-white hover:border-blue-300"
+                          ? "border-[#86a735] bg-[#ecf8cf]"
+                          : "border-[#aedee5] bg-white hover:border-[#002042]"
                       }`}
                       onClick={() => setAnswers((prev) => ({ ...prev, heatingSystem: option.value }))}
                     >
                       <RadioGroupItem value={option.value} id={option.value} />
-                      <Label htmlFor={option.value} className="text-base font-medium cursor-pointer flex-1">
+                      <Label htmlFor={option.value} className="font-serif-body text-base font-medium cursor-pointer flex-1 text-[#10002c]">
                         {option.label}
                       </Label>
                     </div>
@@ -331,13 +328,13 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
                       key={option.value}
                       className={`flex items-center space-x-3 p-4 rounded-xl border-2 transition-all cursor-pointer hover:shadow-md ${
                         answers.currentInsulation === option.value
-                          ? "border-green-500 bg-green-50"
-                          : "border-gray-200 bg-white hover:border-green-300"
+                          ? "border-[#86a735] bg-[#ecf8cf]"
+                          : "border-[#aedee5] bg-white hover:border-[#002042]"
                       }`}
                       onClick={() => setAnswers((prev) => ({ ...prev, currentInsulation: option.value }))}
                     >
                       <RadioGroupItem value={option.value} id={`insulation-${option.value}`} />
-                      <Label htmlFor={`insulation-${option.value}`} className="text-base font-medium cursor-pointer flex-1">
+                      <Label htmlFor={`insulation-${option.value}`} className="font-serif-body text-base font-medium cursor-pointer flex-1 text-[#10002c]">
                         {option.label}
                       </Label>
                     </div>
@@ -363,13 +360,13 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
                       key={option.value}
                       className={`flex items-center space-x-3 p-4 rounded-xl border-2 transition-all cursor-pointer hover:shadow-md ${
                         answers.atticAccess === option.value
-                          ? "border-purple-500 bg-purple-50"
-                          : "border-gray-200 bg-white hover:border-purple-300"
+                          ? "border-[#86a735] bg-[#ecf8cf]"
+                          : "border-[#aedee5] bg-white hover:border-[#002042]"
                       }`}
                       onClick={() => setAnswers((prev) => ({ ...prev, atticAccess: option.value }))}
                     >
                       <RadioGroupItem value={option.value} id={`access-${option.value}`} />
-                      <Label htmlFor={`access-${option.value}`} className="text-base font-medium cursor-pointer flex-1">
+                      <Label htmlFor={`access-${option.value}`} className="font-serif-body text-base font-medium cursor-pointer flex-1 text-[#10002c]">
                         {option.label}
                       </Label>
                     </div>
@@ -379,77 +376,74 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
 
               {/* Step 3: Problèmes identifiés */}
               {currentStep === 3 && (
-                <div className="space-y-4">
-                  <p className="text-sm text-gray-600 mb-4">Sélectionnez tous les problèmes qui s'appliquent (optionnel)</p>
-                  <div className="space-y-3">
-                    {[
-                      { value: "moisissure", label: "Moisissure ou humidité" },
-                      { value: "courants-air", label: "Courants d'air" },
-                      { value: "factures-elevees", label: "Factures d'énergie élevées" },
-                      { value: "temperature-inegale", label: "Température inégale entre les pièces" },
-                      { value: "glace", label: "Formation de glace sur le toit" },
-                      { value: "aucun", label: "Aucun problème identifié" },
-                    ].map((problem) => (
-                      <div
-                        key={problem.value}
-                        className={`flex items-center space-x-3 p-4 rounded-xl border-2 transition-all cursor-pointer hover:shadow-md ${
-                          answers.identifiedProblems.includes(problem.value)
-                            ? "border-orange-500 bg-orange-50"
-                            : "border-gray-200 bg-white hover:border-orange-300"
-                        }`}
-                        onClick={() => handleProblemToggle(problem.value)}
-                      >
-                        <Checkbox
-                          id={problem.value}
-                          checked={answers.identifiedProblems.includes(problem.value)}
-                          onCheckedChange={() => handleProblemToggle(problem.value)}
-                        />
-                        <Label htmlFor={problem.value} className="text-base font-medium cursor-pointer flex-1">
-                          {problem.label}
-                        </Label>
-                      </div>
-                    ))}
-                  </div>
+                <div className="space-y-3">
+                  <p className="font-serif-body text-sm text-[#375371] mb-2">Sélectionnez tous les problèmes qui s'appliquent (optionnel)</p>
+                  {[
+                    { value: "moisissure", label: "Moisissure ou humidité" },
+                    { value: "courants-air", label: "Courants d'air" },
+                    { value: "factures-elevees", label: "Factures d'énergie élevées" },
+                    { value: "temperature-inegale", label: "Température inégale entre les pièces" },
+                    { value: "glace", label: "Formation de glace sur le toit" },
+                    { value: "aucun", label: "Aucun problème identifié" },
+                  ].map((problem) => (
+                    <div
+                      key={problem.value}
+                      className={`flex items-center space-x-3 p-4 rounded-xl border-2 transition-all cursor-pointer hover:shadow-md ${
+                        answers.identifiedProblems.includes(problem.value)
+                          ? "border-[#86a735] bg-[#ecf8cf]"
+                          : "border-[#aedee5] bg-white hover:border-[#002042]"
+                      }`}
+                      onClick={() => handleProblemToggle(problem.value)}
+                    >
+                      <Checkbox
+                        id={problem.value}
+                        checked={answers.identifiedProblems.includes(problem.value)}
+                        onCheckedChange={() => handleProblemToggle(problem.value)}
+                      />
+                      <Label htmlFor={problem.value} className="font-serif-body text-base font-medium cursor-pointer flex-1 text-[#10002c]">
+                        {problem.label}
+                      </Label>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
-          </CardContent>
+          </div>
 
           {/* Navigation Buttons */}
-          <div className="border-t p-6 bg-gray-50 flex justify-between items-center">
-            <Button
-              variant="outline"
+          <div className="border-t border-[#e8e8e0] p-6 bg-[#fffff6] rounded-b-[20px] flex justify-between items-center">
+            <button
               onClick={handlePrevious}
               disabled={currentStep === 0}
-              className="px-6"
+              className="flex items-center gap-2 font-serif-body font-semibold text-[#375371] hover:text-[#002042] disabled:opacity-30 disabled:cursor-not-allowed transition-colors px-4 py-2"
             >
-              <ArrowLeft className="w-4 h-4 mr-2" />
+              <ArrowLeft className="w-4 h-4" />
               Précédent
-            </Button>
+            </button>
 
-            <div className="text-sm text-gray-600">
-              Question {currentStep + 1} sur {steps.length}
-            </div>
+            <span className="font-serif-body text-sm text-[#375371]">
+              {currentStep + 1} / {steps.length}
+            </span>
 
-            <Button
+            <button
               onClick={handleNext}
               disabled={!canGoNext()}
-              className="px-6 bg-blue-600 hover:bg-blue-700"
+              className="flex items-center gap-2 bg-[#b9e15c] border-2 border-[#002042] text-[#002042] font-heading font-bold py-3 px-6 rounded-full shadow-[-2px_4px_0_0_#002042] hover:shadow-[-1px_2px_0_0_#002042] hover:translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0"
             >
               {currentStep === steps.length - 1 ? (
                 <>
                   Obtenir ma soumission
-                  <CheckCircle className="w-4 h-4 ml-2" />
+                  <CheckCircle className="w-4 h-4" />
                 </>
               ) : (
                 <>
                   Suivant
-                  <ArrowRight className="w-4 h-4 ml-2" />
+                  <ArrowRight className="w-4 h-4" />
                 </>
               )}
-            </Button>
+            </button>
           </div>
-        </Card>
+        </div>
       </div>
 
       {/* Lead Capture Popup */}

@@ -30,13 +30,6 @@ export function LeadCaptureForm({ roofData, userAnswers, leadData, onComplete }:
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('� FORM SUBMIT HANDLER CALLED!')
-    console.log('🟢 Event:', e)
-    console.log('🟢 Form data state:', formData)
-    console.log('�🚀 FORM SUBMITTED! Starting lead submission process...')
-    console.log('📝 Form data:', formData)
-    console.log('🏠 Roof data:', roofData)
-    console.log('❓ User answers:', userAnswers)
     setIsSubmitting(true)
     setShowForm(false)
     
@@ -52,12 +45,9 @@ export function LeadCaptureForm({ roofData, userAnswers, leadData, onComplete }:
         pricingData
       }
       
-      console.log('📤 CALLING /api/leads with payload:', leadPayload)
-      console.log('🌐 Current URL:', window.location.href)
       
       const startTime = Date.now()
       
-      console.log('🚀 About to make fetch request...')
       
       const response = await fetch('/api/leads', {
         method: 'POST',
@@ -73,25 +63,17 @@ export function LeadCaptureForm({ roofData, userAnswers, leadData, onComplete }:
         throw fetchError
       })
       
-      console.log('✅ Fetch completed successfully, got response object')
       
       const endTime = Date.now()
-      console.log(`⏱️ API call took ${endTime - startTime}ms`)
-      console.log('📥 Response status:', response.status)
-      console.log('📥 Response ok:', response.ok)
-      console.log('📥 Response headers:', Object.fromEntries(response.headers.entries()))
       
       if (!response.ok) {
-        console.log('❌ Response not OK, getting error text...')
         const errorText = await response.text()
         console.error('❌ API ERROR - Status:', response.status)
         console.error('❌ API ERROR - Text:', errorText)
         throw new Error(`API call failed: ${response.status}`)
       }
       
-      console.log('✅ Response OK, parsing JSON...')
       const result = await response.json()
-      console.log('✅ LEAD SUBMITTED SUCCESSFULLY:', result)
       setPricingData(result.pricingData)
       onComplete(result.pricingData)
       setIsSubmitted(true)
@@ -107,7 +89,6 @@ export function LeadCaptureForm({ roofData, userAnswers, leadData, onComplete }:
       setIsSubmitted(true)
     } finally {
       setIsSubmitting(false)
-      console.log('🏁 Lead submission process COMPLETED')
     }
   }
 
@@ -121,13 +102,6 @@ export function LeadCaptureForm({ roofData, userAnswers, leadData, onComplete }:
   const isFormValid = formData.firstName && formData.lastName && formData.email && formData.phone
   
   // Debug form validation
-  console.log('🔍 FORM VALIDATION DEBUG:')
-  console.log('📝 Form data:', formData)
-  console.log('✅ firstName valid:', !!formData.firstName)
-  console.log('✅ lastName valid:', !!formData.lastName)
-  console.log('✅ email valid:', !!formData.email)
-  console.log('✅ phone valid:', !!formData.phone)
-  console.log('🎯 isFormValid:', isFormValid)
 
   // Show loading state while submitting
   if (isSubmitting) {

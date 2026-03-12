@@ -333,16 +333,18 @@ export default function ThermopompesPage() {
   const priceRange = getPriceRange(recommendation?.recommendation?.totalInvestment)
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#fffff6]">
       {/* Header */}
-      <header className="border-b bg-white/95 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
+      <header className="sticky top-0 z-50 bg-[#fffff6] border-b border-[#e8e8e0]">
+        <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <img 
-              src="/images/logosoumissionconfort-1.png" 
-              alt="Soumission Confort AI" 
-              className="h-16 w-auto" 
-            />
+            <a href="/" className="flex items-center gap-3">
+              <img src="/images/logo-icon.svg" alt="" className="h-7 md:h-[48px] w-auto" />
+              <div className="font-heading font-bold text-[#002042] leading-[0.9] tracking-[-0.04em] text-[18px] md:text-[26px] whitespace-nowrap">
+                <p>Soumission</p>
+                <p>Confort</p>
+              </div>
+            </a>
             <Badge className="bg-blue-100 text-blue-800 border-blue-200">
               <ThermometerSnowflake className="w-4 h-4 mr-1" />
               Thermopompes
@@ -398,7 +400,7 @@ export default function ThermopompesPage() {
                   <Button 
                     onClick={handleAddressSubmit}
                     size="lg"
-                    className="bg-gradient-to-r from-lime-200 via-emerald-300 to-green-500 text-black font-semibold h-14 px-10 shadow-md hover:brightness-95 rounded-full border border-emerald-100"
+                    className="bg-[#b9e15c] border-2 border-[#002042] text-[#002042] font-serif-body font-bold h-14 px-10 shadow-md  rounded-full"
                     disabled={!address || isAnalyzing}
                   >
                     {isAnalyzing ? (
@@ -680,7 +682,7 @@ export default function ThermopompesPage() {
               <div className="space-y-4">
                 <Button
                   onClick={handleSurfaceValidation}
-                  className="w-full h-14 text-lg bg-gradient-to-r from-lime-200 via-emerald-300 to-green-500 text-black font-semibold shadow-md hover:brightness-95 rounded-full border border-emerald-100 disabled:opacity-60"
+                  className="w-full h-14 text-lg bg-[#b9e15c] border-2 border-[#002042] text-[#002042] font-serif-body font-bold shadow-md  rounded-full disabled:opacity-60"
                   disabled={!userCorrectedArea}
                 >
                   Continuer avec cette surface
@@ -728,7 +730,7 @@ export default function ThermopompesPage() {
                           handleThermalSubmit({ constructionYear: thermal.constructionYear })
                         }
                       }}
-                      className="w-full h-12 bg-gradient-to-r from-lime-200 via-emerald-300 to-green-500 text-black font-semibold shadow-md hover:brightness-95 rounded-full border border-emerald-100 disabled:opacity-60"
+                      className="w-full h-12 bg-[#b9e15c] border-2 border-[#002042] text-[#002042] font-serif-body font-bold shadow-md  rounded-full disabled:opacity-60"
                       disabled={!isValidConstructionYear(thermal.constructionYear)}
                     >
                       Continuer
@@ -937,7 +939,7 @@ export default function ThermopompesPage() {
                 </p>
                 <Button
                   size="lg"
-                  className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 h-14 px-14 md:px-16 text-lg w-full max-w-xl mx-auto shadow-lg hover:shadow-xl transition"
+                  className="bg-[#b9e15c] border-2 border-[#002042] text-[#002042] font-serif-body font-bold h-14 px-14 md:px-16 text-lg w-full max-w-xl mx-auto shadow-[-2px_4px_0_0_#002042] rounded-full"
                   onClick={() => router.push('/success')}
                 >
                   Obtenir soumissions gratuites
@@ -947,7 +949,7 @@ export default function ThermopompesPage() {
             </Card>
 
             {/* Hero Results */}
-            <Card className="bg-gradient-to-br from-blue-600 to-cyan-600 text-white shadow-2xl">
+            <Card className="bg-[#002042] text-white shadow-2xl">
               <CardContent className="p-8 text-center">
                 <h2 className="text-3xl font-bold mb-4">
                   Votre Rapport d'Économies Personnalisé
@@ -1027,7 +1029,7 @@ export default function ThermopompesPage() {
         <div className="max-w-4xl mx-auto px-4 pb-12 flex justify-center">
           <Button
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition"
+            className="bg-[#b9e15c] border-2 border-[#002042] text-[#002042] font-serif-body font-bold px-8 py-3 rounded-full shadow-[-2px_4px_0_0_#002042]"
           >
             Obtenir votre soumission
           </Button>

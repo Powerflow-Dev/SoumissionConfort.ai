@@ -12,10 +12,25 @@
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
   }
-  
+
   .text-balance {
     text-wrap: balance;
   }
+  .font-heading {
+    font-family: var(--font-radio-canada), sans-serif;
+  }
+  .font-serif-body {
+    font-family: var(--font-source-serif), serif;
+  }
+}
+
+:root {
+  --brand-navy: #002042;
+  --brand-green: #b9e15c;
+  --brand-blue: #aedee5;
+  --brand-cream: #fffff6;
+  --brand-paragraph: #375371;
+  --brand-dark: #10002c;
 }
 
 @layer base {
