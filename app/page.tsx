@@ -252,7 +252,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
             {[
               {
-                title: "Notre service est 100% gratuit, l'entrepreneur nous offre une commission s'il obtient le contrat, c'est «win-win» !",
+                title: "Les entrepreneurs nous paient pour les mettre en contact avec des propriétaires qui veulent faire leurs travaux.",
                 body: "Aucune pression. On mise sur la qualité de notre service avant tout.\n\nNotre meilleure façon de réussir, c'est de vous trouver l'entrepreneur idéal pour votre projet.",
               },
               {
