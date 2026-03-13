@@ -7,7 +7,7 @@ import { getCurrentUTMParameters } from "@/lib/utm-utils"
 import { track } from '@vercel/analytics'
 import { initializeMeta, isMetaConfigured } from '@/lib/meta-config'
 import { trackViewContent } from '@/lib/meta-conversion-api'
-import { ChevronDown, Search } from 'lucide-react'
+import { ChevronDown, Search, Menu, X } from 'lucide-react'
 
 function Logo() {
   return (
@@ -25,8 +25,8 @@ function AddressBarSection({ onNavigate }: { onNavigate: (address: string) => vo
   const [validAddress, setValidAddress] = useState("")
 
   return (
-    <div className="bg-white border border-black/25 flex flex-col sm:flex-row items-stretch sm:items-center p-2 rounded-full w-full gap-2">
-      <div className="flex-1 min-w-0">
+    <div className="flex flex-wrap gap-2 w-full">
+      <div className="flex-1 min-w-[240px]">
         <AddressInput
           onAddressSelect={() => {}}
           onValidAddressSelect={(a) => setValidAddress(a)}
@@ -37,7 +37,7 @@ function AddressBarSection({ onNavigate }: { onNavigate: (address: string) => vo
       <button
         onClick={() => { if (validAddress.trim()) onNavigate(validAddress) }}
         disabled={!validAddress.trim()}
-        className="bg-[#b9e15c] border-2 border-[#002042] h-[56px] px-8 rounded-full shadow-[-2px_4px_0_0_#002042] font-serif-body font-bold text-[18px] text-[#002042] whitespace-nowrap shrink-0 hover:shadow-[-1px_2px_0_0_#002042] hover:translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+        className="flex-1 min-w-[300px] bg-[#b9e15c] border-2 border-[#002042] h-[56px] px-8 rounded-full shadow-[-2px_4px_0_0_#002042] font-serif-body font-bold text-[18px] text-[#002042] whitespace-nowrap hover:shadow-[-1px_2px_0_0_#002042] hover:translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0"
       >
         Obtenir mon estimation gratuite
       </button>
@@ -69,6 +69,7 @@ export default function HomePage() {
   const [heroAddress, setHeroAddress] = useState("")
   const [heroValidAddress, setHeroValidAddress] = useState("")
   const [openFaq, setOpenFaq] = useState<number | null>(null)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
     initializeMeta()
@@ -113,11 +114,35 @@ export default function HomePage() {
           >
             Obtenir mon estimation gratuite
           </a>
+          <button
+            className="md:hidden p-1 text-[#002042]"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Menu"
+          >
+            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
         </div>
+        {mobileMenuOpen && (
+          <div className="md:hidden bg-[#fffff6] border-t border-[#e8e8e0] px-6 py-4 flex flex-col gap-4">
+            <a href="#comment-ca-fonctionne" onClick={() => setMobileMenuOpen(false)} className="font-serif-body font-semibold text-[18px] text-[#002042] tracking-tight">
+              Comment ça fonctionne ?
+            </a>
+            <a href="#faq" onClick={() => setMobileMenuOpen(false)} className="font-serif-body font-semibold text-[18px] text-[#002042] tracking-tight">
+              FAQ
+            </a>
+            <a
+              href="#form-hero"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center justify-center h-[48px] px-7 rounded-full bg-[#b9e15c] border-2 border-[#002042] shadow-[-2px_4px_0_0_#002042] font-serif-body font-bold text-[17px] text-[#002042] text-center"
+            >
+              Obtenir mon estimation gratuite
+            </a>
+          </div>
+        )}
       </header>
 
       {/* ── HERO ── */}
-      <section className="px-4 sm:px-6 pt-10 pb-16">
+      <section className="px-4 sm:px-6 pt-6 pb-16">
         <div className="container mx-auto max-w-7xl">
           <div className="relative rounded-[20px] overflow-hidden min-h-[580px] md:min-h-[640px] flex flex-col items-center justify-center">
             <img
@@ -139,7 +164,7 @@ export default function HomePage() {
               </div>
 
               {/* Title */}
-              <h1 className="font-heading font-semibold text-[48px] md:text-[56px] text-white text-center leading-none tracking-[-0.03em] drop-shadow-lg max-w-[700px]">
+              <h1 className="font-heading font-semibold text-[56px] text-white text-center leading-none tracking-[-0.03em] drop-shadow-lg max-w-[700px]">
                 Estimation d'isolation instantané
               </h1>
 
