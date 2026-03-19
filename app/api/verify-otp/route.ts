@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getFirestoreAdmin } from '@/lib/firebase-admin'
-
-const MAX_ATTEMPTS = 3
+import twilio from 'twilio'
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,63 +10,27 @@ export async function POST(request: NextRequest) {
     }
 
     const normalizedPhone = phone.replace(/\D/g, '')
-    const db = getFirestoreAdmin()
-    const docRef = db.collection('otp_verifications').doc(normalizedPhone)
-    const doc = await docRef.get()
 
-    if (!doc.exists) {
-      return NextResponse.json(
-        { error: 'Aucun code trouvé. Demandez un nouveau code.' },
-        { status: 400 }
-      )
+    const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
+    const check = await client.verify.v2
+      .services(process.env.TWILIO_VERIFY_SERVICE_SID!)
+      .verificationChecks.create({ to: `+1${normalizedPhone}`, code: code.trim() })
+
+    if (check.status === 'approved') {
+      return NextResponse.json({ success: true })
     }
 
-    const data = doc.data()!
-
-    // Check expiry
-    if (data.expiresAt.toDate() < new Date()) {
-      await docRef.delete()
-      return NextResponse.json(
-        { error: 'Code expiré. Demandez un nouveau code.', expired: true },
-        { status: 400 }
-      )
-    }
-
-    // Check max attempts
-    if (data.attempts >= MAX_ATTEMPTS) {
-      await docRef.delete()
-      return NextResponse.json(
-        { error: 'Trop de tentatives. Demandez un nouveau code.', expired: true },
-        { status: 400 }
-      )
-    }
-
-    // Wrong code
-    if (data.code !== code.trim()) {
-      const newAttempts = data.attempts + 1
-      await docRef.update({ attempts: newAttempts })
-      const attemptsLeft = MAX_ATTEMPTS - newAttempts
-
-      return NextResponse.json(
-        {
-          error: attemptsLeft > 0
-            ? `Code incorrect. Il vous reste ${attemptsLeft} tentative${attemptsLeft > 1 ? 's' : ''}.`
-            : 'Code incorrect. Demandez un nouveau code.',
-          attemptsLeft,
-          expired: attemptsLeft === 0,
-        },
-        { status: 400 }
-      )
-    }
-
-    // Valid — delete OTP record
-    await docRef.delete()
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ error: 'Code incorrect.', attemptsLeft: true }, { status: 400 })
   } catch (error: any) {
-    console.error('verify-otp error:', error)
-    return NextResponse.json(
-      { error: 'Erreur de vérification. Veuillez réessayer.' },
-      { status: 500 }
-    )
+    console.error('verify-otp error:', error.message, error.code)
+
+    if (error.code === 60202) {
+      return NextResponse.json({ error: 'Trop de tentatives. Demandez un nouveau code.', expired: true }, { status: 400 })
+    }
+    if (error.code === 60200 || error.code === 20404) {
+      return NextResponse.json({ error: 'Code expiré. Demandez un nouveau code.', expired: true }, { status: 400 })
+    }
+
+    return NextResponse.json({ error: 'Erreur de vérification. Veuillez réessayer.' }, { status: 500 })
   }
 }
