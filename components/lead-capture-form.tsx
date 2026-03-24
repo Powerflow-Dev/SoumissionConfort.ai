@@ -4,9 +4,9 @@ import React, { useState } from "react"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { useLanguage } from "@/lib/language-context"
-import { CheckCircle, Star, MapPin, Clock, Shield, Trophy, Users } from "lucide-react"
+import { CheckCircle } from "lucide-react"
+import { PhoneOtpInput } from "@/components/phone-otp-input"
 
 interface LeadCaptureFormProps {
   roofData: any
@@ -21,6 +21,7 @@ export function LeadCaptureForm({ roofData, userAnswers, leadData, onComplete }:
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [pricingData, setPricingData] = useState<any>(null)
   const [showForm, setShowForm] = useState(true)
+  const [phoneVerified, setPhoneVerified] = useState(false)
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -32,9 +33,8 @@ export function LeadCaptureForm({ roofData, userAnswers, leadData, onComplete }:
     e.preventDefault()
     setIsSubmitting(true)
     setShowForm(false)
-    
+
     try {
-      // Prepare complete lead data with user input
       const leadPayload = {
         firstName: formData.firstName,
         lastName: formData.lastName,
@@ -44,48 +44,28 @@ export function LeadCaptureForm({ roofData, userAnswers, leadData, onComplete }:
         userAnswers,
         pricingData
       }
-      
-      
-      const startTime = Date.now()
-      
-      
+
       const response = await fetch('/api/leads', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(leadPayload),
       }).catch(fetchError => {
-        console.error('🔥 FETCH ERROR CAUGHT:', fetchError)
-        console.error('🔥 FETCH ERROR TYPE:', typeof fetchError)
-        console.error('🔥 FETCH ERROR MESSAGE:', fetchError.message)
-        console.error('🔥 FETCH ERROR STACK:', fetchError.stack)
+        console.error('🔥 FETCH ERROR:', fetchError.message)
         throw fetchError
       })
-      
-      
-      const endTime = Date.now()
-      
+
       if (!response.ok) {
         const errorText = await response.text()
-        console.error('❌ API ERROR - Status:', response.status)
-        console.error('❌ API ERROR - Text:', errorText)
+        console.error('❌ API ERROR - Status:', response.status, errorText)
         throw new Error(`API call failed: ${response.status}`)
       }
-      
+
       const result = await response.json()
       setPricingData(result.pricingData)
       onComplete(result.pricingData)
       setIsSubmitted(true)
-      
     } catch (error) {
       console.error('❌ CRITICAL ERROR submitting lead:', error)
-      console.error('❌ Error details:', {
-        message: error.message,
-        stack: error.stack,
-        name: error.name
-      })
-      // Still show success to user, but log the error
       setIsSubmitted(true)
     } finally {
       setIsSubmitting(false)
@@ -93,17 +73,11 @@ export function LeadCaptureForm({ roofData, userAnswers, leadData, onComplete }:
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }))
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
-  const isFormValid = formData.firstName && formData.lastName && formData.email && formData.phone
-  
-  // Debug form validation
+  const isFormValid = formData.firstName && formData.lastName && formData.email && formData.phone && phoneVerified
 
-  // Show loading state while submitting
   if (isSubmitting) {
     return (
       <div className="max-w-2xl mx-auto text-center py-12">
@@ -114,7 +88,6 @@ export function LeadCaptureForm({ roofData, userAnswers, leadData, onComplete }:
     )
   }
 
-  // Show contact form first
   if (showForm) {
     return (
       <div className="max-w-2xl mx-auto">
@@ -133,9 +106,7 @@ export function LeadCaptureForm({ roofData, userAnswers, leadData, onComplete }:
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Prénom *
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Prénom *</label>
                   <input
                     type="text"
                     name="firstName"
@@ -147,9 +118,7 @@ export function LeadCaptureForm({ roofData, userAnswers, leadData, onComplete }:
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Nom *
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Nom *</label>
                   <input
                     type="text"
                     name="lastName"
@@ -161,11 +130,9 @@ export function LeadCaptureForm({ roofData, userAnswers, leadData, onComplete }:
                   />
                 </div>
               </div>
-              
+
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
                 <input
                   type="email"
                   name="email"
@@ -176,18 +143,17 @@ export function LeadCaptureForm({ roofData, userAnswers, leadData, onComplete }:
                   placeholder="jean.dupont@email.com"
                 />
               </div>
-              
+
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Téléphone *
-                </label>
-                <input
-                  type="tel"
-                  name="phone"
+                <label className="block text-sm font-medium text-gray-700 mb-2">Téléphone *</label>
+                <PhoneOtpInput
                   value={formData.phone}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onChange={(val) => {
+                    setFormData(prev => ({ ...prev, phone: val }))
+                    setPhoneVerified(false)
+                  }}
+                  onVerified={() => setPhoneVerified(true)}
+                  inputClassName="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="514-555-0123"
                 />
               </div>
@@ -199,7 +165,7 @@ export function LeadCaptureForm({ roofData, userAnswers, leadData, onComplete }:
               >
                 🚀 Obtenir mes soumissions gratuites
               </Button>
-              
+
               <p className="text-sm text-gray-500 text-center">
                 ⚡ Résultats instantanés • 🔒 100% sécurisé • 📞 Aucun appel non sollicité
               </p>
@@ -210,7 +176,6 @@ export function LeadCaptureForm({ roofData, userAnswers, leadData, onComplete }:
     )
   }
 
-  // Show success page with pricing after submission
   if (isSubmitted && pricingData) {
     return (
       <div className="max-w-4xl mx-auto">
@@ -224,14 +189,12 @@ export function LeadCaptureForm({ roofData, userAnswers, leadData, onComplete }:
           </p>
         </div>
 
-        {/* Pricing Results */}
         <Card className="shadow-2xl border-0 mb-8">
           <CardHeader className="text-center pb-4">
             <CardTitle className="text-3xl">Votre soumission personnalisée</CardTitle>
             <p className="text-gray-600">Basée sur l'analyse de votre toit et vos préférences</p>
           </CardHeader>
           <CardContent className="p-8">
-            {/* Investment Range */}
             <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-8 rounded-xl mb-8 text-center">
               <h3 className="text-2xl font-bold mb-4">💰 Investissement estimé</h3>
               <div className="text-5xl font-bold mb-2">
@@ -240,7 +203,6 @@ export function LeadCaptureForm({ roofData, userAnswers, leadData, onComplete }:
               <p className="text-blue-100">Installation professionnelle incluse</p>
             </div>
 
-            {/* Key Details */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               <div className="text-center p-6 bg-gray-50 rounded-lg">
                 <div className="text-3xl font-bold text-blue-600">{roofData.roofArea}</div>
@@ -256,48 +218,33 @@ export function LeadCaptureForm({ roofData, userAnswers, leadData, onComplete }:
               </div>
             </div>
 
-            {/* Next Steps */}
             <div className="bg-blue-50 p-6 rounded-lg">
               <h4 className="text-xl font-bold text-gray-900 mb-4">📋 Prochaines étapes</h4>
               <ul className="space-y-2">
-                <li className="flex items-center">
-                  <CheckCircle className="w-5 h-5 text-green-600 mr-3" />
-                  <span>Les entrepreneurs examineront les détails de votre projet</span>
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle className="w-5 h-5 text-green-600 mr-3" />
-                  <span>Vous recevrez des appels/emails des entrepreneurs intéressés</span>
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle className="w-5 h-5 text-green-600 mr-3" />
-                  <span>Planifiez des évaluations sur site pour des devis détaillés</span>
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle className="w-5 h-5 text-green-600 mr-3" />
-                  <span>Comparez les devis et choisissez votre entrepreneur préféré</span>
-                </li>
+                {[
+                  "Les entrepreneurs examineront les détails de votre projet",
+                  "Vous recevrez des appels/emails des entrepreneurs intéressés",
+                  "Planifiez des évaluations sur site pour des devis détaillés",
+                  "Comparez les devis et choisissez votre entrepreneur préféré",
+                ].map((step) => (
+                  <li key={step} className="flex items-center">
+                    <CheckCircle className="w-5 h-5 text-green-600 mr-3 flex-shrink-0" />
+                    <span>{step}</span>
+                  </li>
+                ))}
               </ul>
             </div>
           </CardContent>
         </Card>
 
-        {/* Contact Info Confirmation */}
         <Card className="shadow-lg">
           <CardContent className="p-6">
             <h4 className="text-lg font-bold text-gray-900 mb-4">📞 Vos informations de contact</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="font-medium">Nom:</span> {formData.firstName} {formData.lastName}
-              </div>
-              <div>
-                <span className="font-medium">Email:</span> {formData.email}
-              </div>
-              <div>
-                <span className="font-medium">Téléphone:</span> {formData.phone}
-              </div>
-              <div>
-                <span className="font-medium">Adresse:</span> {roofData.address}
-              </div>
+              <div><span className="font-medium">Nom:</span> {formData.firstName} {formData.lastName}</div>
+              <div><span className="font-medium">Email:</span> {formData.email}</div>
+              <div><span className="font-medium">Téléphone:</span> {formData.phone}</div>
+              <div><span className="font-medium">Adresse:</span> {roofData.address}</div>
             </div>
           </CardContent>
         </Card>

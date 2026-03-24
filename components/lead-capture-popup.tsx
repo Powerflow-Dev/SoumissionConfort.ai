@@ -10,6 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useLanguage } from "@/lib/language-context"
 import { X, Loader2, Shield, CheckCircle } from 'lucide-react'
 import { track } from '@vercel/analytics'
+import { PhoneOtpInput } from "@/components/phone-otp-input"
 
 interface LeadCapturePopupProps {
   isOpen: boolean
@@ -32,6 +33,7 @@ export interface LeadData {
 export function LeadCapturePopup({ isOpen, onClose, onSubmit, isSubmitting = false, roofData }: LeadCapturePopupProps) {
   const { t } = useLanguage()
   const [phoneError, setPhoneError] = useState<string | null>(null)
+  const [phoneVerified, setPhoneVerified] = useState(false)
   const [formData, setFormData] = useState<LeadData>({
     firstName: "",
     lastName: "",
@@ -47,13 +49,6 @@ export function LeadCapturePopup({ isOpen, onClose, onSubmit, isSubmitting = fal
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const digits = formData.phone.replace(/\D/g, "")
-    if (digits.length !== 10) {
-      setPhoneError("Veuillez entrer un numéro de téléphone à 10 chiffres (ex: 1234567890).")
-      return
-    }
-    setPhoneError(null)
-
     if (isFormValid()) {
       track('Lead Submitted', { firstName: formData.firstName, email: formData.email })
       onSubmit(formData)
@@ -66,6 +61,7 @@ export function LeadCapturePopup({ isOpen, onClose, onSubmit, isSubmitting = fal
       formData.lastName.trim() &&
       formData.email.trim() &&
       formData.phone.trim() &&
+      phoneVerified &&
       formData.agreeToTerms &&
       formData.agreeToContact
     )
@@ -160,22 +156,22 @@ export function LeadCapturePopup({ isOpen, onClose, onSubmit, isSubmitting = fal
           </div>
 
           <div>
-            <Label htmlFor="phone" className="font-serif-body text-sm font-medium text-[#375371]">
+            <Label className="font-serif-body text-sm font-medium text-[#375371]">
               {t.phoneNumber} *
             </Label>
-            <Input
-              id="phone"
-              type="tel"
-              value={formData.phone}
-              onChange={(e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))}
-              disabled={isSubmitting}
-              className="mt-1 border-2 border-[#e8e8e0] focus:border-[#002042] rounded-lg font-serif-body"
-              placeholder="(514) 123-4567"
-              required
-            />
-            {phoneError && (
-              <p className="font-serif-body text-sm text-red-600 mt-1">{phoneError}</p>
-            )}
+            <div className="mt-1">
+              <PhoneOtpInput
+                value={formData.phone}
+                onChange={(val) => {
+                  setFormData((prev) => ({ ...prev, phone: val }))
+                  setPhoneVerified(false)
+                }}
+                onVerified={() => setPhoneVerified(true)}
+                disabled={isSubmitting}
+                inputClassName="border-2 border-[#e8e8e0] focus:border-[#002042] rounded-lg px-3 py-2 font-serif-body outline-none transition-colors w-full"
+                placeholder="(514) 123-4567"
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
