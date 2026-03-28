@@ -103,6 +103,8 @@ export function PhoneOtpInput({
             value={value}
             onChange={handlePhoneChange}
             disabled={disabled || state === 'verified'}
+            autoComplete="tel"
+            inputMode="tel"
             className={`w-full ${inputClassName} ${
               state === 'verified'
                 ? 'border-green-500 bg-green-50 text-green-800 pr-10'
