@@ -421,8 +421,8 @@ export default function ThermopompesPage() {
                   <span className="underline">moins d'une minute.</span>
                 </p>
                 <div className="bg-white border-4 border-[#aedee5] rounded-[20px] p-6 w-full max-w-xl">
-                  <div className="flex flex-col md:flex-row gap-3">
-                    <div className="flex-1">
+                  <div className="flex flex-row items-center gap-3">
+                    <div className="flex-1 min-w-0">
                       <AddressInput {...addressFormProps} />
                     </div>
                     {ctaButton}
@@ -473,16 +473,13 @@ export default function ThermopompesPage() {
                   }
                 ].map((card) => (
                   <div key={card.title} className="bg-white border border-[#F2F2F7] rounded-[20px] p-8 shadow-[0px_4px_4px_rgba(0,0,0,0.25)]">
-                    <div className="w-20 h-20 rounded-xl overflow-hidden mb-4">
-                      <img src={card.icon} alt="" className="w-full h-full object-cover" />
-                    </div>
                     <h3 className="font-serif-body font-bold text-[#10002C] text-xl mb-2">{card.title}</h3>
                     <p className="font-serif-body text-[#375371] text-base leading-relaxed">{card.body}</p>
                   </div>
                 ))}
               </div>
-              <div className="flex flex-col md:flex-row gap-3 max-w-2xl mx-auto">
-                <div className="flex-1"><AddressInput {...addressFormProps} /></div>
+              <div className="flex flex-row items-center gap-3 max-w-2xl mx-auto">
+                <div className="flex-1 min-w-0"><AddressInput {...addressFormProps} /></div>
                 {ctaButton}
               </div>
             </div>
@@ -490,16 +487,8 @@ export default function ThermopompesPage() {
 
           {/* ── POURQUOI PASSER PAR NOUS ── */}
           <section className="py-20 bg-[#fffff6]" id="pourquoi">
-            <div className="max-w-[1024px] mx-auto px-6">
-              <div className="flex flex-col md:flex-row gap-12 items-center">
-                <div className="w-full md:w-1/2">
-                  <img
-                    src="/images/inline-hero-image.jpg"
-                    alt="Application Soumission Confort"
-                    className="rounded-[20px] w-full object-cover shadow-lg"
-                  />
-                </div>
-                <div className="w-full md:w-1/2 space-y-8">
+            <div className="max-w-[900px] mx-auto px-6">
+              <div className="space-y-8">
                   <h2 className="font-heading font-bold text-[#10002C] text-3xl md:text-[40px] tracking-[-0.03em]">
                     Pourquoi passer par nous ?
                   </h2>
@@ -536,7 +525,6 @@ export default function ThermopompesPage() {
                     <div className="flex-1"><AddressInput {...addressFormProps} /></div>
                     {ctaButton}
                   </div>
-                </div>
               </div>
             </div>
           </section>
