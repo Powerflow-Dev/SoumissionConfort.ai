@@ -420,12 +420,16 @@ export default function ThermopompesPage() {
                   Découvrez le coût pour installer une thermopompe chez vous en{" "}
                   <span className="underline">moins d'une minute.</span>
                 </p>
-                <div className="bg-white border-4 border-[#aedee5] rounded-[20px] p-6 w-full max-w-xl">
-                  <div className="flex flex-row items-center gap-3">
-                    <div className="flex-1 min-w-0">
-                      <AddressInput {...addressFormProps} />
-                    </div>
-                    {ctaButton}
+                <div className="bg-white border-4 border-[#aedee5] rounded-[20px] p-6 w-full max-w-xl shadow-[0px_4px_4px_rgba(0,0,0,0.25)]">
+                  <div className="flex flex-col gap-4">
+                    <AddressInput {...addressFormProps} />
+                    <Button
+                      onClick={handleAddressSubmit}
+                      disabled={!address || isAnalyzing}
+                      className="w-full bg-[#b9e15c] border-2 border-[#002042] text-[#002042] font-serif-body font-bold h-14 rounded-full shadow-[-2px_4px_0_0_#002042] hover:shadow-[-1px_2px_0_0_#002042] hover:translate-y-0.5 transition-all disabled:opacity-50 disabled:shadow-none disabled:translate-y-0"
+                    >
+                      {isAnalyzing ? <Loader2 className="w-5 h-5 animate-spin" /> : "Obtenir mon estimation gratuite"}
+                    </Button>
                   </div>
                   <div className="flex flex-wrap justify-center gap-4 mt-4">
                     {["Gratuit et sans obligation", "150+ entrepreneurs certifiés", "Plateforme sécurisée"].map((item) => (
