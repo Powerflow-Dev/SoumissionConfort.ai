@@ -11,16 +11,18 @@ import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { LeadCapturePopup, type LeadData } from "@/components/lead-capture-popup"
 import { AddressInput } from "@/components/address-input"
-import { 
-  Wind, 
-  Home, 
-  CheckCircle, 
-  ArrowRight, 
+import {
+  Wind,
+  Home,
+  CheckCircle,
+  ArrowRight,
   Loader2,
   TrendingDown,
   DollarSign,
   Zap,
-  ThermometerSnowflake
+  ThermometerSnowflake,
+  Shield,
+  Clock
 } from "lucide-react"
 import { track } from '@vercel/analytics'
 import type { 
@@ -332,9 +334,30 @@ export default function ThermopompesPage() {
   // ============================================================================
   const priceRange = getPriceRange(recommendation?.recommendation?.totalInvestment)
 
+  const addressFormProps = {
+    onAddressSelect: (value: string) => {
+      setAddress(value)
+      const pc = extractPostalCode(value)
+      if (pc) setPostalCode(pc)
+    },
+    onAnalyze: handleAddressSubmit,
+    isLoading: isAnalyzing,
+    className: "max-w-full"
+  }
+
+  const ctaButton = (
+    <Button
+      onClick={handleAddressSubmit}
+      disabled={!address || isAnalyzing}
+      className="bg-[#b9e15c] border-2 border-[#002042] text-[#002042] font-serif-body font-bold h-14 px-6 rounded-full shadow-[-2px_4px_0_0_#002042] hover:shadow-[-1px_2px_0_0_#002042] hover:translate-y-0.5 transition-all whitespace-nowrap disabled:opacity-50 disabled:shadow-none disabled:translate-y-0"
+    >
+      {isAnalyzing ? <Loader2 className="w-5 h-5 animate-spin" /> : "Obtenir mon estimation gratuite"}
+    </Button>
+  )
+
   return (
     <div className="min-h-screen bg-[#fffff6]">
-      {/* Header */}
+      {/* HEADER */}
       <header className="sticky top-0 z-50 bg-[#fffff6] border-b border-[#e8e8e0]">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
@@ -345,13 +368,24 @@ export default function ThermopompesPage() {
                 <p>Confort</p>
               </div>
             </a>
-            <Badge className="bg-blue-100 text-blue-800 border-blue-200">
-              <ThermometerSnowflake className="w-4 h-4 mr-1" />
-              Thermopompes
-            </Badge>
+            {currentStep === 1 ? (
+              <nav className="hidden md:flex items-center gap-8">
+                <a href="#comment" className="font-serif-body font-semibold text-[#002042] text-base hover:opacity-70 transition">Comment ça fonctionne ?</a>
+                <a href="#pourquoi" className="font-serif-body font-semibold text-[#002042] text-base hover:opacity-70 transition">Pourquoi nous ?</a>
+                <button
+                  onClick={() => document.getElementById('hero-form')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="font-serif-body font-bold text-[#002042] text-base border-2 border-[#002042] rounded-full px-6 py-2.5 hover:bg-[#002042]/5 transition"
+                >
+                  Obtenir mon estimation gratuite
+                </button>
+              </nav>
+            ) : (
+              <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+                <ThermometerSnowflake className="w-4 h-4 mr-1" />
+                Thermopompes
+              </Badge>
+            )}
           </div>
-          
-          {/* Progress Bar */}
           {currentStep > 1 && (
             <div className="mt-4">
               <div className="flex justify-between text-xs text-gray-600 mb-2">
@@ -364,144 +398,180 @@ export default function ThermopompesPage() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 md:py-12">
-        {/* STEP 1: ADRESSE */}
-        {currentStep === 1 && (
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-12">
-              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                Obtenez une estimation de thermopompe en{" "}
-                <span className="text-green-600">60 secondes</span>
-              </h1>
-              
-            </div>
-
-            <Card className="max-w-2xl mx-auto shadow-2xl border-2 border-blue-100">
-              <CardContent className="p-8 space-y-6">
-                <p className="text-sm text-gray-600">
-                  Découvrez instantanément vos économies potentielles avec une thermopompe
+      {currentStep === 1 ? (
+        <>
+          {/* ── HERO ── */}
+          <section className="relative overflow-hidden" id="hero-form">
+            <div className="relative min-h-[700px] md:min-h-[800px] flex items-center">
+              <img
+                src="/images/thermompompe-wow.png"
+                alt="Thermopompe"
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-black/40" />
+              <div className="relative z-10 w-full flex flex-col items-center justify-center px-6 py-20 text-center">
+                <div className="-rotate-[5.36deg] bg-[#aedee5] px-6 py-2.5 rounded-full mb-8 inline-block">
+                  <span className="font-serif-body font-bold text-[#002042] text-lg">🍁 Solution développée au Québec</span>
+                </div>
+                <h1 className="font-heading font-semibold text-[#fffff6] text-4xl md:text-6xl tracking-[-0.03em] mb-4 max-w-3xl">
+                  Estimation de thermopompe instantané
+                </h1>
+                <p className="font-serif-body font-semibold text-white/90 text-lg md:text-xl mb-8 max-w-xl">
+                  Découvrez le coût pour installer une thermopompe chez vous en{" "}
+                  <span className="underline">moins d'une minute.</span>
                 </p>
-                <Label className="text-lg font-semibold mb-4 block">
-                  Entrez votre adresse pour commencer l'analyse
-                </Label>
-                <div className="flex flex-col md:flex-row gap-4">
-                  <div className="flex-1">
-                  <AddressInput
-                      onAddressSelect={(value) => {
-                        setAddress(value)
-                        const pc = extractPostalCode(value)
-                        if (pc) setPostalCode(pc)
-                      }}
-                      onAnalyze={handleAddressSubmit}
-                      isLoading={isAnalyzing}
-                      className="max-w-full"
-                    />
-                  </div>
-                  <Button 
-                    onClick={handleAddressSubmit}
-                    size="lg"
-                    className="bg-[#b9e15c] border-2 border-[#002042] text-[#002042] font-serif-body font-bold h-14 px-10 shadow-md  rounded-full"
-                    disabled={!address || isAnalyzing}
-                  >
-                    {isAnalyzing ? (
-                      <>
-                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                        Analyse...
-                      </>
-                    ) : (
-                      <>
-                        <span className="text-black text-lg font-semibold">Analyser</span>
-                        <ArrowRight className="w-5 h-5 ml-2" />
-                      </>
-                    )}
-                  </Button>
-                </div>
-                
-                <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-gray-700 p-1">
-                  <div className="flex items-center bg-white px-3 py-1 rounded-md border">
-                    <img src="/hydro-quebec.svg" alt="Hydro-Québec" className="h-6 w-auto" />
-                  </div>
-                  <div className="flex items-center bg-white px-3 py-1 rounded-md border">
-                    <img src="/Rénoclimat.jpg" alt="Rénoclimat" className="h-6 w-auto" />
-                  </div>
-                  <div className="flex items-center bg-white px-3 py-1 rounded-md border">
-                    <img src="/Gouvernement_du_Canada_logo.svg" alt="Gouvernement du Canada" className="h-6 w-auto" />
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-3 gap-4 text-center text-sm">
-                  <div className="flex flex-col items-center">
-                    <CheckCircle className="w-6 h-6 text-green-600 mb-2" />
-                    <span className="text-gray-600">Analyse IA</span>
-                  </div>
-                  <div className="flex flex-col items-center">
-                    <CheckCircle className="w-6 h-6 text-green-600 mb-2" />
-                    <span className="text-gray-600">100% gratuit</span>
-                  </div>
-                  <div className="flex flex-col items-center">
-                    <CheckCircle className="w-6 h-6 text-green-600 mb-2" />
-                    <span className="text-gray-600">60 secondes</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Carousel Section */}
-            <div className="mt-12 space-y-6">
-              <div className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory">
-                {[
-                  { src: "/images/installation-clim.jpg", alt: "Installation de thermopompe" },
-                  { src: "/images/Unité extérieure de thermopompe en hiver.jpg", alt: "Unité extérieure de thermopompe en hiver" },
-                  { src: "/images/thermompompe-wow.png", alt: "Thermopompe haute efficacité" }
-                ].map((item, idx) => (
-                  <div
-                    key={item.src}
-                    className="min-w-[280px] md:min-w-0 md:flex-1 snap-start"
-                  >
-                    <div className="h-56 rounded-xl overflow-hidden shadow-md border border-blue-100">
-                      <img
-                        src={item.src}
-                        alt={item.alt}
-                        className="h-full w-full object-cover"
-                        loading={idx === 0 ? "eager" : "lazy"}
-                      />
+                <div className="bg-white border-4 border-[#aedee5] rounded-[20px] p-6 w-full max-w-xl">
+                  <div className="flex flex-col md:flex-row gap-3">
+                    <div className="flex-1">
+                      <AddressInput {...addressFormProps} />
                     </div>
+                    {ctaButton}
+                  </div>
+                  <div className="flex flex-wrap justify-center gap-4 mt-4">
+                    {["Gratuit et sans obligation", "150+ entrepreneurs certifiés", "Plateforme sécurisée"].map((item) => (
+                      <div key={item} className="flex items-center gap-1.5 font-serif-body text-sm text-[#10002C]">
+                        <CheckCircle className="w-4 h-4 text-[#002042]" />
+                        {item}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* ── COMMENT ÇA FONCTIONNE ── */}
+          <section className="py-20 bg-white" id="comment">
+            <div className="max-w-[900px] mx-auto px-6">
+              <h2 className="font-heading font-bold text-[#10002C] text-3xl md:text-[40px] tracking-[-0.03em] text-center mb-6">
+                Comment ça fonctionne ?
+              </h2>
+              <p className="font-serif-body font-semibold text-[#375371] text-lg md:text-xl text-center mb-12 max-w-[612px] mx-auto">
+                Soumission Confort simplifie l'installation de thermopompe grâce à un outil d'estimation basé sur l'intelligence artificielle et l'expérience d'un réseau de plus de 150 entrepreneurs certifiés par la RBQ.
+              </p>
+              <div className="grid md:grid-cols-2 gap-6 mb-12">
+                {[
+                  {
+                    icon: "/images/card-satellite.png",
+                    title: "Analyse satellite de votre maison",
+                    body: "Notre outil analyse la superficie et la configuration de votre maison grâce aux images satellites pour calculer vos besoins en chauffage."
+                  },
+                  {
+                    icon: "/images/card-calculator.png",
+                    title: "Estimation personnalisée par IA",
+                    body: "Notre IA calcule la puissance de thermopompe idéale pour votre maison et vous prépare une estimation de coûts et d'économies potentielles."
+                  },
+                  {
+                    icon: "/images/card-documents.png",
+                    title: "Vous choisissez la suite",
+                    body: "Vous décidez si on vous accompagne dans votre démarche. Aucune obligation — vous restez en contrôle à chaque étape."
+                  },
+                  {
+                    icon: "/images/card-contractors.png",
+                    title: "3 soumissions d'entrepreneurs certifiés",
+                    body: "On trouve 3 soumissions d'entrepreneurs certifiés en thermopompe pour vous — gratuitement !"
+                  }
+                ].map((card) => (
+                  <div key={card.title} className="bg-white border border-[#F2F2F7] rounded-[20px] p-8 shadow-[0px_4px_4px_rgba(0,0,0,0.25)]">
+                    <div className="w-20 h-20 rounded-xl overflow-hidden mb-4">
+                      <img src={card.icon} alt="" className="w-full h-full object-cover" />
+                    </div>
+                    <h3 className="font-serif-body font-bold text-[#10002C] text-xl mb-2">{card.title}</h3>
+                    <p className="font-serif-body text-[#375371] text-base leading-relaxed">{card.body}</p>
                   </div>
                 ))}
               </div>
+              <div className="flex flex-col md:flex-row gap-3 max-w-2xl mx-auto">
+                <div className="flex-1"><AddressInput {...addressFormProps} /></div>
+                {ctaButton}
+              </div>
             </div>
+          </section>
 
-            {/* Testimonials */}
-            <div className="grid md:grid-cols-3 gap-6 mt-10">
-              {[
-                { name: "Carole P.", city: "Laval", text: "Évaluation en une minute, subvention confirmée et économies immédiates.", avatar: "/images/CAROLE.jpg" },
-                { name: "Jean M.", city: "Québec", text: "Processus simple, équipe rapide et crédits Rénoclimat obtenus.", avatar: "/images/Jean.jpg" },
-                { name: "Michael R.", city: "Montréal", text: "Rapport clair et installation recommandée en quelques jours.", avatar: "/images/Michael.jpg" }
-              ].map((item) => (
-                <Card key={item.name} className="border-blue-100 h-full">
-                  <CardContent className="p-6 space-y-3">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={item.avatar}
-                        alt={item.name}
-                        className="w-12 h-12 rounded-full object-cover border"
-                        loading="lazy"
-                      />
-                      <div>
-                        <p className="font-semibold text-gray-900">{item.name}</p>
-                        <p className="text-sm text-gray-600">{item.city}</p>
+          {/* ── POURQUOI PASSER PAR NOUS ── */}
+          <section className="py-20 bg-[#fffff6]" id="pourquoi">
+            <div className="max-w-[1024px] mx-auto px-6">
+              <div className="flex flex-col md:flex-row gap-12 items-center">
+                <div className="w-full md:w-1/2">
+                  <img
+                    src="/images/inline-hero-image.jpg"
+                    alt="Application Soumission Confort"
+                    className="rounded-[20px] w-full object-cover shadow-lg"
+                  />
+                </div>
+                <div className="w-full md:w-1/2 space-y-8">
+                  <h2 className="font-heading font-bold text-[#10002C] text-3xl md:text-[40px] tracking-[-0.03em]">
+                    Pourquoi passer par nous ?
+                  </h2>
+                  <div className="space-y-6">
+                    {[
+                      {
+                        icon: <Shield className="w-6 h-6 text-[#002042]" />,
+                        title: "La tranquillité d'esprit",
+                        body: "On fait le tri pour vous et sélectionnons des entrepreneurs fiables et certifiés en installation de thermopompes."
+                      },
+                      {
+                        icon: <Clock className="w-6 h-6 text-[#002042]" />,
+                        title: "Gain de temps",
+                        body: "Pas besoin de chercher ou appeler plusieurs entreprises. On s'en occupe pour vous."
+                      },
+                      {
+                        icon: <DollarSign className="w-6 h-6 text-[#002042]" />,
+                        title: "Subventions maximisées",
+                        body: "Nos entrepreneurs connaissent les programmes Rénoclimat et vous aident à obtenir le maximum de subventions disponibles."
+                      }
+                    ].map((benefit) => (
+                      <div key={benefit.title} className="flex gap-4">
+                        <div className="w-12 h-12 flex-shrink-0 bg-[#F7FCEB] border border-[#b9e15c] rounded-[10px] flex items-center justify-center">
+                          {benefit.icon}
+                        </div>
+                        <div>
+                          <h3 className="font-serif-body font-bold text-[#10002C] text-xl mb-1">{benefit.title}</h3>
+                          <p className="font-serif-body text-[#375371] text-base leading-relaxed">{benefit.body}</p>
+                        </div>
                       </div>
-                    </div>
-                    <p className="text-gray-700 text-sm leading-relaxed">
-                      “{item.text}”
-                    </p>
-                  </CardContent>
-                </Card>
-              ))}
+                    ))}
+                  </div>
+                  <div className="flex flex-col md:flex-row gap-3">
+                    <div className="flex-1"><AddressInput {...addressFormProps} /></div>
+                    {ctaButton}
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-        )}
+          </section>
 
+          {/* ── CTA BOTTOM ── */}
+          <section className="relative overflow-hidden">
+            <div className="relative">
+              <img
+                src="/images/Unité extérieure de thermopompe en hiver.jpg"
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-black/20" />
+              <div className="relative z-10 py-20 px-6 flex justify-center">
+                <div
+                  className="w-full max-w-[900px] rounded-[20px] p-10 md:p-16 shadow-[0px_4px_4px_rgba(0,0,0,0.25)] text-center space-y-8"
+                  style={{ background: 'radial-gradient(circle at 50% 0%, rgba(221,242,168,0.2) 0%, transparent 60%), #002042' }}
+                >
+                  <div className="inline-block -rotate-[5.36deg] bg-[#aedee5] px-6 py-2.5 rounded-full">
+                    <span className="font-serif-body font-bold text-[#002042] text-2xl">🎉 C'est gratuit !</span>
+                  </div>
+                  <h2 className="font-heading font-semibold text-white text-4xl md:text-6xl tracking-[-0.03em]">
+                    Prêt à estimer votre projet ?
+                  </h2>
+                  <div className="flex flex-col md:flex-row gap-3 max-w-xl mx-auto">
+                    <div className="flex-1"><AddressInput {...addressFormProps} /></div>
+                    {ctaButton}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </>
+      ) : (
+      <main className="container mx-auto px-4 py-8 md:py-12">
         {/* STEP 2: RAFFINEMENT GÉOMÉTRIQUE */}
         {currentStep === 2 && (
           <Card className="max-w-2xl mx-auto shadow-xl">
@@ -1023,17 +1093,6 @@ export default function ThermopompesPage() {
           </div>
         )}
       </main>
-
-      {/* Back-to-top CTA (uniquement sur l'étape 1) */}
-      {currentStep === 1 && (
-        <div className="max-w-4xl mx-auto px-4 pb-12 flex justify-center">
-          <Button
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="bg-[#b9e15c] border-2 border-[#002042] text-[#002042] font-serif-body font-bold px-8 py-3 rounded-full shadow-[-2px_4px_0_0_#002042]"
-          >
-            Obtenir votre soumission
-          </Button>
-        </div>
       )}
 
       {/* Lead Capture Popup */}
