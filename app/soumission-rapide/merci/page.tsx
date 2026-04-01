@@ -227,7 +227,7 @@ export default function MerciPage() {
                 </span>
               </a>
               <a
-                href="tel:+15146545678"
+                href="tel:+14387994670"
                 className="flex w-full sm:flex-1 h-[56px] items-center justify-center px-[32px] bg-[#b9e15c] border-2 border-[#002042] rounded-full shadow-[-2px_4px_0px_0px_#002042]"
               >
                 <span className="font-bold text-[18px] text-[#002042] leading-none whitespace-nowrap">
