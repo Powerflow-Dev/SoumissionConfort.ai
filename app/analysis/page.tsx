@@ -163,26 +163,24 @@ export default function AnalysisPage() {
     setLeadData(capturedLeadData)
     setPricingData(pricingData)
     
-    // Store pricing data in API and redirect to /pricing page
+    // Store pricing data in sessionStorage and redirect to /pricing page
     const leadId = capturedLeadData.leadId
     if (leadId) {
       try {
-        await fetch('/api/pricing-data', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            leadId,
-            roofData,
-            userAnswers: answers,
-            leadData: capturedLeadData
-          })
-        })
-        
-        // Redirect to pricing page
-        router.push(`/pricing?leadId=${leadId}`)
+        const ctx = { roofData, userAnswers: answers, leadData: capturedLeadData }
+        sessionStorage.setItem('pricingContext', JSON.stringify(ctx))
+        // Also encode minimal non-PII data in URL for resilience (refresh, new tab)
+        const urlData = btoa(JSON.stringify({
+          roofArea: roofData?.roofArea,
+          pitch: roofData?.pitch,
+          heatingSystem: answers?.heatingSystem,
+          currentInsulation: answers?.currentInsulation,
+          atticAccess: answers?.atticAccess,
+          identifiedProblems: answers?.identifiedProblems,
+        }))
+        router.push(`/pricing?leadId=${leadId}&d=${urlData}`)
       } catch (error) {
         console.error('Error storing pricing data:', error)
-        // Fallback to old behavior if API fails
         setCurrentStep("pricing")
       }
     } else {
@@ -216,7 +214,7 @@ export default function AnalysisPage() {
           </Link>
 
           <div className="flex items-center gap-3 min-w-0">
-            {roofData && roofData.roofArea && currentStep !== "loading" && (
+            {roofData && roofData.roofArea && currentStep !== "loading" && currentStep !== "questionnaire" && (
               <div className="flex items-center gap-1 font-serif-body text-sm text-[#375371]">
                 <span className="font-semibold text-[#002042]">Superficie :</span>
                 {isEditingArea ? (
@@ -249,29 +247,33 @@ export default function AnalysisPage() {
                 )}
               </div>
             )}
-            {address && (
+            {address && currentStep !== "questionnaire" && (
               <div className="flex items-center gap-1.5 font-serif-body text-sm text-[#375371]">
                 <MapPin className="w-3.5 h-3.5 text-[#002042] shrink-0" />
                 <span className="truncate max-w-[120px] md:max-w-xs">{address}</span>
               </div>
             )}
-            <div className="flex items-center gap-1.5 bg-[#aedee5]/30 border border-[#aedee5] rounded-full px-3 py-1">
-              <StepIcon className="w-3 h-3 text-[#002042]" />
-              <span className="font-serif-body font-semibold text-[#002042] text-xs hidden sm:inline">{stepInfo.title}</span>
-            </div>
+            {currentStep !== "questionnaire" && (
+              <div className="flex items-center gap-1.5 bg-[#aedee5]/30 border border-[#aedee5] rounded-full px-3 py-1">
+                <StepIcon className="w-3 h-3 text-[#002042]" />
+                <span className="font-serif-body font-semibold text-[#002042] text-xs hidden sm:inline">{stepInfo.title}</span>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Progress bar */}
+        {/* Progress bar – hidden during questionnaire (it has its own) */}
+        {currentStep !== "questionnaire" && (
         <div className="w-full bg-[#e8e8e0] h-1">
           <div
             className="bg-[#b9e15c] h-1 transition-all duration-500"
             style={{ width: `${getStepProgress()}%` }}
           />
         </div>
+        )}
       </header>
 
-      <main className="container mx-auto px-4 py-8 overflow-x-hidden">
+      <main className="container mx-auto px-4 pt-2 pb-8 sm:py-8 overflow-x-hidden">
         {currentStep === "loading" && (
           <div className="max-w-3xl mx-auto">
             <div className="bg-white border border-[#aedee5] rounded-[20px] shadow-md p-10 text-center">

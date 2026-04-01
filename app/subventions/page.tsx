@@ -141,8 +141,6 @@ export default function SubventionsPage() {
     lastName: "",
     email: "",
     phone: "",
-    agreeToTerms: false,
-    agreeToContact: false,
   })
   const [phoneError, setPhoneError] = useState<string | null>(null)
 
@@ -204,9 +202,7 @@ export default function SubventionsPage() {
       leadForm.firstName.trim() &&
       leadForm.lastName.trim() &&
       leadForm.email.trim() &&
-      leadForm.phone.trim() &&
-      leadForm.agreeToTerms &&
-      leadForm.agreeToContact
+      leadForm.phone.trim()
     )
   }
 
@@ -697,36 +693,6 @@ export default function SubventionsPage() {
                 {phoneError && (
                   <p className="text-sm text-red-600 mt-1">{phoneError}</p>
                 )}
-              </div>
-
-              <div className="space-y-3 pt-2">
-                <label className="flex items-start gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={leadForm.agreeToTerms}
-                    onChange={(e) => setLeadForm((p) => ({ ...p, agreeToTerms: e.target.checked }))}
-                    disabled={isSubmittingLead}
-                    className="mt-1 w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
-                  />
-                  <span className="text-sm text-gray-600">
-                    J'accepte les{" "}
-                    <a href="#" className="text-blue-600 hover:underline">Conditions d'utilisation</a>{" "}
-                    et la{" "}
-                    <a href="#" className="text-blue-600 hover:underline">Politique de confidentialité</a> *
-                  </span>
-                </label>
-                <label className="flex items-start gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={leadForm.agreeToContact}
-                    onChange={(e) => setLeadForm((p) => ({ ...p, agreeToContact: e.target.checked }))}
-                    disabled={isSubmittingLead}
-                    className="mt-1 w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
-                  />
-                  <span className="text-sm text-gray-600">
-                    Je consens à être contacté par Soumission Confort concernant mon projet *
-                  </span>
-                </label>
               </div>
 
               <button

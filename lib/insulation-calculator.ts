@@ -85,52 +85,60 @@ function getCurrentRValue(currentInsulation: string): number {
 }
 
 // Étape 3: Gammes d'isolation (prix de base avant multiplicateurs d'accès)
+// Prix basés sur le marché québécois 2024-2025
 const INSULATION_RANGES: { [key: string]: InsulationRange } = {
   economique: {
     name: 'Économique',
-    type: 'Fibre de verre soufflée',
+    type: 'Cellulose soufflée',
     rValue: 50,
-    thickness: '12 pouces',
-    durability: '20-25 ans',
-    pricePerSqFt: { min: 2.20, max: 2.70 },
+    thickness: '14 pouces',
+    durability: '20-30 ans',
+    pricePerSqFt: { min: 0.90, max: 1.50 },
     features: [
-      'Valeur R: 3,2-4,2 par pouce',
-      'Installation rapide',
-      'Bon rapport qualité-prix',
-      'Résistant au feu',
+      'Valeur R: 3,6-3,8 par pouce',
+      'Matériau 100% recyclé',
+      'Excellente insonorisation',
+      'Traitement anti-feu et anti-moisissure',
     ],
     icon: '🥉',
   },
   standard: {
     name: 'Standard',
-    type: 'Cellulose soufflée',
+    type: 'Fibre de verre soufflée',
     rValue: 55,
-    thickness: '15 pouces',
-    durability: '25-30 ans',
-    pricePerSqFt: { min: 2.70, max: 3.60 },
+    thickness: '18 pouces',
+    durability: '20-25 ans',
+    pricePerSqFt: { min: 1.40, max: 2.80 },
     features: [
-      'Valeur R: 3,6-3,8 par pouce',
-      'Matériau écologique (recyclé)',
-      'Excellente insonorisation',
-      'Traitement anti-feu et anti-moisissure',
+      'Valeur R: 2,6-2,9 par pouce',
+      'Non combustible',
+      'Résistant à l\'humidité',
+      'Installation certifiée RBQ',
     ],
     icon: '🥈',
   },
   premium: {
     name: 'Premium',
-    type: 'Uréthane giclé à cellules fermées',
+    type: 'Hybride : mousse projetée + soufflé',
     rValue: 60,
-    thickness: '10 pouces',
+    thickness: '12 pouces',
     durability: '30-50 ans',
-    pricePerSqFt: { min: 4.00, max: 5.50 },
+    pricePerSqFt: { min: 3.00, max: 5.00 },
     features: [
-      'Valeur R: 6,0-7,0 par pouce',
-      'Barrière d\'air et d\'humidité',
-      'Renforce la structure',
-      'Performance maximale',
+      'Valeur R: 6,0-7,0 par pouce (mousse)',
+      'Barrière d\'air et d\'humidité intégrée',
+      'Renforce la structure du toit',
+      'Performance maximale certifiée',
     ],
     icon: '🥇',
   },
+}
+
+// Coût minimum par projet (les entrepreneurs ont un tarif plancher)
+const MINIMUM_PROJECT_COSTS: { [key: string]: number } = {
+  economique: 1500,
+  standard: 2000,
+  premium: 3500,
 }
 
 // Étape 4A: Multiplicateur de complexité d'accès
@@ -242,9 +250,10 @@ export function calculateInsulationPricing(inputs: CalculationInputs): Calculati
     const baseCostMin = adjustedArea * range.pricePerSqFt.min
     const baseCostMax = adjustedArea * range.pricePerSqFt.max
     
-    // Coût total
-    const totalCostMin = Math.round(baseCostMin * accessMultiplier + removalSupplement + problemSupplements)
-    const totalCostMax = Math.round(baseCostMax * accessMultiplier + removalSupplement + problemSupplements)
+    // Coût total (avec plancher minimum par projet)
+    const minimumCost = MINIMUM_PROJECT_COSTS[key] || 1500
+    const totalCostMin = Math.max(minimumCost, Math.round(baseCostMin * accessMultiplier + removalSupplement + problemSupplements))
+    const totalCostMax = Math.max(minimumCost, Math.round(baseCostMax * accessMultiplier + removalSupplement + problemSupplements))
     
     // Économies
     const deltaR = range.rValue - currentR

@@ -1,0 +1,9 @@
+<svg preserveAspectRatio="none" width="100%" height="100%" overflow="visible" style="display: block;" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="UrgentIcon">
+<path id="Vector" d="M42.8 9.6H37.2C36.0954 9.6 35.2 10.4954 35.2 11.6V13.2C35.2 14.3046 36.0954 15.2 37.2 15.2H42.8C43.9046 15.2 44.8 14.3046 44.8 13.2V11.6C44.8 10.4954 43.9046 9.6 42.8 9.6Z" fill="var(--fill-0, white)" stroke="var(--stroke-0, #002042)" stroke-width="2.8" stroke-linejoin="round"/>
+<path id="Vector_2" d="M40 65.6C53.2548 65.6 64 54.8548 64 41.6C64 28.3452 53.2548 17.6 40 17.6C26.7452 17.6 16 28.3452 16 41.6C16 54.8548 26.7452 65.6 40 65.6Z" fill="var(--fill-0, white)" stroke="var(--stroke-0, #002042)" stroke-width="2.8"/>
+<path id="Vector_3" d="M41 22.6C45.8011 22.8672 50.3453 24.8553 53.8 28.2" stroke="var(--stroke-0, #B9E15C)" stroke-width="4.8" stroke-linecap="round"/>
+<path id="Vector_4" d="M40 42L51 31" stroke="var(--stroke-0, #002042)" stroke-width="2.4" stroke-linecap="round"/>
+<path id="Vector_5" d="M40 44C41.3255 44 42.4 42.9255 42.4 41.6C42.4 40.2745 41.3255 39.2 40 39.2C38.6745 39.2 37.6 40.2745 37.6 41.6C37.6 42.9255 38.6745 44 40 44Z" fill="var(--fill-0, #002042)"/>
+</g>
+</svg>

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/lib/language-context"
 import { CheckCircle } from "lucide-react"
 import { PhoneOtpInput } from "@/components/phone-otp-input"
+import { OTP_ENABLED } from "@/lib/feature-flags"
 
 interface LeadCaptureFormProps {
   roofData: any
@@ -21,7 +22,7 @@ export function LeadCaptureForm({ roofData, userAnswers, leadData, onComplete }:
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [pricingData, setPricingData] = useState<any>(null)
   const [showForm, setShowForm] = useState(true)
-  const [phoneVerified, setPhoneVerified] = useState(false)
+  const [phoneVerified, setPhoneVerified] = useState(!OTP_ENABLED)
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -146,16 +147,28 @@ export function LeadCaptureForm({ roofData, userAnswers, leadData, onComplete }:
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Téléphone *</label>
-                <PhoneOtpInput
-                  value={formData.phone}
-                  onChange={(val) => {
-                    setFormData(prev => ({ ...prev, phone: val }))
-                    setPhoneVerified(false)
-                  }}
-                  onVerified={() => setPhoneVerified(true)}
-                  inputClassName="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="514-555-0123"
-                />
+                {OTP_ENABLED ? (
+                  <PhoneOtpInput
+                    value={formData.phone}
+                    onChange={(val) => {
+                      setFormData(prev => ({ ...prev, phone: val }))
+                      setPhoneVerified(false)
+                    }}
+                    onVerified={() => setPhoneVerified(true)}
+                    inputClassName="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="514-555-0123"
+                  />
+                ) : (
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="514-555-0123"
+                  />
+                )}
               </div>
 
               <Button

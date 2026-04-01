@@ -401,26 +401,30 @@ export default function ThermopompesPage() {
       {currentStep === 1 ? (
         <>
           {/* ── HERO ── */}
-          <section className="relative overflow-hidden" id="hero-form">
-            <div className="relative min-h-[700px] md:min-h-[800px] flex items-center">
+          <section className="bg-[#fffff6] px-2 py-4 md:px-[40px] md:py-[60px]" id="hero-form">
+            {/* Hero card — rounded, photo inside, matching Figma */}
+            <div className="relative rounded-[20px] overflow-hidden w-full">
               <img
                 src="/images/thermompompe-wow.png"
                 alt="Thermopompe"
                 className="absolute inset-0 w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-black/40" />
-              <div className="relative z-10 w-full flex flex-col items-center justify-center px-6 py-20 text-center">
-                <div className="-rotate-[5.36deg] bg-[#aedee5] px-6 py-2.5 rounded-full mb-8 inline-block">
-                  <span className="font-serif-body font-bold text-[#002042] text-lg">🍁 Solution développée au Québec</span>
+              <div className="absolute inset-0 bg-black/30 rounded-[20px]" />
+              <div className="relative z-10 flex flex-col items-center justify-center text-center max-w-[900px] mx-auto py-16 md:py-[64px] px-6">
+                <div className="-rotate-[5.36deg] bg-[#aedee5] px-[10px] py-[6px] rounded-full mb-8 inline-flex items-center gap-1 shadow-[0px_4px_4px_rgba(0,0,0,0.25)]">
+                  <span className="font-serif-body font-bold text-[#002042] text-lg tracking-[-0.04em]">Solution développée au Québec</span>
+                  <div className="-rotate-[-4.64deg] w-6 h-6 shrink-0">
+                    <img src="/images/logo-qc.png" alt="" className="w-full h-full object-cover" />
+                  </div>
                 </div>
-                <h1 className="font-heading font-semibold text-[#fffff6] text-4xl md:text-6xl tracking-[-0.03em] mb-4 max-w-3xl">
+                <h1 className="font-heading font-semibold text-[#fffff6] text-4xl md:text-[56px] tracking-[-0.03em] mb-6 w-full">
                   Estimation de thermopompe instantané
                 </h1>
-                <p className="font-serif-body font-semibold text-white/90 text-lg md:text-xl mb-8 max-w-xl">
+                <p className="font-serif-body font-semibold text-[#fffff6] text-lg md:text-xl mb-8 max-w-xl">
                   Découvrez le coût pour installer une thermopompe chez vous en{" "}
                   <span className="underline">moins d'une minute.</span>
                 </p>
-                <div className="bg-white border-4 border-[#aedee5] rounded-[20px] p-6 w-full max-w-xl shadow-[0px_4px_4px_rgba(0,0,0,0.25)]">
+                <div className="bg-white border-4 border-[#aedee5] rounded-[20px] p-6 w-full shadow-[0px_4px_4px_rgba(0,0,0,0.25)]">
                   <div className="flex flex-col gap-4">
                     <AddressInput {...addressFormProps} />
                     <Button
@@ -482,7 +486,7 @@ export default function ThermopompesPage() {
                   </div>
                 ))}
               </div>
-              <div className="flex flex-row items-center gap-3 max-w-2xl mx-auto">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 max-w-2xl mx-auto">
                 <div className="flex-1 min-w-0"><AddressInput {...addressFormProps} /></div>
                 {ctaButton}
               </div>

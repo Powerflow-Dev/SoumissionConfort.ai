@@ -16,6 +16,7 @@ function PricingContent() {
   const [error, setError] = useState<string | null>(null)
 
   const leadId = searchParams.get("leadId")
+  const urlData = searchParams.get("d")
 
   useEffect(() => {
     const fetchPricingData = async () => {
@@ -25,13 +26,43 @@ function PricingContent() {
         return
       }
 
+      // 1. URL param `d` — most reliable (survives refresh, copy-paste, new tab)
+      if (urlData) {
+        try {
+          const decoded = JSON.parse(atob(urlData))
+          setPricingData({
+            roofData: { roofArea: decoded.roofArea, pitch: decoded.pitch },
+            userAnswers: {
+              heatingSystem: decoded.heatingSystem,
+              currentInsulation: decoded.currentInsulation,
+              atticAccess: decoded.atticAccess,
+              identifiedProblems: decoded.identifiedProblems,
+            },
+            leadData: {},
+          })
+          setLoading(false)
+          return
+        } catch {
+          // malformed — fall through
+        }
+      }
+
+      // 2. sessionStorage — set just before redirect, survives refresh
+      try {
+        const cached = sessionStorage.getItem('pricingContext')
+        if (cached) {
+          setPricingData(JSON.parse(cached))
+          setLoading(false)
+          return
+        }
+      } catch {
+        // unavailable — fall through
+      }
+
+      // 3. Fallback: in-memory API (works on local dev in same process)
       try {
         const response = await fetch(`/api/pricing-data?leadId=${leadId}`)
-        
-        if (!response.ok) {
-          throw new Error("Impossible de récupérer les données de pricing")
-        }
-
+        if (!response.ok) throw new Error("Impossible de récupérer les données de pricing")
         const data = await response.json()
         setPricingData(data)
       } catch (err) {
@@ -43,7 +74,7 @@ function PricingContent() {
     }
 
     fetchPricingData()
-  }, [leadId])
+  }, [leadId, urlData])
 
   if (loading) {
     return (

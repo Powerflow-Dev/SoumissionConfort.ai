@@ -1,15 +1,9 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
 import { LeadCapturePopup, type LeadData } from "@/components/lead-capture-popup"
 import { getCurrentUTMParameters, type UTMParameters } from "@/lib/utm-utils"
-import { ArrowLeft, ArrowRight, CheckCircle, Clock } from "lucide-react"
+import { ArrowLeft, Check, CheckCircle, Smile } from "lucide-react"
 import { track } from '@vercel/analytics'
 
 declare global {
@@ -104,6 +98,15 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
     }
   }
 
+  // Auto-advance for radio steps (0-2)
+  const selectAndAdvance = (field: 'heatingSystem' | 'currentInsulation' | 'atticAccess', value: string) => {
+    setAnswers((prev) => ({ ...prev, [field]: value }))
+    setTimeout(() => {
+      track('Questionnaire Step Completed', { step: currentStep + 1, stepName: steps[currentStep].key })
+      setCurrentStep((s) => s + 1)
+    }, 250)
+  }
+
   const isFormValid = () => {
     return (
       answers.heatingSystem &&
@@ -151,24 +154,43 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
         
       } catch (pricingError) {
         console.error('💥 Pricing calculation error, using fallback:', pricingError)
+        const area = roofData?.roofArea || 1500
         pricingData = {
-          adjustedArea: roofData.roofArea || 2000,
+          adjustedArea: area,
           ranges: {
             economique: {
-              totalCost: { min: roofData.roofArea * 0.9, max: roofData.roofArea * 1.0 },
-              annualSavings: { min: 500, max: 700 },
-              paybackPeriod: { min: 3, max: 5 }
+              name: 'Économique', type: 'Cellulose soufflée', rValue: 50,
+              thickness: '14 pouces', durability: '20-30 ans', icon: '🥉',
+              features: ['Valeur R: 3,6-3,8 par pouce', 'Matériau 100% recyclé', 'Installation rapide'],
+              totalCost: { min: Math.max(1500, Math.round(area * 0.90)), max: Math.round(area * 1.50) },
+              annualSavings: { min: 350, max: 600 },
+              heatingReduction: { min: 15, max: 25 },
+              paybackPeriod: { min: 3, max: 6 },
+              savings25Years: { min: 8750, max: 15000 },
+              netGain25Years: { min: 5000, max: 12000 },
             },
             standard: {
-              totalCost: { min: roofData.roofArea * 1.2, max: roofData.roofArea * 1.8 },
-              annualSavings: { min: 600, max: 900 },
-              paybackPeriod: { min: 2.5, max: 4 }
+              name: 'Standard', type: 'Fibre de verre soufflée', rValue: 55,
+              thickness: '18 pouces', durability: '20-25 ans', icon: '🥈',
+              features: ['Valeur R: 2,6-2,9 par pouce', 'Non combustible', 'Installation certifiée RBQ'],
+              totalCost: { min: Math.max(2000, Math.round(area * 1.40)), max: Math.round(area * 2.80) },
+              annualSavings: { min: 450, max: 750 },
+              heatingReduction: { min: 20, max: 35 },
+              paybackPeriod: { min: 3, max: 6 },
+              savings25Years: { min: 11250, max: 18750 },
+              netGain25Years: { min: 6000, max: 15000 },
             },
             premium: {
-              totalCost: { min: roofData.roofArea * 4.0, max: roofData.roofArea * 6.0 },
-              annualSavings: { min: 800, max: 1200 },
-              paybackPeriod: { min: 5, max: 8 }
-            }
+              name: 'Premium', type: 'Hybride : mousse projetée + soufflé', rValue: 60,
+              thickness: '12 pouces', durability: '30-50 ans', icon: '🥇',
+              features: ['Valeur R: 6,0+ par pouce (mousse)', 'Barrière d\'air et d\'humidité', 'Performance maximale'],
+              totalCost: { min: Math.max(3500, Math.round(area * 3.00)), max: Math.round(area * 5.00) },
+              annualSavings: { min: 600, max: 1000 },
+              heatingReduction: { min: 25, max: 45 },
+              paybackPeriod: { min: 5, max: 10 },
+              savings25Years: { min: 15000, max: 25000 },
+              netGain25Years: { min: 8000, max: 20000 },
+            },
           }
         }
       }
@@ -234,11 +256,44 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
         stack: error instanceof Error ? error.stack : 'No stack trace',
         name: error instanceof Error ? error.name : 'Unknown error type'
       })
+      const area = roofData?.roofArea || 1500
       const fallbackPricing = {
-        lowEstimate: roofData.roofArea * 8,
-        highEstimate: roofData.roofArea * 12,
-        materialType: 'Standard',
-        complexity: roofData.pitchComplexity || 'moderate'
+        adjustedArea: area,
+        ranges: {
+          economique: {
+            name: 'Économique', type: 'Cellulose soufflée', rValue: 50,
+            thickness: '14 pouces', durability: '20-30 ans', icon: '🥉',
+            features: ['Valeur R: 3,6-3,8 par pouce', 'Matériau 100% recyclé', 'Installation rapide'],
+            totalCost: { min: Math.max(1500, Math.round(area * 0.90)), max: Math.round(area * 1.50) },
+            annualSavings: { min: 350, max: 600 },
+            heatingReduction: { min: 15, max: 25 },
+            paybackPeriod: { min: 3, max: 6 },
+            savings25Years: { min: 8750, max: 15000 },
+            netGain25Years: { min: 5000, max: 12000 },
+          },
+          standard: {
+            name: 'Standard', type: 'Fibre de verre soufflée', rValue: 55,
+            thickness: '18 pouces', durability: '20-25 ans', icon: '🥈',
+            features: ['Valeur R: 2,6-2,9 par pouce', 'Non combustible', 'Installation certifiée RBQ'],
+            totalCost: { min: Math.max(2000, Math.round(area * 1.40)), max: Math.round(area * 2.80) },
+            annualSavings: { min: 450, max: 750 },
+            heatingReduction: { min: 20, max: 35 },
+            paybackPeriod: { min: 3, max: 6 },
+            savings25Years: { min: 11250, max: 18750 },
+            netGain25Years: { min: 6000, max: 15000 },
+          },
+          premium: {
+            name: 'Premium', type: 'Hybride : mousse projetée + soufflé', rValue: 60,
+            thickness: '12 pouces', durability: '30-50 ans', icon: '🥇',
+            features: ['Valeur R: 6,0+ par pouce (mousse)', 'Barrière d\'air et d\'humidité', 'Performance maximale'],
+            totalCost: { min: Math.max(3500, Math.round(area * 3.00)), max: Math.round(area * 5.00) },
+            annualSavings: { min: 600, max: 1000 },
+            heatingReduction: { min: 25, max: 45 },
+            paybackPeriod: { min: 5, max: 10 },
+            savings25Years: { min: 15000, max: 25000 },
+            netGain25Years: { min: 8000, max: 20000 },
+          },
+        }
       }
       setShowLeadCapture(false)
       onComplete(answers, leadData, fallbackPricing)
@@ -249,199 +304,193 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
 
   return (
     <>
-      <div className="max-w-3xl mx-auto px-4 py-6">
-        {/* Header with Progress */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 bg-[#aedee5]/30 border border-[#aedee5] rounded-full px-4 py-2 mb-4">
-            <Clock className="w-4 h-4 text-[#002042]" />
-            <span className="font-serif-body font-semibold text-[#002042] text-sm">
-              Question {currentStep + 1} sur {steps.length}
-            </span>
-          </div>
+      <div className="max-w-3xl mx-auto px-4 pt-3 pb-4 sm:py-[60px] flex flex-col items-center gap-4 sm:gap-8">
 
-          {/* Progress bar */}
-          <div className="w-full bg-[#e8e8e0] rounded-full h-1.5 mb-6">
-            <div
-              className="bg-[#b9e15c] h-1.5 rounded-full transition-all duration-500"
-              style={{ width: `${getProgress()}%` }}
-            />
-          </div>
-
-          <h1 className="font-heading text-2xl md:text-3xl font-bold text-[#10002c] mb-2">{steps[currentStep].title}</h1>
-          <p className="font-serif-body text-lg text-[#375371]">
-            {steps[currentStep].description}
-          </p>
+        {/* Badge */}
+        <div className="inline-flex items-center gap-1.5 bg-[#aedee5] rounded-full px-4 py-2 sm:py-2.5 shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)]">
+          <span className="font-serif-body font-bold text-[#002042] text-base sm:text-xl leading-none tracking-[-0.8px]">
+            Question {currentStep + 1}/{steps.length}
+          </span>
+          <Smile className="w-5 h-5 sm:w-6 sm:h-6 text-[#002042]" />
         </div>
 
-        {/* Wizard Card */}
-        <div className="bg-white border border-[#aedee5] rounded-[20px] shadow-md">
-          <div className="p-8 min-h-[400px] flex flex-col">
-            <div className="flex-1 space-y-3">
-              {/* Step 0: Système de chauffage */}
-              {currentStep === 0 && (
-                <RadioGroup
-                  value={answers.heatingSystem}
-                  onValueChange={(value) => setAnswers((prev) => ({ ...prev, heatingSystem: value }))}
-                  className="space-y-3"
-                >
-                  {[
-                    { value: "electricite", label: "Électricité (plinthes, air pulsé, thermopompe)" },
-                    { value: "bi-energie", label: "Bi-énergie (Hydro + combustible)" },
-                    { value: "gaz", label: "Gaz naturel" },
-                    { value: "mazout", label: "Mazout" },
-                    { value: "eau-chaude", label: "Système à eau chaude (chaudière/radiateurs)" },
-                    { value: "autre", label: "Autre/Combinaison" },
-                  ].map((option) => (
-                    <div
-                      key={option.value}
-                      className={`flex items-center space-x-3 p-4 rounded-xl border-2 transition-all cursor-pointer hover:shadow-md ${
-                        answers.heatingSystem === option.value
-                          ? "border-[#86a735] bg-[#ecf8cf]"
-                          : "border-[#aedee5] bg-white hover:border-[#002042]"
-                      }`}
-                      onClick={() => setAnswers((prev) => ({ ...prev, heatingSystem: option.value }))}
-                    >
-                      <RadioGroupItem value={option.value} id={option.value} />
-                      <Label htmlFor={option.value} className="font-serif-body text-base font-medium cursor-pointer flex-1 text-[#10002c]">
-                        {option.label}
-                      </Label>
-                    </div>
-                  ))}
-                </RadioGroup>
-              )}
+        {/* Progress bar */}
+        <div className="w-full bg-[#eef5fc] rounded-[100px] h-3 sm:h-4 relative overflow-hidden">
+          <div
+            className="absolute inset-y-0 left-0 rounded-[100px] transition-[width] duration-500"
+            style={{
+              width: `${getProgress()}%`,
+              background: "linear-gradient(7.67deg, #aedee5 0%, #b9e15c 99.27%)",
+            }}
+          />
+        </div>
 
-              {/* Step 1: État de l'isolation */}
-              {currentStep === 1 && (
-                <RadioGroup
-                  value={answers.currentInsulation}
-                  onValueChange={(value) => setAnswers((prev) => ({ ...prev, currentInsulation: value }))}
-                  className="space-y-3"
-                >
-                  {[
-                    { value: "aucune", label: "Aucune isolation ou très peu" },
-                    { value: "partielle", label: "Isolation partielle" },
-                    { value: "complete", label: "Isolation complète mais ancienne" },
-                    { value: "recente", label: "Isolation récente" },
-                    { value: "inconnue", label: "Je ne sais pas" },
-                  ].map((option) => (
-                    <div
-                      key={option.value}
-                      className={`flex items-center space-x-3 p-4 rounded-xl border-2 transition-all cursor-pointer hover:shadow-md ${
-                        answers.currentInsulation === option.value
-                          ? "border-[#86a735] bg-[#ecf8cf]"
-                          : "border-[#aedee5] bg-white hover:border-[#002042]"
-                      }`}
-                      onClick={() => setAnswers((prev) => ({ ...prev, currentInsulation: option.value }))}
-                    >
-                      <RadioGroupItem value={option.value} id={`insulation-${option.value}`} />
-                      <Label htmlFor={`insulation-${option.value}`} className="font-serif-body text-base font-medium cursor-pointer flex-1 text-[#10002c]">
-                        {option.label}
-                      </Label>
-                    </div>
-                  ))}
-                </RadioGroup>
-              )}
+        {/* Card */}
+        <div className="bg-white rounded-[20px] shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] w-full flex flex-col gap-4 sm:gap-6 p-4 sm:p-8">
 
-              {/* Step 2: Accès à l'entre-toit */}
-              {currentStep === 2 && (
-                <RadioGroup
-                  value={answers.atticAccess}
-                  onValueChange={(value) => setAnswers((prev) => ({ ...prev, atticAccess: value }))}
-                  className="space-y-3"
-                >
-                  {[
-                    { value: "facile", label: "Accès facile depuis l'intérieur" },
-                    { value: "trappe", label: "Trappe d'accès disponible" },
-                    { value: "difficile", label: "Accès difficile ou limité" },
-                    { value: "aucun", label: "Aucun accès direct" },
-                    { value: "inconnue", label: "Je ne sais pas" },
-                  ].map((option) => (
-                    <div
-                      key={option.value}
-                      className={`flex items-center space-x-3 p-4 rounded-xl border-2 transition-all cursor-pointer hover:shadow-md ${
-                        answers.atticAccess === option.value
-                          ? "border-[#86a735] bg-[#ecf8cf]"
-                          : "border-[#aedee5] bg-white hover:border-[#002042]"
-                      }`}
-                      onClick={() => setAnswers((prev) => ({ ...prev, atticAccess: option.value }))}
-                    >
-                      <RadioGroupItem value={option.value} id={`access-${option.value}`} />
-                      <Label htmlFor={`access-${option.value}`} className="font-serif-body text-base font-medium cursor-pointer flex-1 text-[#10002c]">
-                        {option.label}
-                      </Label>
-                    </div>
-                  ))}
-                </RadioGroup>
-              )}
-
-              {/* Step 3: Problèmes identifiés */}
-              {currentStep === 3 && (
-                <div className="space-y-3">
-                  <p className="font-serif-body text-sm text-[#375371] mb-2">Sélectionnez tous les problèmes qui s'appliquent (optionnel)</p>
-                  {[
-                    { value: "moisissure", label: "Moisissure ou humidité" },
-                    { value: "courants-air", label: "Courants d'air" },
-                    { value: "factures-elevees", label: "Factures d'énergie élevées" },
-                    { value: "temperature-inegale", label: "Température inégale entre les pièces" },
-                    { value: "glace", label: "Formation de glace sur le toit" },
-                    { value: "aucun", label: "Aucun problème identifié" },
-                  ].map((problem) => (
-                    <div
-                      key={problem.value}
-                      className={`flex items-center space-x-3 p-4 rounded-xl border-2 transition-all cursor-pointer hover:shadow-md ${
-                        answers.identifiedProblems.includes(problem.value)
-                          ? "border-[#86a735] bg-[#ecf8cf]"
-                          : "border-[#aedee5] bg-white hover:border-[#002042]"
-                      }`}
-                      onClick={() => handleProblemToggle(problem.value)}
-                    >
-                      <Checkbox
-                        id={problem.value}
-                        checked={answers.identifiedProblems.includes(problem.value)}
-                        onCheckedChange={() => handleProblemToggle(problem.value)}
-                      />
-                      <Label htmlFor={problem.value} className="font-serif-body text-base font-medium cursor-pointer flex-1 text-[#10002c]">
-                        {problem.label}
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+          {/* Title + description */}
+          <div className="flex flex-col gap-1.5 sm:gap-3">
+            <h2 className="font-heading font-bold text-[20px] sm:text-[24px] text-[#002042] tracking-[-0.72px] leading-[1.2]">
+              {steps[currentStep].title}
+            </h2>
+            <p className="font-serif-body text-[14px] sm:text-[18px] text-[#002042] tracking-[-0.04em] leading-[1.2]">
+              {steps[currentStep].description}
+            </p>
           </div>
 
-          {/* Navigation Buttons */}
-          <div className="border-t border-[#e8e8e0] p-6 bg-[#fffff6] rounded-b-[20px] flex justify-between items-center">
+          {/* Options */}
+          <div className="flex flex-col gap-2 sm:gap-4">
+
+            {/* Step 0: Système de chauffage */}
+            {currentStep === 0 && [
+              { value: "electricite", label: "Électricité (plinthes, air pulsé, thermopompe)" },
+              { value: "bi-energie", label: "Bi-énergie (Hydro + combustible)" },
+              { value: "gaz", label: "Gaz naturel" },
+              { value: "mazout", label: "Mazout" },
+              { value: "eau-chaude", label: "Système à eau chaude (chaudière/radiateurs)" },
+              { value: "autre", label: "Autre / Je ne sais pas" },
+            ].map((option) => {
+              const selected = answers.heatingSystem === option.value
+              return (
+                <div
+                  key={option.value}
+                  onClick={() => selectAndAdvance('heatingSystem', option.value)}
+                  className={`flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-[20px] cursor-pointer transition-all ${
+                    selected ? "bg-[#ecf8cf] border-2 border-[#86a735]" : "bg-white border border-[#aedee5] hover:border-[#375371]"
+                  }`}
+                >
+                  {selected ? (
+                    <div className="flex-shrink-0 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-[#86a735] flex items-center justify-center">
+                      <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white stroke-[3]" />
+                    </div>
+                  ) : (
+                    <div className="flex-shrink-0 w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 border-[#aedee5]" />
+                  )}
+                  <span className="font-serif-body font-semibold text-sm sm:text-[20px] text-[#002042] tracking-[-0.05em] leading-[1.2]">
+                    {option.label}
+                  </span>
+                </div>
+              )
+            })}
+
+            {/* Step 1: État de l'isolation */}
+            {currentStep === 1 && [
+              { value: "aucune", label: "Aucune isolation ou très peu" },
+              { value: "partielle", label: "Isolation partielle" },
+              { value: "complete", label: "Isolation complète mais ancienne" },
+              { value: "recente", label: "Isolation récente" },
+              { value: "inconnue", label: "Je ne sais pas" },
+            ].map((option) => {
+              const selected = answers.currentInsulation === option.value
+              return (
+                <div
+                  key={option.value}
+                  onClick={() => selectAndAdvance('currentInsulation', option.value)}
+                  className={`flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-[20px] cursor-pointer transition-all ${
+                    selected ? "bg-[#ecf8cf] border-2 border-[#86a735]" : "bg-white border border-[#aedee5] hover:border-[#375371]"
+                  }`}
+                >
+                  {selected ? (
+                    <div className="flex-shrink-0 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-[#86a735] flex items-center justify-center">
+                      <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white stroke-[3]" />
+                    </div>
+                  ) : (
+                    <div className="flex-shrink-0 w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 border-[#aedee5]" />
+                  )}
+                  <span className="font-serif-body font-semibold text-sm sm:text-[20px] text-[#002042] tracking-[-0.05em] leading-[1.2]">
+                    {option.label}
+                  </span>
+                </div>
+              )
+            })}
+
+            {/* Step 2: Accès à l'entre-toit */}
+            {currentStep === 2 && [
+              { value: "facile", label: "Accès facile depuis l'intérieur" },
+              { value: "trappe", label: "Trappe d'accès disponible" },
+              { value: "difficile", label: "Accès difficile ou limité" },
+              { value: "aucun", label: "Aucun accès direct" },
+              { value: "inconnue", label: "Je ne sais pas" },
+            ].map((option) => {
+              const selected = answers.atticAccess === option.value
+              return (
+                <div
+                  key={option.value}
+                  onClick={() => selectAndAdvance('atticAccess', option.value)}
+                  className={`flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-[20px] cursor-pointer transition-all ${
+                    selected ? "bg-[#ecf8cf] border-2 border-[#86a735]" : "bg-white border border-[#aedee5] hover:border-[#375371]"
+                  }`}
+                >
+                  {selected ? (
+                    <div className="flex-shrink-0 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-[#86a735] flex items-center justify-center">
+                      <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white stroke-[3]" />
+                    </div>
+                  ) : (
+                    <div className="flex-shrink-0 w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 border-[#aedee5]" />
+                  )}
+                  <span className="font-serif-body font-semibold text-sm sm:text-[20px] text-[#002042] tracking-[-0.05em] leading-[1.2]">
+                    {option.label}
+                  </span>
+                </div>
+              )
+            })}
+
+            {/* Step 3: Problèmes identifiés (multi-select) */}
+            {currentStep === 3 && [
+              { value: "moisissure", label: "Moisissure ou humidité" },
+              { value: "courants-air", label: "Courants d'air" },
+              { value: "factures-elevees", label: "Factures d'énergie élevées" },
+              { value: "temperature-inegale", label: "Température inégale entre les pièces" },
+              { value: "glace", label: "Formation de glace sur le toit" },
+              { value: "aucun", label: "Aucun problème identifié" },
+            ].map((problem) => {
+              const checked = answers.identifiedProblems.includes(problem.value)
+              return (
+                <div
+                  key={problem.value}
+                  onClick={() => handleProblemToggle(problem.value)}
+                  className={`flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-[20px] cursor-pointer transition-all ${
+                    checked ? "bg-[#ecf8cf] border-2 border-[#86a735]" : "bg-white border border-[#aedee5] hover:border-[#375371]"
+                  }`}
+                >
+                  {checked ? (
+                    <div className="flex-shrink-0 w-5 h-5 sm:w-6 sm:h-6 rounded-[6px] bg-[#86a735] flex items-center justify-center">
+                      <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white stroke-[3]" />
+                    </div>
+                  ) : (
+                    <div className="flex-shrink-0 w-5 h-5 sm:w-6 sm:h-6 rounded-[6px] border-2 border-[#aedee5]" />
+                  )}
+                  <span className="font-serif-body font-semibold text-sm sm:text-[20px] text-[#002042] tracking-[-0.05em] leading-[1.2]">
+                    {problem.label}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Navigation */}
+          <div className="flex justify-between items-center pt-2 sm:pt-0 border-t border-[#e8e8e0]">
             <button
               onClick={handlePrevious}
               disabled={currentStep === 0}
-              className="flex items-center gap-2 font-serif-body font-semibold text-[#375371] hover:text-[#002042] disabled:opacity-30 disabled:cursor-not-allowed transition-colors px-4 py-2"
+              className="flex items-center gap-2 font-serif-body font-bold text-[#375371] hover:text-[#002042] disabled:opacity-30 disabled:cursor-not-allowed transition-colors px-1 py-2 sm:py-3 text-sm sm:text-[18px]"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
               Précédent
             </button>
 
-            <span className="font-serif-body text-sm text-[#375371]">
-              {currentStep + 1} / {steps.length}
-            </span>
-
-            <button
-              onClick={handleNext}
-              disabled={!canGoNext()}
-              className="flex items-center gap-2 bg-[#b9e15c] border-2 border-[#002042] text-[#002042] font-heading font-bold py-3 px-6 rounded-full shadow-[-2px_4px_0_0_#002042] hover:shadow-[-1px_2px_0_0_#002042] hover:translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0"
-            >
-              {currentStep === steps.length - 1 ? (
-                <>
-                  Obtenir ma soumission
-                  <CheckCircle className="w-4 h-4" />
-                </>
-              ) : (
-                <>
-                  Suivant
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
+            {currentStep === steps.length - 1 ? (
+              <button
+                onClick={handleNext}
+                disabled={!canGoNext()}
+                className="flex items-center gap-1.5 bg-[#b9e15c] border-2 border-[#002042] text-[#002042] font-heading font-bold py-2 px-4 sm:py-3 sm:px-8 rounded-full shadow-[-2px_4px_0_0_#002042] hover:shadow-[-1px_2px_0_0_#002042] hover:translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0 text-sm sm:text-[18px]"
+              >
+                Obtenir ma soumission
+                <CheckCircle className="w-4 h-4" />
+              </button>
+            ) : (
+              <div className="w-[90px] sm:w-[120px]" />
+            )}
           </div>
         </div>
       </div>

@@ -16,6 +16,7 @@ export async function POST(request: NextRequest) {
     const leadType = leadData.leadType || 'isolation'
     const isHVAC = leadType === 'hvac'
     const isSubvention = leadType === 'subvention'
+    const isSoumissionRapide = leadType === 'isolation_soumission_rapide'
 
     // Validate required fields by lead type
     if (isHVAC) {
@@ -25,7 +26,7 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ error: `Missing required field: ${field}` }, { status: 400 })
         }
       }
-    } else if (isSubvention) {
+    } else if (isSubvention || isSoumissionRapide) {
       const requiredFields = ["firstName", "lastName", "email", "phone"]
       for (const field of requiredFields) {
         if (!leadData[field]) {
@@ -90,7 +91,32 @@ export async function POST(request: NextRequest) {
       console.log('📋 LEADS API: Webhook URLs:', webhookUrls)
       
       // Prepare webhook payload depending on lead type
-      const webhookPayload = isSubvention
+      const webhookPayload = isSoumissionRapide
+        ? {
+            timestamp: new Date().toISOString(),
+            leadId,
+            webhookType: "isolation_soumission_rapide",
+            leadType,
+            contact: {
+              firstName: leadData.firstName,
+              lastName: leadData.lastName,
+              email: leadData.email,
+              phone: leadData.phone,
+            },
+            property: {
+              ville: leadData.ville || "",
+            },
+            projectDetails: {
+              projectType: leadData.userAnswers?.projectType || "",
+              currentInsulation: leadData.userAnswers?.currentInsulation || "",
+              problems: leadData.userAnswers?.problems || "",
+              timeline: leadData.userAnswers?.timeline || "",
+              contactTime: leadData.userAnswers?.contactTime || "",
+            },
+            utmParams,
+            source: "soumission-rapide-isolation",
+          }
+        : isSubvention
         ? {
             timestamp: new Date().toISOString(),
             leadId,
@@ -262,7 +288,27 @@ export async function POST(request: NextRequest) {
       console.log('🏷️ LEADS API: UTM Parameters:', webhookPayload.utmParams)
       
       // Prepare formatted payload for Make.com (matching Google Sheets structure)
-      const makeComPayload = isSubvention
+      const makeComPayload = isSoumissionRapide
+        ? {
+            "Prénom (A)": webhookPayload.contact.firstName,
+            "Nom (B)": webhookPayload.contact.lastName,
+            "Adresse courriel (C)": webhookPayload.contact.email,
+            "Téléphone (D)": webhookPayload.contact.phone,
+            "Ville (E)": (webhookPayload as any).property?.ville || "",
+            "Type de projet (F)": (webhookPayload as any).projectDetails?.projectType || "",
+            "Isolation actuelle (G)": (webhookPayload as any).projectDetails?.currentInsulation || "",
+            "Problèmes (H)": (webhookPayload as any).projectDetails?.problems || "",
+            "Échéancier (I)": (webhookPayload as any).projectDetails?.timeline || "",
+            "Heure de contact (J)": (webhookPayload as any).projectDetails?.contactTime || "",
+            "UTM Source (AF)": webhookPayload.utmParams?.utm_source || "",
+            "UTM Campaign (AG)": webhookPayload.utmParams?.utm_campaign || "",
+            "UTM Content (AH)": webhookPayload.utmParams?.utm_content || "",
+            "UTM Medium (AI)": webhookPayload.utmParams?.utm_medium || "",
+            "UTM Term (AJ)": webhookPayload.utmParams?.utm_term || "",
+            "Lead ID (AK)": leadId,
+            "Webhook Type (AL)": "isolation_soumission_rapide"
+          }
+        : isSubvention
         ? {
             "Prénom (A)": webhookPayload.contact.firstName,
             "Nom (B)": webhookPayload.contact.lastName,
@@ -436,6 +482,7 @@ export async function POST(request: NextRequest) {
             // Determine service_type and value based on lead type
             const serviceTypeMap: Record<string, string> = {
               'isolation': 'isolation',
+              'isolation_soumission_rapide': 'isolation',
               'subvention': 'subvention',
               'hvac': 'thermopompe',
             }

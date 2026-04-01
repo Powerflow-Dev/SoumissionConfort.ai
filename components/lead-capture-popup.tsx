@@ -11,6 +11,7 @@ import { useLanguage } from "@/lib/language-context"
 import { X, Loader2, Shield, CheckCircle } from 'lucide-react'
 import { track } from '@vercel/analytics'
 import { PhoneOtpInput } from "@/components/phone-otp-input"
+import { OTP_ENABLED } from "@/lib/feature-flags"
 
 interface LeadCapturePopupProps {
   isOpen: boolean
@@ -25,22 +26,18 @@ export interface LeadData {
   lastName: string
   email: string
   phone: string
-  agreeToTerms: boolean
-  agreeToContact: boolean
   leadId?: string
 }
 
 export function LeadCapturePopup({ isOpen, onClose, onSubmit, isSubmitting = false, roofData }: LeadCapturePopupProps) {
   const { t } = useLanguage()
   const [phoneError, setPhoneError] = useState<string | null>(null)
-  const [phoneVerified, setPhoneVerified] = useState(false)
+  const [phoneVerified, setPhoneVerified] = useState(!OTP_ENABLED)
   const [formData, setFormData] = useState<LeadData>({
     firstName: "",
     lastName: "",
     email: "",
     phone: "",
-    agreeToTerms: false,
-    agreeToContact: false,
   })
 
   const estimatedMaxSavings = roofData?.roofArea
@@ -61,9 +58,7 @@ export function LeadCapturePopup({ isOpen, onClose, onSubmit, isSubmitting = fal
       formData.lastName.trim() &&
       formData.email.trim() &&
       formData.phone.trim() &&
-      phoneVerified &&
-      formData.agreeToTerms &&
-      formData.agreeToContact
+      phoneVerified
     )
   }
 
@@ -160,53 +155,32 @@ export function LeadCapturePopup({ isOpen, onClose, onSubmit, isSubmitting = fal
               {t.phoneNumber} *
             </Label>
             <div className="mt-1">
-              <PhoneOtpInput
-                value={formData.phone}
-                onChange={(val) => {
-                  setFormData((prev) => ({ ...prev, phone: val }))
-                  setPhoneVerified(false)
-                }}
-                onVerified={() => setPhoneVerified(true)}
-                disabled={isSubmitting}
-                inputClassName="border-2 border-[#e8e8e0] focus:border-[#002042] rounded-lg px-3 py-2 font-serif-body outline-none transition-colors w-full"
-                placeholder="(514) 123-4567"
-              />
+              {OTP_ENABLED ? (
+                <PhoneOtpInput
+                  value={formData.phone}
+                  onChange={(val) => {
+                    setFormData((prev) => ({ ...prev, phone: val }))
+                    setPhoneVerified(false)
+                  }}
+                  onVerified={() => setPhoneVerified(true)}
+                  disabled={isSubmitting}
+                  inputClassName="border-2 border-[#e8e8e0] focus:border-[#002042] rounded-lg px-3 py-2 font-serif-body outline-none transition-colors w-full"
+                  placeholder="(514) 123-4567"
+                />
+              ) : (
+                <Input
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))}
+                  disabled={isSubmitting}
+                  className="border-2 border-[#e8e8e0] focus:border-[#002042] rounded-lg font-serif-body"
+                  placeholder="(514) 123-4567"
+                />
+              )}
             </div>
           </div>
 
           <div className="space-y-2">
-            <div className="flex items-start space-x-2">
-              <Checkbox
-                id="terms"
-                checked={formData.agreeToTerms}
-                onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, agreeToTerms: checked as boolean }))}
-                disabled={isSubmitting}
-                className="mt-1"
-              />
-              <Label htmlFor="terms" className="font-serif-body text-sm leading-relaxed text-[#375371]">
-                J'accepte les{" "}
-                <a href="#" className="text-[#002042] underline hover:opacity-70">
-                  Conditions d'utilisation
-                </a>{" "}
-                et la{" "}
-                <a href="#" className="text-[#002042] underline hover:opacity-70">
-                  Politique de confidentialité
-                </a>{" "}
-                *
-              </Label>
-            </div>
-            <div className="flex items-start space-x-2">
-              <Checkbox
-                id="contact"
-                checked={formData.agreeToContact}
-                onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, agreeToContact: checked as boolean }))}
-                disabled={isSubmitting}
-                className="mt-1"
-              />
-              <Label htmlFor="contact" className="font-serif-body text-sm leading-relaxed text-[#375371]">
-                Je consens à être contacté par Soumission Confort concernant mon projet *
-              </Label>
-            </div>
           </div>
 
           <div className="pt-2">
