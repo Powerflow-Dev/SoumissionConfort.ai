@@ -32,6 +32,14 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ error: `Missing required field: ${field}` }, { status: 400 })
         }
       }
+    } else if (leadData.source === "soumission-rapide") {
+      // pSEO soumission-rapide leads have simpler fields (no roofData/pricingData)
+      const requiredFields = ["firstName", "lastName", "email", "phone"]
+      for (const field of requiredFields) {
+        if (!leadData[field]) {
+          return NextResponse.json({ error: `Missing required field: ${field}` }, { status: 400 })
+        }
+      }
     } else {
       const requiredFields = ["firstName", "lastName", "email", "phone", "roofData", "userAnswers", "pricingData"]
       for (const field of requiredFields) {
