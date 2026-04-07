@@ -255,3 +255,23 @@ export async function appendGHLNote(contactId: string, body: string): Promise<bo
   })
   return res.ok
 }
+
+/**
+ * Add a tag to a GHL contact. Used to flag a lead as "Demande 3 soumissions"
+ * when the client clicks the precise-quote CTA on the pricing calculator —
+ * this triggers a downstream GHL workflow that moves the opportunity to the
+ * "ask for 3 soumissions" stage.
+ *
+ * Endpoint: POST /contacts/{contactId}/tags
+ * Body: { tags: [string, ...] }
+ * Idempotent: GHL silently ignores duplicates if the tag is already present.
+ */
+export async function addGHLContactTag(contactId: string, tag: string): Promise<boolean> {
+  const apiKey = process.env.GHL_API_KEY
+  if (!apiKey || !contactId || !tag) return false
+  const res = await ghlRequest(apiKey, `/contacts/${contactId}/tags`, {
+    method: 'POST',
+    body: JSON.stringify({ tags: [tag] }),
+  })
+  return res.ok
+}
