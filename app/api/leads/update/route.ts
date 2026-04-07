@@ -1,5 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { isGHLEnabled, findGHLContactByEmail, appendGHLNote } from "@/lib/ghl-client"
+import { isGHLEnabled, findGHLContactByEmail, appendGHLNote, addGHLContactTag } from "@/lib/ghl-client"
+
+const PRECISE_QUOTE_ACTION = 'clicked_precise_quote_button'
+const DEMANDE_3_SOUMISSIONS_TAG = 'Demande 3 soumissions'
 
 export async function POST(request: NextRequest) {
   try {
@@ -40,11 +43,21 @@ export async function POST(request: NextRequest) {
       }
       const noteBody = `[${new Date().toISOString()}] Action: ${action} (leadId=${leadId})`
       const ok = await appendGHLNote(contact.id, noteBody)
+
+      // For "demande 3 soumissions" CTA: also tag the contact so a downstream
+      // GHL workflow can move the opportunity to the "ask for 3 soumissions"
+      // stage and notify the setter that this is a hot lead.
+      let tagAdded = false
+      if (action === PRECISE_QUOTE_ACTION) {
+        tagAdded = await addGHLContactTag(contact.id, DEMANDE_3_SOUMISSIONS_TAG)
+        console.log(`🔥 LEAD UPDATE: hot lead — tag '${DEMANDE_3_SOUMISSIONS_TAG}' added=${tagAdded}`)
+      }
+
       return NextResponse.json({
         success: ok,
         leadId,
         action,
-        ghl: { contactId: contact.id, noteAppended: ok },
+        ghl: { contactId: contact.id, noteAppended: ok, hotLeadTagAdded: tagAdded },
       })
     }
 
