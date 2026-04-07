@@ -79,7 +79,9 @@ export function PricingCalculator({ roofData, userAnswers, leadData, onComplete 
       const leadId = (leadData as any).leadId || 'UNKNOWN_LEAD_ID'
       
       
-      // Send lead update to webhook
+      // Send lead update to webhook. Pass contact identity so the GHL branch
+      // (and Make's lead-finder logic) can match the existing lead instead of
+      // creating a duplicate or no-op'ing.
       const response = await fetch('/api/leads/update', {
         method: 'POST',
         headers: {
@@ -87,7 +89,11 @@ export function PricingCalculator({ roofData, userAnswers, leadData, onComplete 
         },
         body: JSON.stringify({
           leadId: leadId,
-          action: 'clicked_precise_quote_button'
+          action: 'clicked_precise_quote_button',
+          email: leadData.email,
+          firstName: leadData.firstName,
+          lastName: leadData.lastName,
+          phone: leadData.phone,
         })
       })
 

@@ -190,10 +190,13 @@ export async function postLeadToGHL(lead: NormalizedLead): Promise<GHLPostResult
 
   const payload = buildContactPayload(lead, locationId)
 
-  // Create contact (GHL upserts on duplicate-not-allowed sub-accounts and returns 200 + existing contact)
+  // Use /contacts/upsert (vs /contacts/) so duplicates are merged into the
+  // existing contact instead of returning 400/422. The endpoint returns
+  // { contact, new: boolean } — `new: false` means duplicate-merged.
+  // Docs: https://marketplace.gohighlevel.com/docs/ghl/contacts/upsert-contact/index.html
   const created = await ghlRequest<{ contact: { id: string }; new?: boolean }>(
     apiKey,
-    '/contacts/',
+    '/contacts/upsert',
     { method: 'POST', body: JSON.stringify(payload) },
   )
 
