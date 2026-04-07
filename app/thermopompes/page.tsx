@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { LeadCapturePopup, type LeadData } from "@/components/lead-capture-popup"
+import { OTP_ENABLED } from "@/lib/feature-flags"
 import { AddressInput } from "@/components/address-input"
 import {
   Wind,
@@ -104,6 +105,15 @@ export default function ThermopompesPage() {
     if (Object.keys(params).length > 0) {
       setUtmParams(params)
     }
+    // Restore step 6 if returning from OTP verification
+    try {
+      const stored = sessionStorage.getItem("thermopompe-result")
+      if (stored) {
+        sessionStorage.removeItem("thermopompe-result")
+        setRecommendation(JSON.parse(stored))
+        setCurrentStep(6)
+      }
+    } catch { /* ignore */ }
   }, [])
 
   // ============================================================================
@@ -285,9 +295,15 @@ export default function ThermopompesPage() {
     } catch (error) {
       console.error('Erreur envoi lead:', error)
     }
-    
+
     setShowLeadCapture(false)
-    setCurrentStep(6)
+    if (OTP_ENABLED) {
+      sessionStorage.setItem("thermopompe-result", JSON.stringify(resolvedRec))
+      sessionStorage.setItem("otp-verify", JSON.stringify({ phone: data.phone, redirectTo: "/thermopompes" }))
+      router.push('/verifier-telephone')
+    } else {
+      setCurrentStep(6)
+    }
   }
 
   // ============================================================================

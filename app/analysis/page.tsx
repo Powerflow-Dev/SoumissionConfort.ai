@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { useLanguage } from "@/lib/language-context"
+import { OTP_ENABLED } from "@/lib/feature-flags"
 import { ArrowLeft, MapPin, Zap, Clock, CheckCircle, Pencil, Check } from 'lucide-react'
 import Link from "next/link"
 import type { LeadData } from "@/components/lead-capture-popup"
@@ -162,7 +163,7 @@ export default function AnalysisPage() {
     setUserAnswers(answers)
     setLeadData(capturedLeadData)
     setPricingData(pricingData)
-    
+
     // Store pricing data in sessionStorage and redirect to /pricing page
     const leadId = capturedLeadData.leadId
     if (leadId) {
@@ -178,7 +179,15 @@ export default function AnalysisPage() {
           atticAccess: answers?.atticAccess,
           identifiedProblems: answers?.identifiedProblems,
         }))
-        router.push(`/pricing?leadId=${leadId}&d=${urlData}`)
+        const pricingUrl = `/pricing?leadId=${leadId}&d=${urlData}`
+        if (OTP_ENABLED) {
+          // Update redirectTo to point to pricing page (phone already set by wizard)
+          const otpData = JSON.parse(sessionStorage.getItem('otp-verify') || '{}')
+          sessionStorage.setItem('otp-verify', JSON.stringify({ ...otpData, redirectTo: pricingUrl }))
+          router.push('/verifier-telephone')
+        } else {
+          router.push(pricingUrl)
+        }
       } catch (error) {
         console.error('Error storing pricing data:', error)
         setCurrentStep("pricing")
@@ -310,13 +319,17 @@ export default function AnalysisPage() {
         )}
 
         {currentStep === "pricing" && roofData && userAnswers && leadData && (
-          <InsulationResults 
-            roofData={roofData} 
-            userAnswers={userAnswers} 
+          <InsulationResults
+            roofData={roofData}
+            userAnswers={userAnswers}
             leadData={leadData}
             onComplete={() => {
-              // Redirect to branded success page after final CTA
-              router.push("/success")
+              // Redirect to OTP verification before success page
+              if (OTP_ENABLED) {
+                router.push("/verifier-telephone")
+              } else {
+                router.push("/success")
+              }
             }}
           />
         )}

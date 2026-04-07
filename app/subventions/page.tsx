@@ -7,6 +7,7 @@ import { HowItWorks } from "@/components/how-it-works"
 import { ReviewsSection } from "@/components/reviews-section"
 import { getCurrentUTMParameters, type UTMParameters } from "@/lib/utm-utils"
 import { track } from "@vercel/analytics"
+import { OTP_ENABLED } from "@/lib/feature-flags"
 import {
   Home,
   Building2,
@@ -256,6 +257,9 @@ export default function SubventionsPage() {
     } catch (error) {
       console.error("Error submitting subvention lead:", error)
     } finally {
+      if (OTP_ENABLED) {
+        sessionStorage.setItem("otp-verify", JSON.stringify({ phone: leadForm.phone, redirectTo: "/success" }))
+      }
       setIsSubmittingLead(false)
       setStep("result")
     }
@@ -774,7 +778,7 @@ export default function SubventionsPage() {
                     {/* CTA 1: Agent éco-énergétique */}
                     <button
                       type="button"
-                      onClick={() => router.push("/success")}
+                      onClick={() => router.push(OTP_ENABLED ? "/verifier-telephone" : "/success")}
                       className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-5 px-8 rounded-2xl text-lg transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-[1.02]"
                     >
                       <div className="flex items-center justify-center gap-3">
@@ -848,7 +852,7 @@ export default function SubventionsPage() {
                   {/* CTA: Contact agent */}
                   <button
                     type="button"
-                    onClick={() => router.push("/success")}
+                    onClick={() => router.push(OTP_ENABLED ? "/verifier-telephone" : "/success")}
                     className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-5 px-8 rounded-2xl text-lg transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-[1.02]"
                   >
                     <div className="flex items-center justify-center gap-3">

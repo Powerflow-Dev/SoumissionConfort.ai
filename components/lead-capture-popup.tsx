@@ -10,8 +10,6 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useLanguage } from "@/lib/language-context"
 import { X, Loader2, Shield, CheckCircle } from 'lucide-react'
 import { track } from '@vercel/analytics'
-import { PhoneOtpInput } from "@/components/phone-otp-input"
-import { OTP_ENABLED } from "@/lib/feature-flags"
 
 interface LeadCapturePopupProps {
   isOpen: boolean
@@ -32,7 +30,6 @@ export interface LeadData {
 export function LeadCapturePopup({ isOpen, onClose, onSubmit, isSubmitting = false, roofData }: LeadCapturePopupProps) {
   const { t } = useLanguage()
   const [phoneError, setPhoneError] = useState<string | null>(null)
-  const [phoneVerified, setPhoneVerified] = useState(!OTP_ENABLED)
   const [formData, setFormData] = useState<LeadData>({
     firstName: "",
     lastName: "",
@@ -57,8 +54,7 @@ export function LeadCapturePopup({ isOpen, onClose, onSubmit, isSubmitting = fal
       formData.firstName.trim() &&
       formData.lastName.trim() &&
       formData.email.trim() &&
-      formData.phone.trim() &&
-      phoneVerified
+      formData.phone.trim()
     )
   }
 
@@ -155,28 +151,14 @@ export function LeadCapturePopup({ isOpen, onClose, onSubmit, isSubmitting = fal
               {t.phoneNumber} *
             </Label>
             <div className="mt-1">
-              {OTP_ENABLED ? (
-                <PhoneOtpInput
-                  value={formData.phone}
-                  onChange={(val) => {
-                    setFormData((prev) => ({ ...prev, phone: val }))
-                    setPhoneVerified(false)
-                  }}
-                  onVerified={() => setPhoneVerified(true)}
-                  disabled={isSubmitting}
-                  inputClassName="border-2 border-[#e8e8e0] focus:border-[#002042] rounded-lg px-3 py-2 font-serif-body outline-none transition-colors w-full"
-                  placeholder="(514) 123-4567"
-                />
-              ) : (
-                <Input
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))}
-                  disabled={isSubmitting}
-                  className="border-2 border-[#e8e8e0] focus:border-[#002042] rounded-lg font-serif-body"
-                  placeholder="(514) 123-4567"
-                />
-              )}
+              <Input
+                type="tel"
+                value={formData.phone}
+                onChange={(e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))}
+                disabled={isSubmitting}
+                className="border-2 border-[#e8e8e0] focus:border-[#002042] rounded-lg font-serif-body"
+                placeholder="(514) 123-4567"
+              />
             </div>
           </div>
 

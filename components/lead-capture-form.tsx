@@ -1,12 +1,10 @@
 "use client"
 
 import React, { useState } from "react"
+import { useRouter } from "next/navigation"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { useLanguage } from "@/lib/language-context"
-import { CheckCircle } from "lucide-react"
-import { PhoneOtpInput } from "@/components/phone-otp-input"
 import { OTP_ENABLED } from "@/lib/feature-flags"
 
 interface LeadCaptureFormProps {
@@ -17,12 +15,8 @@ interface LeadCaptureFormProps {
 }
 
 export function LeadCaptureForm({ roofData, userAnswers, leadData, onComplete }: LeadCaptureFormProps) {
-  const { t } = useLanguage()
-  const [isSubmitted, setIsSubmitted] = useState(false)
+  const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [pricingData, setPricingData] = useState<any>(null)
-  const [showForm, setShowForm] = useState(true)
-  const [phoneVerified, setPhoneVerified] = useState(!OTP_ENABLED)
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -33,7 +27,6 @@ export function LeadCaptureForm({ roofData, userAnswers, leadData, onComplete }:
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
-    setShowForm(false)
 
     try {
       const leadPayload = {
@@ -43,7 +36,6 @@ export function LeadCaptureForm({ roofData, userAnswers, leadData, onComplete }:
         phone: formData.phone,
         roofData,
         userAnswers,
-        pricingData
       }
 
       const response = await fetch('/api/leads', {
@@ -60,16 +52,17 @@ export function LeadCaptureForm({ roofData, userAnswers, leadData, onComplete }:
         console.error('❌ API ERROR - Status:', response.status, errorText)
         throw new Error(`API call failed: ${response.status}`)
       }
-
-      const result = await response.json()
-      setPricingData(result.pricingData)
-      onComplete(result.pricingData)
-      setIsSubmitted(true)
     } catch (error) {
       console.error('❌ CRITICAL ERROR submitting lead:', error)
-      setIsSubmitted(true)
     } finally {
       setIsSubmitting(false)
+    }
+
+    if (OTP_ENABLED) {
+      sessionStorage.setItem('otp-verify', JSON.stringify({ phone: formData.phone, redirectTo: '/success' }))
+      router.push('/verifier-telephone')
+    } else {
+      router.push('/success')
     }
   }
 
@@ -77,7 +70,7 @@ export function LeadCaptureForm({ roofData, userAnswers, leadData, onComplete }:
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
-  const isFormValid = formData.firstName && formData.lastName && formData.email && formData.phone && phoneVerified
+  const isFormValid = formData.firstName && formData.lastName && formData.email && formData.phone
 
   if (isSubmitting) {
     return (
@@ -89,179 +82,88 @@ export function LeadCaptureForm({ roofData, userAnswers, leadData, onComplete }:
     )
   }
 
-  if (showForm) {
-    return (
-      <div className="max-w-2xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">🎯 Obtenez vos soumissions</h1>
-          <p className="text-xl text-gray-600">
-            Entrez vos coordonnées pour recevoir des soumissions personnalisées de nos entrepreneurs certifiés
-          </p>
-        </div>
+  return (
+    <div className="max-w-2xl mx-auto">
+      <div className="text-center mb-8">
+        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">🎯 Obtenez vos soumissions</h1>
+        <p className="text-xl text-gray-600">
+          Entrez vos coordonnées pour recevoir des soumissions personnalisées de nos entrepreneurs certifiés
+        </p>
+      </div>
 
-        <Card className="shadow-2xl border-0">
-          <CardHeader className="text-center pb-4">
-            <CardTitle className="text-2xl">Vos informations de contact</CardTitle>
-          </CardHeader>
-          <CardContent className="p-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Prénom *</label>
-                  <input
-                    type="text"
-                    name="firstName"
-                    value={formData.firstName}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Jean"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Nom *</label>
-                  <input
-                    type="text"
-                    name="lastName"
-                    value={formData.lastName}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Dupont"
-                  />
-                </div>
-              </div>
-
+      <Card className="shadow-2xl border-0">
+        <CardHeader className="text-center pb-4">
+          <CardTitle className="text-2xl">Vos informations de contact</CardTitle>
+        </CardHeader>
+        <CardContent className="p-8">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Prénom *</label>
                 <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
+                  type="text"
+                  name="firstName"
+                  value={formData.firstName}
                   onChange={handleInputChange}
                   required
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="jean.dupont@email.com"
+                  placeholder="Jean"
                 />
               </div>
-
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Téléphone *</label>
-                {OTP_ENABLED ? (
-                  <PhoneOtpInput
-                    value={formData.phone}
-                    onChange={(val) => {
-                      setFormData(prev => ({ ...prev, phone: val }))
-                      setPhoneVerified(false)
-                    }}
-                    onVerified={() => setPhoneVerified(true)}
-                    inputClassName="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="514-555-0123"
-                  />
-                ) : (
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="514-555-0123"
-                  />
-                )}
-              </div>
-
-              <Button
-                type="submit"
-                disabled={!isFormValid}
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-              >
-                🚀 Obtenir mes soumissions gratuites
-              </Button>
-
-              <p className="text-sm text-gray-500 text-center">
-                ⚡ Résultats instantanés • 🔒 100% sécurisé • 📞 Aucun appel non sollicité
-              </p>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
-
-  if (isSubmitted && pricingData) {
-    return (
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="w-8 h-8 text-green-600" />
-          </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">🎉 Demande envoyée avec succès!</h1>
-          <p className="text-xl text-gray-600">
-            Vos informations ont été transmises aux entrepreneurs. Voici votre estimation personnalisée:
-          </p>
-        </div>
-
-        <Card className="shadow-2xl border-0 mb-8">
-          <CardHeader className="text-center pb-4">
-            <CardTitle className="text-3xl">Votre soumission personnalisée</CardTitle>
-            <p className="text-gray-600">Basée sur l'analyse de votre toit et vos préférences</p>
-          </CardHeader>
-          <CardContent className="p-8">
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-8 rounded-xl mb-8 text-center">
-              <h3 className="text-2xl font-bold mb-4">💰 Investissement estimé</h3>
-              <div className="text-5xl font-bold mb-2">
-                ${pricingData.lowEstimate?.toLocaleString()} - ${pricingData.highEstimate?.toLocaleString()}
-              </div>
-              <p className="text-blue-100">Installation professionnelle incluse</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <div className="text-center p-6 bg-gray-50 rounded-lg">
-                <div className="text-3xl font-bold text-blue-600">{roofData.roofArea}</div>
-                <div className="text-gray-600">pi² de toiture</div>
-              </div>
-              <div className="text-center p-6 bg-gray-50 rounded-lg">
-                <div className="text-3xl font-bold text-green-600">{pricingData.materialType || 'Standard'}</div>
-                <div className="text-gray-600">Matériau recommandé</div>
-              </div>
-              <div className="text-center p-6 bg-gray-50 rounded-lg">
-                <div className="text-3xl font-bold text-purple-600">24-48h</div>
-                <div className="text-gray-600">Délai de réponse</div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Nom *</label>
+                <input
+                  type="text"
+                  name="lastName"
+                  value={formData.lastName}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Dupont"
+                />
               </div>
             </div>
 
-            <div className="bg-blue-50 p-6 rounded-lg">
-              <h4 className="text-xl font-bold text-gray-900 mb-4">📋 Prochaines étapes</h4>
-              <ul className="space-y-2">
-                {[
-                  "Les entrepreneurs examineront les détails de votre projet",
-                  "Vous recevrez des appels/emails des entrepreneurs intéressés",
-                  "Planifiez des évaluations sur site pour des devis détaillés",
-                  "Comparez les devis et choisissez votre entrepreneur préféré",
-                ].map((step) => (
-                  <li key={step} className="flex items-center">
-                    <CheckCircle className="w-5 h-5 text-green-600 mr-3 flex-shrink-0" />
-                    <span>{step}</span>
-                  </li>
-                ))}
-              </ul>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="jean.dupont@email.com"
+              />
             </div>
-          </CardContent>
-        </Card>
 
-        <Card className="shadow-lg">
-          <CardContent className="p-6">
-            <h4 className="text-lg font-bold text-gray-900 mb-4">📞 Vos informations de contact</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              <div><span className="font-medium">Nom:</span> {formData.firstName} {formData.lastName}</div>
-              <div><span className="font-medium">Email:</span> {formData.email}</div>
-              <div><span className="font-medium">Téléphone:</span> {formData.phone}</div>
-              <div><span className="font-medium">Adresse:</span> {roofData.address}</div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Téléphone *</label>
+              <input
+                type="tel"
+                name="phone"
+                value={formData.phone}
+                onChange={handleInputChange}
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="514-555-0123"
+              />
             </div>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
+
+            <Button
+              type="submit"
+              disabled={!isFormValid}
+              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            >
+              🚀 Obtenir mes soumissions gratuites
+            </Button>
+
+            <p className="text-sm text-gray-500 text-center">
+              ⚡ Résultats instantanés • 🔒 100% sécurisé • 📞 Aucun appel non sollicité
+            </p>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  )
 }

@@ -8,6 +8,7 @@ import { ArrowLeft, CheckCircle, Loader2, MapPin } from "lucide-react"
 import { getCurrentUTMParameters, type UTMParameters } from "@/lib/utm-utils"
 import { getMunicipalityBySlug } from "@/lib/municipalities"
 import { useAddressAutocomplete } from "@/hooks/use-address-autocomplete"
+import { OTP_ENABLED } from "@/lib/feature-flags"
 
 declare global {
   interface Window {
@@ -334,6 +335,7 @@ function QuestionnaireContent() {
         "soumission-rapide-lead",
         JSON.stringify({
           firstName: formData.firstName,
+          phone: formData.phone,
           ville: cityName,
           villeSlug,
           leadId: result.leadId,
@@ -343,13 +345,14 @@ function QuestionnaireContent() {
         })
       )
 
-      router.push("/soumission-rapide/merci")
+      router.push(OTP_ENABLED ? "/soumission-rapide/verifier-telephone" : "/soumission-rapide/merci")
     } catch (err) {
       console.error("Lead submission error:", err)
       sessionStorage.setItem(
         "soumission-rapide-lead",
         JSON.stringify({
           firstName: formData.firstName,
+          phone: formData.phone,
           ville: cityName,
           villeSlug,
           habitationType: selections.habitationType,
@@ -357,7 +360,7 @@ function QuestionnaireContent() {
           timeline,
         })
       )
-      router.push("/soumission-rapide/merci")
+      router.push(OTP_ENABLED ? "/soumission-rapide/verifier-telephone" : "/soumission-rapide/merci")
     } finally {
       setIsSubmittingLead(false)
     }

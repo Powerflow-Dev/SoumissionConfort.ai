@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { LeadCapturePopup, type LeadData } from "@/components/lead-capture-popup"
 import { getCurrentUTMParameters, type UTMParameters } from "@/lib/utm-utils"
+import { OTP_ENABLED } from "@/lib/feature-flags"
 import { ArrowLeft, Check, CheckCircle, Smile } from "lucide-react"
 import { track } from '@vercel/analytics'
 
@@ -245,7 +246,11 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
         ...leadData,
         leadId: result.leadId
       }
-      
+
+      if (OTP_ENABLED) {
+        sessionStorage.setItem("otp-verify", JSON.stringify({ phone: leadData.phone, redirectTo: "/success" }))
+      }
+
       setShowLeadCapture(false)
       onComplete(answers, leadDataWithId, pricingData)
       
@@ -294,6 +299,9 @@ export function UserQuestionnaire({ roofData, onComplete }: UserQuestionnairePro
             netGain25Years: { min: 8000, max: 20000 },
           },
         }
+      }
+      if (OTP_ENABLED) {
+        sessionStorage.setItem("otp-verify", JSON.stringify({ phone: leadData.phone, redirectTo: "/success" }))
       }
       setShowLeadCapture(false)
       onComplete(answers, leadData, fallbackPricing)
