@@ -153,7 +153,64 @@ export async function POST(request: NextRequest) {
           )
         }
 
-        // Meta CAPI is fired below regardless of branch — preserved.
+        // Mirror the legacy Meta CAPI server-side call so attribution survives
+        // the GHL cutover. The legacy block at the bottom of this file is
+        // skipped by the early return below; without this duplicate, GHL
+        // contacts wouldn't get a Meta Lead event.
+        try {
+          const metaPixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID
+          const metaAccessToken = process.env.META_CONVERSION_ACCESS_TOKEN
+          if (metaPixelId && metaAccessToken) {
+            const metaAPI = initializeMetaConversionAPI(metaPixelId, metaAccessToken)
+            const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0] ||
+                             request.headers.get('x-real-ip') || 'unknown'
+            const userAgent = request.headers.get('user-agent') || 'unknown'
+            const serviceTypeMap: Record<string, string> = {
+              isolation: 'isolation',
+              isolation_soumission_rapide: 'isolation',
+              subvention: 'subvention',
+              hvac: 'thermopompe',
+            }
+            const serviceType = serviceTypeMap[leadType] || 'isolation'
+            let estimatedValue = 0
+            if (isHVAC) {
+              estimatedValue = leadData.estimatedPrice ||
+                ((leadData.estimatedPriceMin || 0) + (leadData.estimatedPriceMax || 0)) / 2
+            } else if (isSubvention) {
+              estimatedValue = 1500
+            } else {
+              const stdMin = leadData.pricingData?.ranges?.standard?.totalCost?.min || 0
+              const stdMax = leadData.pricingData?.ranges?.standard?.totalCost?.max || 0
+              estimatedValue = (stdMin + stdMax) / 2
+            }
+            const sourceUrlMap: Record<string, string> = {
+              isolation: '/analysis',
+              subvention: '/subventions',
+              hvac: '/thermopompes',
+            }
+            const sourcePath = sourceUrlMap[leadType] || '/'
+            const origin = request.headers.get('origin') || 'https://soumissionconfort.com'
+            await metaAPI.trackLead({
+              email: leadData.email,
+              phone: leadData.phone,
+              firstName: leadData.firstName,
+              lastName: leadData.lastName,
+              value: estimatedValue,
+              clientIp,
+              userAgent,
+              sourceUrl: `${origin}${sourcePath}`,
+              eventId: leadData.eventId || undefined,
+              customData: { service_type: serviceType },
+            })
+            console.log(`✅ LEADS API: Meta CAPI event sent (GHL branch, ${serviceType})`)
+          } else {
+            console.warn('⚠️ LEADS API: Meta CAPI not configured (GHL branch)')
+          }
+        } catch (metaErr) {
+          console.error('❌ LEADS API: Meta CAPI error in GHL branch:', metaErr)
+          // Don't fail the request if Meta tracking fails
+        }
+
         // Return early so we skip the Make webhook code path.
         return NextResponse.json({
           success: true,

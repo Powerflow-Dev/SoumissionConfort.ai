@@ -90,6 +90,28 @@ export async function POST(request: NextRequest) {
           )
         }
 
+        // Mirror Meta CAPI so attribution survives the GHL branch.
+        initializeMeta()
+        if (isMetaConfigured()) {
+          try {
+            const estimatedValue = leadData.pricing?.totalCost ||
+              (leadData.property.roofArea ? leadData.property.roofArea * 10 : 5000)
+            await trackLead({
+              email: leadData.contact.email,
+              phone: leadData.contact.phone,
+              firstName: leadData.contact.firstName,
+              lastName: leadData.contact.lastName,
+              value: estimatedValue,
+              clientIp: request.headers.get('x-forwarded-for') ||
+                        request.headers.get('x-real-ip') || '127.0.0.1',
+              userAgent: request.headers.get('user-agent') || '',
+              sourceUrl: request.headers.get('referer') || 'https://soumissionconfort.com',
+            })
+          } catch (metaErr) {
+            console.error('⚠️ WEBHOOK: Meta CAPI error in GHL branch:', metaErr)
+          }
+        }
+
         return NextResponse.json({
           success: true,
           message: '✅ WEBHOOK: Lead sent to GoHighLevel',
