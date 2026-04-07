@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { initializeMetaConversionAPI } from "@/lib/meta-conversion-api"
+import { isGHLEnabled, postLeadToGHL, type LeadVertical, type NormalizedLead } from "@/lib/ghl-client"
 
 console.log('🔥🔥🔥 LEADS API FILE LOADED - THIS SHOULD SHOW ON SERVER START 🔥🔥🔥')
 
@@ -72,15 +73,180 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Send to webhook endpoints - DIRECT CALL TO MAKE.COM
+    // GHL DIRECT branch — controlled by GHL_ENABLED env flag.
+    // When enabled, contact goes straight to GoHighLevel (Make/Close bypassed).
+    // When disabled, the legacy Make webhook path runs unchanged.
+    if (isGHLEnabled()) {
+      console.log('🟢 LEADS API: GHL_ENABLED=true → posting to GoHighLevel directly')
+      try {
+        const vertical: LeadVertical = isHVAC
+          ? 'hvac'
+          : isSubvention
+          ? 'subvention'
+          : isSoumissionRapide
+          ? 'isolation_soumission_rapide'
+          : 'isolation'
+
+        const ghlPayload: NormalizedLead = {
+          vertical,
+          firstName: leadData.firstName,
+          lastName: leadData.lastName,
+          email: leadData.email,
+          phone: leadData.phone,
+          address1: leadData.address || leadData.roofData?.address || undefined,
+          city: leadData.city || leadData.roofData?.city || leadData.ville || undefined,
+          postalCode: leadData.postalCode || leadData.roofData?.postalCode || undefined,
+          utmSource: utmParams.utm_source,
+          utmCampaign: utmParams.utm_campaign,
+          utmContent: utmParams.utm_content,
+          utmMedium: utmParams.utm_medium,
+          utmTerm: utmParams.utm_term,
+          fbclid: utmParams.fbclid,
+          landingPage: leadData.landingPage,
+          leadSource: leadData.source || 'soumission-confort-ai',
+          internalLeadId: leadId,
+          custom: {
+            ...(isHVAC && {
+              superficie_total: leadData.finalArea || leadData.roofData?.roofArea,
+              annee_de_construction: leadData.thermal?.constructionYear,
+              isolation_renovee: leadData.thermal?.insulationUpgraded ? 'Oui' : 'Non',
+              systeme_de_chauffage: leadData.thermal?.currentHeatingType,
+              garage: leadData.geometric?.garageType,
+              nombre_d_etages: leadData.geometric?.floors,
+              soussol_fini: leadData.geometric?.hasFinishedBasement ? 'Oui' : 'Non',
+              souhaite_extraire_le_mazout: leadData.wantsOilTankRemoval ? 'Oui' : 'Non',
+              prix_minimum: leadData.estimatedPriceMin,
+              prix_maximum: leadData.estimatedPriceMax,
+              prix: leadData.estimatedPrice,
+            }),
+            ...(!isHVAC && !isSubvention && {
+              hauteur_du_batiment: leadData.roofData?.buildingHeight,
+              isolation_actuelle: leadData.userAnswers?.currentInsulation,
+              acces_entretoit: leadData.userAnswers?.atticAccess,
+              systeme_de_chauffage: leadData.userAnswers?.heatingSystem,
+              problemes_identifies: Array.isArray(leadData.userAnswers?.identifiedProblems)
+                ? leadData.userAnswers.identifiedProblems.join(', ')
+                : leadData.userAnswers?.identifiedProblems,
+              econo__prix_min: leadData.pricingData?.ranges?.economique?.totalCost?.min,
+              econo__prix_max: leadData.pricingData?.ranges?.economique?.totalCost?.max,
+              standard__prix_min: leadData.pricingData?.ranges?.standard?.totalCost?.min,
+              standard__prix_max: leadData.pricingData?.ranges?.standard?.totalCost?.max,
+              premium__prix_min: leadData.pricingData?.ranges?.premium?.totalCost?.min,
+              premium__prix_max: leadData.pricingData?.ranges?.premium?.totalCost?.max,
+            }),
+          },
+        }
+
+        const ghlResult = await postLeadToGHL(ghlPayload)
+        console.log('🟢 LEADS API: GHL post result:', ghlResult)
+
+        if (!ghlResult.contactId) {
+          console.error('❌ LEADS API: GHL contact creation failed', ghlResult.contactError)
+          return NextResponse.json(
+            {
+              success: false,
+              leadId,
+              error: ghlResult.contactError || 'GHL contact creation failed',
+              ghl: ghlResult,
+            },
+            { status: 502 },
+          )
+        }
+
+        // Mirror the legacy Meta CAPI server-side call so attribution survives
+        // the GHL cutover. The legacy block at the bottom of this file is
+        // skipped by the early return below; without this duplicate, GHL
+        // contacts wouldn't get a Meta Lead event.
+        try {
+          const metaPixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID
+          const metaAccessToken = process.env.META_CONVERSION_ACCESS_TOKEN
+          if (metaPixelId && metaAccessToken) {
+            const metaAPI = initializeMetaConversionAPI(metaPixelId, metaAccessToken)
+            const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0] ||
+                             request.headers.get('x-real-ip') || 'unknown'
+            const userAgent = request.headers.get('user-agent') || 'unknown'
+            const serviceTypeMap: Record<string, string> = {
+              isolation: 'isolation',
+              isolation_soumission_rapide: 'isolation',
+              subvention: 'subvention',
+              hvac: 'thermopompe',
+            }
+            const serviceType = serviceTypeMap[leadType] || 'isolation'
+            let estimatedValue = 0
+            if (isHVAC) {
+              estimatedValue = leadData.estimatedPrice ||
+                ((leadData.estimatedPriceMin || 0) + (leadData.estimatedPriceMax || 0)) / 2
+            } else if (isSubvention) {
+              estimatedValue = 1500
+            } else {
+              const stdMin = leadData.pricingData?.ranges?.standard?.totalCost?.min || 0
+              const stdMax = leadData.pricingData?.ranges?.standard?.totalCost?.max || 0
+              estimatedValue = (stdMin + stdMax) / 2
+            }
+            const sourceUrlMap: Record<string, string> = {
+              isolation: '/analysis',
+              subvention: '/subventions',
+              hvac: '/thermopompes',
+            }
+            const sourcePath = sourceUrlMap[leadType] || '/'
+            const origin = request.headers.get('origin') || 'https://soumissionconfort.com'
+            await metaAPI.trackLead({
+              email: leadData.email,
+              phone: leadData.phone,
+              firstName: leadData.firstName,
+              lastName: leadData.lastName,
+              value: estimatedValue,
+              clientIp,
+              userAgent,
+              sourceUrl: `${origin}${sourcePath}`,
+              eventId: leadData.eventId || undefined,
+              customData: { service_type: serviceType },
+            })
+            console.log(`✅ LEADS API: Meta CAPI event sent (GHL branch, ${serviceType})`)
+          } else {
+            console.warn('⚠️ LEADS API: Meta CAPI not configured (GHL branch)')
+          }
+        } catch (metaErr) {
+          console.error('❌ LEADS API: Meta CAPI error in GHL branch:', metaErr)
+          // Don't fail the request if Meta tracking fails
+        }
+
+        // Return early so we skip the Make webhook code path.
+        return NextResponse.json({
+          success: true,
+          leadId,
+          message: '✅ LEADS API: Lead sent to GoHighLevel',
+          ghl: ghlResult,
+          debugInfo: {
+            timestamp: new Date().toISOString(),
+            endpoint: '/api/leads/route.ts',
+            version: 'GHL_DIRECT',
+            generatedLeadId: leadId,
+            ghlEnabled: true,
+          },
+        })
+      } catch (ghlError) {
+        console.error('💥 LEADS API: GHL branch error:', ghlError)
+        return NextResponse.json(
+          {
+            success: false,
+            leadId,
+            error: ghlError instanceof Error ? ghlError.message : 'GHL branch crashed',
+          },
+          { status: 500 },
+        )
+      }
+    }
+
+    // Send to webhook endpoints - DIRECT CALL TO MAKE.COM (legacy path)
     try {
       console.log('🚨 LEADS API: ENTERING WEBHOOK TRY BLOCK')
       console.log('🚨🚨🚨 LEADS API: ABOUT TO CALL WEBHOOK DIRECTLY 🚨🚨🚨')
-      
+
       // Get webhook URLs directly from environment
       const webhookUrlsEnv = process.env.WEBHOOK_URLS
       console.log('🔍 LEADS API: WEBHOOK_URLS configured:', webhookUrlsEnv ? 'YES' : 'NO')
-      
+
       if (!webhookUrlsEnv) {
         console.error('❌ LEADS API: No webhook URLs configured')
         throw new Error('WEBHOOK_URLS not configured')
