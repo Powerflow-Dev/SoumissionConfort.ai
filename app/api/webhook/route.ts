@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { initializeMeta, isMetaConfigured } from "@/lib/meta-config"
 import { trackLead } from "@/lib/meta-conversion-api"
+import { isGHLEnabled, postLeadToGHL, type LeadVertical, type NormalizedLead } from "@/lib/ghl-client"
 
 export async function POST(request: NextRequest) {
   console.log('🚨🚨🚨 WEBHOOK ENDPOINT CALLED - THIS SHOULD APPEAR IN LOGS 🚨🚨🚨')
@@ -27,9 +28,88 @@ export async function POST(request: NextRequest) {
     }
 
     if (!leadData.property || !leadData.projectDetails) {
-      return NextResponse.json({ 
-        error: "Missing required fields: property, projectDetails" 
+      return NextResponse.json({
+        error: "Missing required fields: property, projectDetails"
       }, { status: 400 })
+    }
+
+    // GHL DIRECT (defensive branch — this route is normally only hit by external services).
+    // When GHL_ENABLED=true, push the contact to GHL and short-circuit before the Make webhook.
+    if (isGHLEnabled()) {
+      console.log('🟢 WEBHOOK: GHL_ENABLED=true → posting to GoHighLevel directly')
+      try {
+        const wt = (leadData.webhookType ?? '') as string
+        const vertical: LeadVertical = wt === 'hvac_contact'
+          ? 'hvac'
+          : wt === 'subvention_contact'
+          ? 'subvention'
+          : wt === 'isolation_soumission_rapide'
+          ? 'isolation_soumission_rapide'
+          : 'isolation'
+
+        const ghlPayload: NormalizedLead = {
+          vertical,
+          firstName: leadData.contact.firstName,
+          lastName: leadData.contact.lastName,
+          email: leadData.contact.email,
+          phone: leadData.contact.phone,
+          address1: leadData.property.address,
+          city: leadData.property.city || leadData.property.ville,
+          postalCode: leadData.property.postalCode,
+          utmSource: leadData.utmParams?.utm_source,
+          utmCampaign: leadData.utmParams?.utm_campaign,
+          utmContent: leadData.utmParams?.utm_content,
+          utmMedium: leadData.utmParams?.utm_medium,
+          utmTerm: leadData.utmParams?.utm_term,
+          fbclid: leadData.utmParams?.fbclid,
+          leadSource: leadData.source || 'soumission-confort-ai',
+          internalLeadId: leadData.leadId,
+          custom: {
+            isolation_actuelle: leadData.projectDetails?.currentInsulation,
+            acces_entretoit: leadData.projectDetails?.atticAccess,
+            systeme_de_chauffage: leadData.projectDetails?.heatingSystem,
+            problemes_identifies: Array.isArray(leadData.projectDetails?.identifiedProblems)
+              ? leadData.projectDetails.identifiedProblems.join(', ')
+              : leadData.projectDetails?.identifiedProblems,
+            econo__prix_min: leadData.pricing?.ranges?.economique?.min,
+            econo__prix_max: leadData.pricing?.ranges?.economique?.max,
+            standard__prix_min: leadData.pricing?.ranges?.standard?.min,
+            standard__prix_max: leadData.pricing?.ranges?.standard?.max,
+            premium__prix_min: leadData.pricing?.ranges?.premium?.min,
+            premium__prix_max: leadData.pricing?.ranges?.premium?.max,
+          },
+        }
+
+        const ghlResult = await postLeadToGHL(ghlPayload)
+        console.log('🟢 WEBHOOK: GHL post result:', ghlResult)
+
+        if (!ghlResult.contactId) {
+          return NextResponse.json(
+            { success: false, error: ghlResult.contactError, ghl: ghlResult },
+            { status: 502 },
+          )
+        }
+
+        return NextResponse.json({
+          success: true,
+          message: '✅ WEBHOOK: Lead sent to GoHighLevel',
+          ghl: ghlResult,
+          debugInfo: {
+            timestamp: new Date().toISOString(),
+            endpoint: '/api/webhook/route.ts',
+            version: 'GHL_DIRECT_DEFENSIVE',
+          },
+        })
+      } catch (ghlError) {
+        console.error('💥 WEBHOOK: GHL branch error:', ghlError)
+        return NextResponse.json(
+          {
+            success: false,
+            error: ghlError instanceof Error ? ghlError.message : 'GHL branch crashed',
+          },
+          { status: 500 },
+        )
+      }
     }
 
     // Initialize Meta Conversion API and track Lead event

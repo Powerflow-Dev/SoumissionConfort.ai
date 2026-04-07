@@ -1,26 +1,70 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { isGHLEnabled, findGHLContactByEmail, appendGHLNote } from "@/lib/ghl-client"
 
 export async function POST(request: NextRequest) {
   try {
-    const { leadId, action } = await request.json()
-    
+    const body = await request.json()
+    const { leadId, action, email } = body as { leadId?: string; action?: string; email?: string }
+
     console.log('📝 Lead Update API: Updating lead', leadId, 'with action:', action)
 
     if (!leadId || !action) {
       return NextResponse.json({ error: "Missing leadId or action" }, { status: 400 })
     }
 
-    // Prepare updated webhook payload with same structure as main webhook
+    // GHL DIRECT branch — controlled by GHL_ENABLED env flag.
+    // When enabled, look up contact by email and append a note describing the action.
+    // The legacy Make path is bypassed entirely so we don't double-write.
+    if (isGHLEnabled()) {
+      console.log('🟢 LEAD UPDATE: GHL_ENABLED=true → routing to GoHighLevel')
+      if (!email) {
+        // Frontend hasn't been updated yet to send email — return success but log.
+        // Cutover (Phase 5) will require pricing-calculator.tsx to also send email.
+        console.warn('⚠️ LEAD UPDATE: GHL branch requires email in body. Skipping note (no-op).')
+        return NextResponse.json({
+          success: true,
+          leadId,
+          message: 'GHL_ENABLED no-op (email missing)',
+          ghl: { skipped: true },
+        })
+      }
+      const contact = await findGHLContactByEmail(email)
+      if (!contact) {
+        console.warn('⚠️ LEAD UPDATE: GHL contact not found for', email)
+        return NextResponse.json({
+          success: true,
+          leadId,
+          message: 'GHL contact not found, no-op',
+          ghl: { found: false },
+        })
+      }
+      const noteBody = `[${new Date().toISOString()}] Action: ${action} (leadId=${leadId})`
+      const ok = await appendGHLNote(contact.id, noteBody)
+      return NextResponse.json({
+        success: ok,
+        leadId,
+        action,
+        ghl: { contactId: contact.id, noteAppended: ok },
+      })
+    }
+
+    // Prepare updated webhook payload with same structure as main webhook (legacy path)
     const updatePayload = {
       "Lead ID (Y)": leadId,
       "Webhook Type (Z)": "quote_request", // Second webhook type
       "Action (AA)": action,
       "Timestamp (BB)": new Date().toISOString(),
-      "A cliqué pour soumission précise (CC)": true
+      "A cliqué pour soumission précise (CC)": true,
     }
 
-    // Get webhook URLs from environment
-    const webhookUrlsEnv = process.env.WEBHOOK_URLS || 'https://hook.us2.make.com/hkh6cvtrgbswwecam6gmul9plxtgk98m'
+    // Get webhook URLs from environment — fail explicit instead of hidden hardcoded fallback.
+    const webhookUrlsEnv = process.env.WEBHOOK_URLS
+    if (!webhookUrlsEnv) {
+      return NextResponse.json(
+        { error: "WEBHOOK_URLS not configured and GHL_ENABLED is not true" },
+        { status: 500 },
+      )
+    }
     const webhookUrls = webhookUrlsEnv.split(',').map(url => url.trim()).filter(url => url.length > 0)
 
     console.log('🔄 Sending lead update to webhook:', updatePayload)
