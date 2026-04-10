@@ -153,6 +153,8 @@ function QuestionnaireContent() {
   const [validAddress, setValidAddress] = useState("")
   const [addressCity, setAddressCity] = useState("")
   const [addressPostalCode, setAddressPostalCode] = useState("")
+  const [addressCoordinates, setAddressCoordinates] = useState<{ lat: number; lng: number } | null>(null)
+  const [addressProvince, setAddressProvince] = useState("")
   const [isAddressDropdownOpen, setIsAddressDropdownOpen] = useState(false)
   const [addressSelectedIndex, setAddressSelectedIndex] = useState(-1)
   const addressInputRef = useRef<HTMLInputElement>(null)
@@ -188,6 +190,8 @@ function QuestionnaireContent() {
     setValidAddress("") // reset on typing
     setAddressCity("")
     setAddressPostalCode("")
+    setAddressCoordinates(null)
+    setAddressProvince("")
     if (value.length >= 2) {
       fetchAddressPredictions(value)
       setIsAddressDropdownOpen(true)
@@ -213,6 +217,8 @@ function QuestionnaireContent() {
           if (data.success && data.address) {
             setAddressCity(data.address.city || "")
             setAddressPostalCode(data.address.postalCode || "")
+            setAddressCoordinates(data.address.coordinates || null)
+            setAddressProvince(data.address.province || "")
           }
         }
       } catch (e) {
@@ -318,6 +324,8 @@ function QuestionnaireContent() {
           address: validAddress,
           city: addressCity,
           postalCode: addressPostalCode,
+          coordinates: addressCoordinates,
+          province: addressProvince,
           source: "soumission-rapide",
           leadType: "isolation_soumission_rapide",
           userAnswers: {

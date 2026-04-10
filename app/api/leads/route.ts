@@ -137,9 +137,12 @@ export async function POST(request: NextRequest) {
               souhaite_extraire_le_mazout: leadData.wantsOilTankRemoval ? 'Oui' : 'Non',
               prix_minimum: leadData.estimatedPriceMin,
               prix_maximum: leadData.estimatedPriceMax,
+              latitude: leadData.coordinates?.lat?.toString() || leadData.roofData?.coordinates?.lat?.toString(),
+              longitude: leadData.coordinates?.lng?.toString() || leadData.roofData?.coordinates?.lng?.toString(),
+              province: leadData.province || leadData.roofData?.coordinates?.province || 'QC',
               prix: leadData.estimatedPrice,
             }),
-            ...(!isHVAC && !isSubvention && {
+            ...(!isHVAC && !isSubvention && !isSoumissionRapide && {
               hauteur_du_batiment: leadData.roofData?.buildingHeight,
               isolation_actuelle: leadData.userAnswers?.currentInsulation,
               acces_entretoit: leadData.userAnswers?.atticAccess,
@@ -153,6 +156,33 @@ export async function POST(request: NextRequest) {
               standard__prix_max: leadData.pricingData?.ranges?.standard?.totalCost?.max,
               premium__prix_min: leadData.pricingData?.ranges?.premium?.totalCost?.min,
               premium__prix_max: leadData.pricingData?.ranges?.premium?.totalCost?.max,
+              superficie_total: leadData.roofData?.roofArea,
+              latitude: leadData.roofData?.coordinates?.lat?.toString(),
+              longitude: leadData.roofData?.coordinates?.lng?.toString(),
+              province: leadData.roofData?.coordinates?.province || 'QC',
+              forme_du_toit: leadData.roofData?.roofShape,
+              complexite_pente: leadData.roofData?.pitchComplexity,
+              obstacles: Array.isArray(leadData.roofData?.obstacles)
+                ? leadData.roofData.obstacles.join(', ')
+                : leadData.roofData?.obstacles,
+              nb_segments_toiture: leadData.roofData?.segments,
+              surface_utilisable: leadData.roofData?.usableArea,
+              difficulte_acces: leadData.roofData?.accessDifficulty,
+            }),
+            ...(isSoumissionRapide && {
+              type_habitation: leadData.userAnswers?.habitationType,
+              statut_proprietaire: leadData.userAnswers?.ownershipStatus,
+              isolation_actuelle: leadData.userAnswers?.insulationStatus || leadData.userAnswers?.currentInsulation,
+              latitude: leadData.coordinates?.lat?.toString(),
+              longitude: leadData.coordinates?.lng?.toString(),
+              province: leadData.coordinates?.province || 'QC',
+            }),
+            ...(isSubvention && {
+              eligible_subvention: leadData.eligible ? 'Oui' : 'Non',
+              type_habitation: leadData.subventionAnswers?.buildingType,
+              statut_proprietaire: leadData.subventionAnswers?.owner === 'oui' ? 'Propriétaire' : 'Non-propriétaire',
+              systeme_de_chauffage: leadData.subventionAnswers?.heating,
+              isolation_actuelle: leadData.subventionAnswers?.insulation,
             }),
           },
         }
