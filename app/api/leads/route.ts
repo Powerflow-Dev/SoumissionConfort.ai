@@ -73,6 +73,26 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Normalize location data once — used by both GHL and legacy webhook branches
+    const rawAddress = leadData.address || leadData.userAnswers?.address || leadData.roofData?.address || ""
+    let extractedCity = leadData.city || leadData.roofData?.city || leadData.ville || ""
+    let extractedPostalCode = leadData.postalCode || leadData.roofData?.postalCode || ""
+
+    if (!extractedCity && rawAddress) {
+      const parts = rawAddress.split(',').map((p: string) => p.trim())
+      if (parts.length >= 2) {
+        extractedCity = parts[parts.length - 2] || ""
+        extractedCity = extractedCity.replace(/[A-Za-z]\d[A-Za-z]\s*\d[A-Za-z]\d/g, '').replace(/\b\d{5}(-\d{4})?\b/g, '').trim()
+      }
+    }
+
+    if (!extractedPostalCode && rawAddress) {
+      const match = rawAddress.match(/[A-Za-z]\d[A-Za-z]\s*\d[A-Za-z]\d/)
+      if (match) extractedPostalCode = match[0].toUpperCase().trim()
+    }
+
+    console.log('📍 LEADS API: Normalized location:', { rawAddress, extractedCity, extractedPostalCode })
+
     // GHL DIRECT branch — controlled by GHL_ENABLED env flag.
     // When enabled, contact goes straight to GoHighLevel (Make/Close bypassed).
     // When disabled, the legacy Make webhook path runs unchanged.
@@ -93,9 +113,9 @@ export async function POST(request: NextRequest) {
           lastName: leadData.lastName,
           email: leadData.email,
           phone: leadData.phone,
-          address1: leadData.address || leadData.roofData?.address || undefined,
-          city: leadData.city || leadData.roofData?.city || leadData.ville || undefined,
-          postalCode: leadData.postalCode || leadData.roofData?.postalCode || undefined,
+          address1: rawAddress || undefined,
+          city: extractedCity || undefined,
+          postalCode: extractedPostalCode || undefined,
           utmSource: utmParams.utm_source,
           utmCampaign: utmParams.utm_campaign,
           utmContent: utmParams.utm_content,
@@ -270,6 +290,9 @@ export async function POST(request: NextRequest) {
               phone: leadData.phone,
             },
             property: {
+              address: rawAddress || "",
+              city: extractedCity || "",
+              postalCode: extractedPostalCode || "",
               ville: leadData.ville || "",
             },
             projectDetails: {
@@ -460,7 +483,9 @@ export async function POST(request: NextRequest) {
             "Nom (B)": webhookPayload.contact.lastName,
             "Adresse courriel (C)": webhookPayload.contact.email,
             "Téléphone (D)": webhookPayload.contact.phone,
-            "Ville (E)": (webhookPayload as any).property?.ville || "",
+            "Adresse (E)": (webhookPayload as any).property?.address || "",
+            "Code postal (E2)": (webhookPayload as any).property?.postalCode || "",
+            "Ville (E3)": (webhookPayload as any).property?.city || (webhookPayload as any).property?.ville || "",
             "Type de projet (F)": (webhookPayload as any).projectDetails?.projectType || "",
             "Isolation actuelle (G)": (webhookPayload as any).projectDetails?.currentInsulation || "",
             "Problèmes (H)": (webhookPayload as any).projectDetails?.problems || "",
