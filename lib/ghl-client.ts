@@ -26,6 +26,7 @@ export interface NormalizedLead {
   // Address
   address1?: string
   city?: string
+  state?: string
   postalCode?: string
   // UTM / attribution
   utmSource?: string
@@ -100,7 +101,7 @@ function buildContactPayload(lead: NormalizedLead, locationId: string): GHLConta
     phone: lead.phone,
     address1: lead.address1,
     city: lead.city,
-    state: 'QC',
+    state: lead.state || 'QC',
     postalCode: lead.postalCode,
     country: 'CA',
     source: lead.leadSource ?? lead.utmSource ?? 'vercel-direct',

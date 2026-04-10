@@ -73,6 +73,29 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Normalize location data once — used by both GHL and legacy webhook branches
+    const rawAddress = leadData.address || leadData.userAnswers?.address || leadData.roofData?.address || ""
+    let extractedCity = leadData.city || leadData.roofData?.city || leadData.ville || ""
+    let extractedPostalCode = leadData.postalCode || leadData.roofData?.postalCode || ""
+
+    if (!extractedCity && rawAddress) {
+      // Format typique Google: "123 Rue X, Montreal, QC H2X 1Y4, Canada"
+      const parts = rawAddress.split(',').map((p: string) => p.trim())
+      if (parts.length >= 3) {
+        extractedCity = parts[1] || ""
+      } else if (parts.length === 2) {
+        extractedCity = parts[0] || ""
+      }
+    }
+
+    if (!extractedPostalCode && rawAddress) {
+      const match = rawAddress.match(/[A-Za-z]\d[A-Za-z]\s*\d[A-Za-z]\d/)
+      if (match) extractedPostalCode = match[0].toUpperCase().trim()
+    }
+
+    const extractedProvince = leadData.province || leadData.roofData?.coordinates?.province || ''
+    console.log('📍 LEADS API: Normalized location:', { rawAddress, extractedCity, extractedPostalCode, extractedProvince })
+
     // GHL DIRECT branch — controlled by GHL_ENABLED env flag.
     // When enabled, contact goes straight to GoHighLevel (Make/Close bypassed).
     // When disabled, the legacy Make webhook path runs unchanged.
@@ -93,9 +116,10 @@ export async function POST(request: NextRequest) {
           lastName: leadData.lastName,
           email: leadData.email,
           phone: leadData.phone,
-          address1: leadData.address || leadData.roofData?.address || undefined,
-          city: leadData.city || leadData.roofData?.city || leadData.ville || undefined,
-          postalCode: leadData.postalCode || leadData.roofData?.postalCode || undefined,
+          address1: rawAddress || undefined,
+          city: extractedCity || undefined,
+          state: extractedProvince || undefined,
+          postalCode: extractedPostalCode || undefined,
           utmSource: utmParams.utm_source,
           utmCampaign: utmParams.utm_campaign,
           utmContent: utmParams.utm_content,
@@ -117,9 +141,12 @@ export async function POST(request: NextRequest) {
               souhaite_extraire_le_mazout: leadData.wantsOilTankRemoval ? 'Oui' : 'Non',
               prix_minimum: leadData.estimatedPriceMin,
               prix_maximum: leadData.estimatedPriceMax,
+              latitude: leadData.coordinates?.lat?.toString() || leadData.roofData?.coordinates?.lat?.toString(),
+              longitude: leadData.coordinates?.lng?.toString() || leadData.roofData?.coordinates?.lng?.toString(),
+              province: leadData.province || leadData.roofData?.coordinates?.province || 'QC',
               prix: leadData.estimatedPrice,
             }),
-            ...(!isHVAC && !isSubvention && {
+            ...(!isHVAC && !isSubvention && !isSoumissionRapide && {
               hauteur_du_batiment: leadData.roofData?.buildingHeight,
               isolation_actuelle: leadData.userAnswers?.currentInsulation,
               acces_entretoit: leadData.userAnswers?.atticAccess,
@@ -133,6 +160,33 @@ export async function POST(request: NextRequest) {
               standard__prix_max: leadData.pricingData?.ranges?.standard?.totalCost?.max,
               premium__prix_min: leadData.pricingData?.ranges?.premium?.totalCost?.min,
               premium__prix_max: leadData.pricingData?.ranges?.premium?.totalCost?.max,
+              superficie_total: leadData.roofData?.roofArea,
+              latitude: leadData.roofData?.coordinates?.lat?.toString(),
+              longitude: leadData.roofData?.coordinates?.lng?.toString(),
+              province: leadData.roofData?.coordinates?.province || 'QC',
+              forme_du_toit: leadData.roofData?.roofShape,
+              complexite_pente: leadData.roofData?.pitchComplexity,
+              obstacles: Array.isArray(leadData.roofData?.obstacles)
+                ? leadData.roofData.obstacles.join(', ')
+                : leadData.roofData?.obstacles,
+              nb_segments_toiture: leadData.roofData?.segments,
+              surface_utilisable: leadData.roofData?.usableArea,
+              difficulte_acces: leadData.roofData?.accessDifficulty,
+            }),
+            ...(isSoumissionRapide && {
+              type_habitation: leadData.userAnswers?.habitationType,
+              statut_proprietaire: leadData.userAnswers?.ownershipStatus,
+              isolation_actuelle: leadData.userAnswers?.insulationStatus || leadData.userAnswers?.currentInsulation,
+              latitude: leadData.coordinates?.lat?.toString(),
+              longitude: leadData.coordinates?.lng?.toString(),
+              province: leadData.province || 'QC',
+            }),
+            ...(isSubvention && {
+              eligible_subvention: leadData.eligible ? 'Oui' : 'Non',
+              type_habitation: leadData.subventionAnswers?.buildingType,
+              statut_proprietaire: leadData.subventionAnswers?.owner === 'oui' ? 'Propriétaire' : 'Non-propriétaire',
+              systeme_de_chauffage: leadData.subventionAnswers?.heating,
+              isolation_actuelle: leadData.subventionAnswers?.insulation,
             }),
           },
         }
@@ -270,6 +324,9 @@ export async function POST(request: NextRequest) {
               phone: leadData.phone,
             },
             property: {
+              address: rawAddress || "",
+              city: extractedCity || "",
+              postalCode: extractedPostalCode || "",
               ville: leadData.ville || "",
             },
             projectDetails: {
@@ -460,7 +517,9 @@ export async function POST(request: NextRequest) {
             "Nom (B)": webhookPayload.contact.lastName,
             "Adresse courriel (C)": webhookPayload.contact.email,
             "Téléphone (D)": webhookPayload.contact.phone,
-            "Ville (E)": (webhookPayload as any).property?.ville || "",
+            "Adresse (E)": (webhookPayload as any).property?.address || "",
+            "Code postal (E2)": (webhookPayload as any).property?.postalCode || "",
+            "Ville (E3)": (webhookPayload as any).property?.city || (webhookPayload as any).property?.ville || "",
             "Type de projet (F)": (webhookPayload as any).projectDetails?.projectType || "",
             "Isolation actuelle (G)": (webhookPayload as any).projectDetails?.currentInsulation || "",
             "Problèmes (H)": (webhookPayload as any).projectDetails?.problems || "",

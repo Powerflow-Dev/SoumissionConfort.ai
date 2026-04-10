@@ -152,6 +152,10 @@ function QuestionnaireContent() {
   const [selections, setSelections] = useState<Record<string, string>>({})
   const [addressInput, setAddressInput] = useState("")
   const [validAddress, setValidAddress] = useState("")
+  const [addressCity, setAddressCity] = useState("")
+  const [addressPostalCode, setAddressPostalCode] = useState("")
+  const [addressCoordinates, setAddressCoordinates] = useState<{ lat: number; lng: number } | null>(null)
+  const [addressProvince, setAddressProvince] = useState("")
   const [isAddressDropdownOpen, setIsAddressDropdownOpen] = useState(false)
   const [addressSelectedIndex, setAddressSelectedIndex] = useState(-1)
   const addressInputRef = useRef<HTMLInputElement>(null)
@@ -185,6 +189,10 @@ function QuestionnaireContent() {
   const handleAddressInputChange = (value: string) => {
     setAddressInput(value)
     setValidAddress("") // reset on typing
+    setAddressCity("")
+    setAddressPostalCode("")
+    setAddressCoordinates(null)
+    setAddressProvince("")
     if (value.length >= 2) {
       fetchAddressPredictions(value)
       setIsAddressDropdownOpen(true)
@@ -195,12 +203,29 @@ function QuestionnaireContent() {
     }
   }
 
-  const handleAddressPredictionSelect = (prediction: { place_id: string; description: string; main_text: string; secondary_text: string }) => {
+  const handleAddressPredictionSelect = async (prediction: { place_id: string; description: string; main_text: string; secondary_text: string }) => {
     setAddressInput(prediction.description)
     setValidAddress(prediction.description)
     setIsAddressDropdownOpen(false)
     clearAddressPredictions()
     addressInputRef.current?.focus()
+    // Fetch structured address data (city, postalCode) from place details
+    if (prediction.place_id) {
+      try {
+        const res = await fetch(`/api/places/details?place_id=${encodeURIComponent(prediction.place_id)}`)
+        if (res.ok) {
+          const data = await res.json()
+          if (data.success && data.address) {
+            setAddressCity(data.address.city || "")
+            setAddressPostalCode(data.address.postalCode || "")
+            setAddressCoordinates(data.address.coordinates || null)
+            setAddressProvince(data.address.province || "")
+          }
+        }
+      } catch (e) {
+        console.error("Failed to fetch place details:", e)
+      }
+    }
   }
 
   const handleAddressKeyDown = (e: React.KeyboardEvent) => {
@@ -297,6 +322,11 @@ function QuestionnaireContent() {
           email: formData.email,
           phone: formData.phone,
           ville: villeSlug,
+          address: validAddress,
+          city: addressCity,
+          postalCode: addressPostalCode,
+          coordinates: addressCoordinates,
+          province: addressProvince,
           source: "soumission-rapide",
           leadType: "isolation_soumission_rapide",
           userAnswers: {

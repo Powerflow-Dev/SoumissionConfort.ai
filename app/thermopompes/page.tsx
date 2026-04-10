@@ -50,6 +50,8 @@ export default function ThermopompesPage() {
   const [address, setAddress] = useState("")
   const [postalCode, setPostalCode] = useState("")
   const [city, setCity] = useState("")
+  const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null)
+  const [province, setProvince] = useState("")
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   
   // Données collectées
@@ -142,10 +144,14 @@ export default function ThermopompesPage() {
       const roofArea = data.roofData?.roofArea || 2000
       const detectedPostal = data.roofData?.postalCode || extractPostalCode(data.roofData?.address || address)
       const detectedCity = data.roofData?.city || ""
-      
+      const detectedCoordinates = data.roofData?.coordinates || null
+      const detectedProvince = data.roofData?.coordinates?.province || ""
+
       setSolarArea(roofArea)
       if (detectedPostal) setPostalCode(detectedPostal)
       if (detectedCity) setCity(detectedCity)
+      if (detectedCoordinates) setCoordinates(detectedCoordinates)
+      if (detectedProvince) setProvince(detectedProvince)
       track('HeatPump_Solar_Analysis_Complete', { roofArea })
       
       // Transition immédiate vers Step 2
@@ -276,6 +282,8 @@ export default function ThermopompesPage() {
           address,
           postalCode,
           city,
+          coordinates,
+          province,
           solarArea,
           geometric,
           thermal,
