@@ -175,7 +175,7 @@ export async function POST(request: NextRequest) {
               isolation_actuelle: leadData.userAnswers?.insulationStatus || leadData.userAnswers?.currentInsulation,
               latitude: leadData.coordinates?.lat?.toString(),
               longitude: leadData.coordinates?.lng?.toString(),
-              province: leadData.coordinates?.province || 'QC',
+              province: leadData.province || 'QC',
             }),
             ...(isSubvention && {
               eligible_subvention: leadData.eligible ? 'Oui' : 'Non',
