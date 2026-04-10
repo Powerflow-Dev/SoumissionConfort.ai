@@ -1,7 +1,6 @@
 export interface GHLFieldDef { id: string; name: string; key: string; type: string }
 
 export const GHL_FIELDS: Record<string, GHLFieldDef> = {
-  a_demande_3_soumissions: { id: 'BeH24ZPk457bf7STDElX', name: 'A demande 3 soumissions', key: 'a_demande_3_soumissions', type: 'CHECKBOX' },
   acces_entretoit: { id: 'PXssFa4x79h3SvhG1wU7', name: 'Acces entretoit', key: 'acces_entretoit', type: 'TEXT' },
   ad_name: { id: '0XEUFGpcx6IAigZceBZz', name: 'Ad Name', key: 'ad_name', type: 'TEXT' },
   age_du_toit: { id: 'htl72tA4VVMDUnwl3cCF', name: 'Age du toit', key: 'age_du_toit', type: 'SINGLE_OPTIONS' },
