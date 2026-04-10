@@ -79,10 +79,12 @@ export async function POST(request: NextRequest) {
     let extractedPostalCode = leadData.postalCode || leadData.roofData?.postalCode || ""
 
     if (!extractedCity && rawAddress) {
+      // Format typique Google: "123 Rue X, Montreal, QC H2X 1Y4, Canada"
       const parts = rawAddress.split(',').map((p: string) => p.trim())
-      if (parts.length >= 2) {
-        extractedCity = parts[parts.length - 2] || ""
-        extractedCity = extractedCity.replace(/[A-Za-z]\d[A-Za-z]\s*\d[A-Za-z]\d/g, '').replace(/\b\d{5}(-\d{4})?\b/g, '').trim()
+      if (parts.length >= 3) {
+        extractedCity = parts[1] || ""
+      } else if (parts.length === 2) {
+        extractedCity = parts[0] || ""
       }
     }
 
@@ -91,7 +93,8 @@ export async function POST(request: NextRequest) {
       if (match) extractedPostalCode = match[0].toUpperCase().trim()
     }
 
-    console.log('📍 LEADS API: Normalized location:', { rawAddress, extractedCity, extractedPostalCode })
+    const extractedProvince = leadData.province || leadData.roofData?.coordinates?.province || ''
+    console.log('📍 LEADS API: Normalized location:', { rawAddress, extractedCity, extractedPostalCode, extractedProvince })
 
     // GHL DIRECT branch — controlled by GHL_ENABLED env flag.
     // When enabled, contact goes straight to GoHighLevel (Make/Close bypassed).
@@ -115,6 +118,7 @@ export async function POST(request: NextRequest) {
           phone: leadData.phone,
           address1: rawAddress || undefined,
           city: extractedCity || undefined,
+          state: extractedProvince || undefined,
           postalCode: extractedPostalCode || undefined,
           utmSource: utmParams.utm_source,
           utmCampaign: utmParams.utm_campaign,

@@ -2,6 +2,14 @@ import { type NextRequest, NextResponse } from "next/server"
 
 export async function GET(request: NextRequest) {
   try {
+    // Block external callers to protect Google Places quota
+    const origin = request.headers.get('origin') || request.headers.get('referer') || ''
+    const allowedHosts = ['localhost', '127.0.0.1', 'soumissionconfort.ai', 'soumission-confort-ai.vercel.app']
+    const isAllowed = allowedHosts.some(h => origin.includes(h)) || !origin
+    if (!isAllowed) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
     const { searchParams } = new URL(request.url)
     const input = searchParams.get("input")
 
