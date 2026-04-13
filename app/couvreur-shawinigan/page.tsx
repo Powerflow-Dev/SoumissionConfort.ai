@@ -4,13 +4,33 @@ import { AddressInput } from "@/components/address-input"
 import { useLanguage } from "@/lib/language-context"
 import { Badge } from "@/components/ui/badge"
 import { Calculator, TrendingDown, Shield, Clock, Users, MapPin, CheckCircle, Award } from 'lucide-react'
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { getCurrentUTMParameters } from "@/lib/utm-utils"
 
 function ToitureShawiniganPage() {
   const { t } = useLanguage()
   const router = useRouter()
   const [address, setAddress] = useState("")
+
+  useEffect(() => {
+    getCurrentUTMParameters()
+  }, [])
+
+  const navigateToAnalysis = () => {
+    if (!address.trim()) return
+    const utm = getCurrentUTMParameters()
+    const origin = typeof window !== 'undefined' ? window.location.origin : ''
+    const url = new URL('/analysis', origin || 'http://localhost')
+    url.searchParams.set('address', address.trim())
+    url.searchParams.set('region', 'shawinigan')
+    ;(['utm_source','utm_campaign','utm_content','utm_medium','utm_term','fbclid'] as const).forEach((k) => {
+      const v = (utm as any)[k]
+      if (v) url.searchParams.set(k, v)
+    })
+    const href = origin ? url.toString().replace(origin, '') : url.toString()
+    router.push(href)
+  }
 
   return (
     <div className="min-h-screen bg-[#fffff6]">
@@ -115,11 +135,7 @@ function ToitureShawiniganPage() {
                   </label>
                   <AddressInput
                     onAddressSelect={setAddress}
-                    onAnalyze={() => {
-                      if (address.trim()) {
-                        router.push(`/analysis?address=${encodeURIComponent(address)}&region=shawinigan`)
-                      }
-                    }}
+                    onAnalyze={navigateToAnalysis}
                   />
                 </div>
 

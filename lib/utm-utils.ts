@@ -76,10 +76,12 @@ export function getCurrentUTMParameters(): UTMParameters {
   // First try to get from current URL
   const currentParams = extractUTMParameters()
   
-  // If we found UTM params in URL, store them and return
+  // If we found UTM params in URL, merge with stored and return
   if (Object.keys(currentParams).length > 0) {
-    storeUTMParameters(currentParams)
-    return currentParams
+    const stored = getStoredUTMParameters()
+    const merged = { ...stored, ...currentParams }
+    storeUTMParameters(merged)
+    return merged
   }
   
   // Otherwise, try to get from stored parameters

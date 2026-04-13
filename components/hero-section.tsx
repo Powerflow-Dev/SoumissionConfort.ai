@@ -26,7 +26,7 @@ export function HeroSection() {
     const origin = typeof window !== 'undefined' ? window.location.origin : ''
     const url = new URL('/analysis', origin || 'http://localhost')
     url.searchParams.set('address', address.trim())
-    ;(['utm_source','utm_campaign','utm_content','utm_medium','utm_term'] as const).forEach((k) => {
+    ;(['utm_source','utm_campaign','utm_content','utm_medium','utm_term','fbclid'] as const).forEach((k) => {
       const v = (utm as any)[k]
       if (v) url.searchParams.set(k, v)
     })
