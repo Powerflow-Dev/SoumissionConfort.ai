@@ -293,11 +293,7 @@ export default function ThermopompesPage() {
           estimatedPriceMin: priceRange?.min,
           estimatedPriceMax: priceRange?.max,
           eventId,
-          utmParams: {
-            utm_source: utmParams.utm_source,
-            utm_campaign: utmParams.utm_campaign,
-            utm_content: utmParams.utm_content
-          }
+          utmParams,
         })
       })
     } catch (error) {
