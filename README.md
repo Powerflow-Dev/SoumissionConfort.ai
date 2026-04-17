@@ -52,5 +52,5 @@ Continue building your app on:
    ```
 4. Test Places autocomplete directly:
    ```bash
-   curl "http://localhost:3000/api/places/autocomplete?input=Montreal"
+   curl -H "Origin: http://localhost:3000" "http://localhost:3000/api/places/autocomplete?input=Montreal"
    ```

@@ -194,9 +194,9 @@ https://maps.googleapis.com/maps/api/place/autocomplete/json?input=montreal&key=
 ### Test 2: Vérifier l'Endpoint Local
 
 1. Démarrer le serveur: `npm run dev`
-2. Ouvrir dans le navigateur:
-   ```
-   http://localhost:3000/api/places/autocomplete?input=montreal
+2. Tester via curl (l'endpoint rejette les appels sans header `Origin`):
+   ```bash
+   curl -H "Origin: http://localhost:3000" "http://localhost:3000/api/places/autocomplete?input=montreal"
    ```
 
 **Résultat attendu**:

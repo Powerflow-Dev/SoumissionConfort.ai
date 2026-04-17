@@ -1,15 +1,12 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { isAllowedOrigin } from "@/lib/allowed-origins"
 
 const GOOGLE_API_KEY = process.env.GOOGLE_PLACES_API_KEY || process.env.GOOGLE_SOLAR_API_KEY
 
 export async function GET(request: NextRequest) {
   try {
-    // Block external callers to protect Google Places quota
-    const origin = request.headers.get('origin') || request.headers.get('referer') || ''
-    const allowedHosts = ['localhost', '127.0.0.1', 'soumissionconfort.com', 'soumissionconfort.ai', 'soumission-confort-ai.vercel.app']
-    const isAllowed = allowedHosts.some(h => origin.includes(h)) || !origin
-    if (!isAllowed) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    if (!isAllowedOrigin(request)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
     const searchParams = request.nextUrl.searchParams
