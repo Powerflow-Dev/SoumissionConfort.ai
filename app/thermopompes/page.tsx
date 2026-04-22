@@ -368,10 +368,11 @@ export default function ThermopompesPage() {
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
               <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                Obtenez une estimation de thermopompe en{" "}
-                <span className="text-green-600">60 secondes</span>
+                Estimation instantanée pour l'installation de thermopompes
               </h1>
-              
+              <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
+                Notre outil calcule automatiquement la superficie de votre maison afin d'estimer les besoins en terme d'équipement et le coût d'installation initial.
+              </p>
             </div>
 
             <Card className="max-w-2xl mx-auto shadow-2xl border-2 border-blue-100">
