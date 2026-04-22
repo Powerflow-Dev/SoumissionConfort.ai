@@ -2,7 +2,9 @@ import type { NextRequest } from "next/server"
 
 const ALLOWED_HOSTNAMES_PROD = new Set([
   "soumissionconfort.com",
+  "www.soumissionconfort.com",
   "soumissionconfort.ai",
+  "www.soumissionconfort.ai",
   "soumission-confort-ai.vercel.app",
 ])
 
