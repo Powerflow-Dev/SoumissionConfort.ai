@@ -1,17 +1,26 @@
 import type { NextRequest } from "next/server"
 
-const ALLOWED_HOSTNAMES_PROD = new Set([
+const APEX_DOMAINS = [
   "soumissionconfort.com",
-  "www.soumissionconfort.com",
   "soumissionconfort.ai",
-  "www.soumissionconfort.ai",
-  "soumission-confort-ai.vercel.app",
-])
+] as const
 
-const ALLOWED_HOSTNAMES_DEV = new Set([
+const PREVIEW_HOSTS = [
+  "soumission-confort-ai.vercel.app",
+] as const
+
+const DEV_HOSTS = [
   "localhost",
   "127.0.0.1",
+] as const
+
+export const ALLOWED_HOSTNAMES_PROD = new Set<string>([
+  ...APEX_DOMAINS,
+  ...APEX_DOMAINS.map((d) => `www.${d}`),
+  ...PREVIEW_HOSTS,
 ])
+
+export const ALLOWED_HOSTNAMES_DEV = new Set<string>(DEV_HOSTS)
 
 function normalizeHostname(raw: string): string {
   return raw.toLowerCase().replace(/\.$/, "")
